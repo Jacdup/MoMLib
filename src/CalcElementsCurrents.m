@@ -1,6 +1,6 @@
 function [triangles_vertices_currents] = CalcElementsCurrents(I_vec, tri_dofs, tri_dofs_idx, num_tri, node_coords)
 % This postprocessing routine calculates the values (Jx,Jy,Jz) at the three
-% vertices of each triangle in the mesh, as evaluated fromthe perspective of that triangle.  
+% vertices of each triangle in the mesh, as evaluated from the perspective of that triangle.  
 %
 % Structure of <triangles_vertices_currents>:
 % num_tri x 3(i.e. num vert per tri) x 3(three Cartesian components of J)
