@@ -22,7 +22,7 @@ eta_pol                  = pi/4;              % plane wave spec
 flag_planewave           = true;
 flag_lumped              = false;           % lumped sources and/or loads are present
 interelem_VsrcZload      = [];             % init lumped circuit element specification
-mesh_create_option       = 4;
+mesh_create_option       = 5;
 TextOn                   = true;           % mesh visualisation text
 flag_mesh_refine_uniform = false;
 h_split_num              = 3;
@@ -81,9 +81,19 @@ if mesh_create_option == 4
     %  Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 3];
     %  Contour = [0 0 0; 0.1 0 0; 0.2 0 0; 0.3 0 0; 0.4 0 0; 0.5 0 0];
     Contour = [0 0 0; 1 0 0; 2 0 0];
-    Contour = RefineMesh(Contour,2);
+%     Contour = RefineMesh(Contour,1);
     [node_coords,quad_nodes, elements] = QuadMesh_v5(Contour,vertices,rho);
     [tri_nodes,triangles] = QuadtoTri(elements);
+%     PlotMesh(node_coords,elements, triangles)
+end
+
+if mesh_create_option == 5
+    [node_coords, quad_nodes] = MeshCube(6);
+    quadElements = {};
+    for node = 1:length(element)
+    quadElements = [quadElements;element(node,1:4),[0 0 0 0 0 0 0 0]]; 
+    end
+
 end
 
 % Visualize the raw mesh data:
@@ -97,15 +107,21 @@ end
 
 % Create the mesh data, which includes edge definitions and connectivity:
 if quad == 1
-    [quad_blah,N,basis_supports_quad] = EdgeCalcQuad(quad_nodes,vertices);
+    [quad_blah,N,basis_supports_quad] = EdgeCalcQuad(quad_nodes,1);
     obs_basis_select = {1:N};
     src_basis_select      = {1:N};
     [common_basis_functions, num_obs, num_src] = common_basis(obs_basis_select,src_basis_select);
     quad_dof_idx = (1:N)';
     [new_quads,new_quad_points, new_quad_N, quad_observer_map, quad_source_map] = QuadBasisFunctionSelect(quad_blah ,common_basis_functions,basis_supports_quad,node_coords);
     MODE = 1;
+    mex  GCC='/usr/bin/gcc-7' -R2018a src\\Jacques\qmom.c
     [Z_mat] = qmom(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map),int32(quad_source_map), num_obs, num_src, MODE);
     V_vec = qfillPlane(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map), num_obs,0, MODE);
+%     [U_Mat] = SelectDOFMBF(basis_supports_quad, vertices);
+%     Z_mat_redu = U_Mat.'*Z_mat*U_Mat;
+%     V_vec_redu = U_Mat.'*V_vec;
+%     Alpha_Vec_Redu = Z_mat_redu\V_vec_redu;
+%     I_vec_redu = U_Mat*Alpha_Vec_Redu;
 else
     [mesh_data] = CreateMeshData(node_coords,tri_nodes);
     clear node_coords tri_nodes;
@@ -171,8 +187,8 @@ else
     % Fill the excitation vector:
     V_vec     = zeros(num_dofs,1);
     if flag_planewave
-        V_vec = qfillPlane(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map), num_obs,incident_dir, MODE);
-        %     V_vec = CalcExciteVecPlaneWave(reduced_tri_dofs,reduced_node_coords, observer_map, k0, E_scalfac, theta_inc, phi_inc, eta_pol);
+%         V_vec = qfillPlane(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map), num_obs,incident_dir, MODE);
+            V_vec = CalcExciteVecPlaneWave(reduced_tri_dofs,reduced_node_coords, observer_map, k0, E_scalfac, theta_inc, phi_inc, eta_pol);
     end
     
     % Fill the impedance matrix:
@@ -209,10 +225,10 @@ if quad == 1
     quad_currents_cent = zeros(num_quad,1);
     quad_currents_vert = zeros(num_quad,3);
     for ii = 1:num_quad
-        J_centroid              = (1/3)*[1 1 1]*squeeze(quads_vertices_currents(ii,1:3,1:3)); % Add each component at all 3 vertices and average
+        J_centroid              = (1/4)*[1 1 1 1]*squeeze(quads_vertices_currents(ii,1:4,1:3)); % Add each component at all 3 vertices and average
         quad_currents_cent(ii,1) = sqrt(abs(J_centroid*J_centroid'));
-        for jj = 1:3
-            J_vertex                 = squeeze(triangles_vertices_currents(ii,jj,1:3)).'; % non-conjugate transpose to make this a row vector
+        for jj = 1:4
+            J_vertex                 = squeeze(quads_vertices_currents(ii,jj,1:3)).'; % non-conjugate transpose to make this a row vector
             quad_currents_vert(ii,jj) = sqrt(abs(J_vertex*J_vertex')); % Magnitude
         end
     end
@@ -237,7 +253,11 @@ end
 
 % Visualize the current:
 % PlotCurrent3D(0,false,mesh_data.tri_nodes,mesh_data.node_coords,tri_currents_cent);
-PlotCurrent3D(1,false,mesh_data.tri_nodes,mesh_data.node_coords,tri_currents_vert);
+if quad == 1
+    PlotCurrent3DQuad(1,false,quad_blah,node_coords,quad_currents_vert);
+else
+    PlotCurrent3D(1,false,mesh_data.tri_nodes,mesh_data.node_coords,tri_currents_vert);
+end
 
 %---------------------------------------------------------------
 % Custom impedance calculation for the 'bowtie_1.nas' mesh, when excited at the neck: edge nodes 24 and 28; dof number 49.
@@ -259,13 +279,19 @@ end
 % The output of the farfield routine has this row format:
 % THETA     PHI     magn{Etheta} phase{Etheta} magn{Ephi} phase{Ephi}
 %   1        2            3           4            5          6
-plane               = 'XY'; % set the observation plane: 'XY' or 'XZ' or 'YZ'
+plane               = 'XZ'; % set the observation plane: 'XY' or 'XZ' or 'YZ'
 dalta_angle_degrees = 2;    % degree increment for observation directions
-[farfield_XY] = farfield(reduced_node_coords, reduced_tri_dofs, reduced_num_dofs, FREQUENCY, I_vec, dalta_angle_degrees, plane);
+[farfield_XY] = qfarfield(new_quad_points, new_quads, new_quad_N, FREQUENCY, I_vec, dalta_angle_degrees, plane);
 disp('<farfield> routine still needs some generalisation work');
 figure;
-semilogy(farfield_XY(:,2),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
-
+plot(farfield_XY(:,1),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
+% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_0.1.txt');
+[E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_ZPlaneWave.txt');
+% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_endcaps_xz.txt');
+% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_8m_xz.txt');
+hold on
+plot(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2));
+% 
 %---------------------------------------------------------------
 return;
 %---------------------------------------------------------------

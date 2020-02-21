@@ -51,7 +51,6 @@ norm_vec = zeros(1,3);
 % -------------------------------------------------------------------------
 
 for node = 1:num_nodes
-    
     % ----------------------------------
     % Form the points at the first node
     % ----------------------------------
@@ -103,8 +102,7 @@ for node = 1:num_nodes
             bisector = bisector/norm(bisector);
             basis_vec2 = cross(bisector,norm_vec);
             basis_vec2 = basis_vec2/norm(basis_vec2);
-            
-            
+                 
             % Rotate bisector 90 degrees about basis_vec2 to form normal
             % vector to tilted plane
             beta = pi/2;
@@ -117,7 +115,6 @@ for node = 1:num_nodes
             
         end
 
-        
         % Project points to plane
         for v = 1:num_vertices
             point_index = v + num_vertices*(node-1);
@@ -140,7 +137,6 @@ end
 % Now take the points and form the quadrilateral elements
 element = zeros((num_nodes-2)*(num_vertices)-1,3);
 for p = 1:(num_nodes-1)*(num_vertices)
-    
     for corner = 1:4
         %1,2,7,8
         %2,3,8,9
@@ -148,14 +144,11 @@ for p = 1:(num_nodes-1)*(num_vertices)
         offset_next_node = 0;
         if corner > 2
             offset_next_node = num_vertices;
-        end
-        
+        end     
         if (corner == 2 || corner == 4) && mod((p+offset_curr_node),num_vertices) == 1
             offset_curr_node = -(num_vertices-1); %go back to first vertice in node
-        end
-        
+        end      
         element(p,corner) = p+offset_curr_node+offset_next_node;
-
     end
 end
 
@@ -164,6 +157,28 @@ third = element(:,3);
 fourth = element(:,4);
 element(:,3) = fourth;
 element(:,4) = third;
+
+% ------------------------------------------------------------------------
+% -------------------------New 19/02/2020---------------------------------
+% ------------------------------------------------------------------------
+% Mesh degenerate quadrilaterals on the endcaps
+points(point_index + 1, 1:3) = Contour(1,:);
+points(point_index + 2, 1:3) = Contour(end,:);
+for v = 1:num_vertices % There will be num_vertices degenerate quads on the endcaps
+    % The elements at the start
+    % 'p' is the last element (#elements)
+    element(p+v, 1) = element(v,1);
+    element(p+v, 2) = element(v,2);
+    element(p+v, 3) = element(p,4) + 1; % Add extra
+    element(p+v, 4) = element(p,4) + 1; % Degenerate coordinate
+    
+    % The elements at the end
+    element(p+v+num_vertices, 1) = element(p-v+1,4);
+    element(p+v+num_vertices, 2) = element(p-v+1,3);
+    element(p+v+num_vertices, 3) = element(p,4) + 2; % Add extra
+    element(p+v+num_vertices, 4) = element(p,4) + 2; % Degenerate coordinate
+end
+
 
 quadElements = {};
 for node = 1:length(element)

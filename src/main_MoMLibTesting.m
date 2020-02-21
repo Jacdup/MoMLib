@@ -22,7 +22,7 @@ eta_pol                  = pi/4;              % plane wave spec
 flag_planewave           = true;
 flag_lumped              = false;           % lumped sources and/or loads are present
 interelem_VsrcZload      = [];             % init lumped circuit element specification
-mesh_create_option       = 4;
+mesh_create_option       = 5;
 TextOn                   = true;           % mesh visualisation text
 flag_mesh_refine_uniform = false;
 h_split_num              = 3;
@@ -75,15 +75,25 @@ end
 if mesh_create_option == 4
     
     rho = 0.5;
-    vertices = 15;
+    vertices = 12;
     % vertices =10 + (9); % Number of vertices
     %  Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 0.1; 5 0 0.2; 6 0.1 0.3; 7 0.2 0.4; 8 0.25 0.5; 9 0.2 0.6; 10 0.2 0.5; 11 0.2 0.4 ]; % Hardcode some contour
     %  Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 3];
     %  Contour = [0 0 0; 0.1 0 0; 0.2 0 0; 0.3 0 0; 0.4 0 0; 0.5 0 0];
     Contour = [0 0 0; 1 0 0; 2 0 0];
-    Contour = RefineMesh(Contour,2);
+%     Contour = RefineMesh(Contour,1);
     [node_coords,quad_nodes, elements] = QuadMesh_v5(Contour,vertices,rho);
     [tri_nodes,triangles] = QuadtoTri(elements);
+%     PlotMesh(node_coords,elements, triangles)
+end
+
+if mesh_create_option == 5
+    [node_coords, quad_elems] = MeshCube(6);
+    quad_nodes = {};
+    for node = 1:length(quad_elems)
+      quad_nodes = [quad_nodes;quad_elems(node,1:4),[0 0 0 0 0 0 0 0]]; 
+    end
+
 end
 
 % Visualize the raw mesh data:
@@ -97,20 +107,21 @@ end
 
 % Create the mesh data, which includes edge definitions and connectivity:
 if quad == 1
-    [quad_blah,N,basis_supports_quad] = EdgeCalcQuad(quad_nodes,vertices);
+    [quad_blah,N,basis_supports_quad] = EdgeCalcQuad(quad_nodes,1);
     obs_basis_select = {1:N};
     src_basis_select      = {1:N};
     [common_basis_functions, num_obs, num_src] = common_basis(obs_basis_select,src_basis_select);
     quad_dof_idx = (1:N)';
     [new_quads,new_quad_points, new_quad_N, quad_observer_map, quad_source_map] = QuadBasisFunctionSelect(quad_blah ,common_basis_functions,basis_supports_quad,node_coords);
     MODE = 1;
+    mex  GCC='/usr/bin/gcc-7' -R2018a src\\Jacques\qmom.c
     [Z_mat] = qmom(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map),int32(quad_source_map), num_obs, num_src, MODE);
     V_vec = qfillPlane(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map), num_obs,0, MODE);
-    [U_Mat] = SelectDOFMBF(basis_supports_quad, vertices);
-    Z_mat_redu = U_Mat.'*Z_mat*U_Mat;
-    V_vec_redu = U_Mat.'*V_vec;
-    Alpha_Vec_Redu = Z_mat_redu\V_vec_redu;
-    I_vec_redu = U_Mat*Alpha_Vec_Redu;
+%     [U_Mat] = SelectDOFMBF(basis_supports_quad, vertices);
+%     Z_mat_redu = U_Mat.'*Z_mat*U_Mat;
+%     V_vec_redu = U_Mat.'*V_vec;
+%     Alpha_Vec_Redu = Z_mat_redu\V_vec_redu;
+%     I_vec_redu = U_Mat*Alpha_Vec_Redu;
 else
     [mesh_data] = CreateMeshData(node_coords,tri_nodes);
     clear node_coords tri_nodes;
@@ -208,7 +219,7 @@ I_vec = Z_mat\V_vec;
 % Calculate the surface current density at the three vertices of all mesh triangle:
 if quad == 1
     num_quad = size(new_quads,1);
-    [quads_vertices_currents] = CalcElementsCurrentsQuad(I_vec_redu, new_quads, quad_dof_idx, num_quad, node_coords);
+    [quads_vertices_currents] = CalcElementsCurrentsQuad(I_vec, new_quads, quad_dof_idx, num_quad, node_coords);
     
      % Calculate centroid and vertex current magnitudes:
     quad_currents_cent = zeros(num_quad,1);
@@ -270,15 +281,16 @@ end
 %   1        2            3           4            5          6
 plane               = 'XZ'; % set the observation plane: 'XY' or 'XZ' or 'YZ'
 dalta_angle_degrees = 2;    % degree increment for observation directions
-[farfield_XY] = qfarfield(new_quad_points, new_quads, new_quad_N, FREQUENCY, I_vec_redu, dalta_angle_degrees, plane);
+[farfield_XY] = qfarfield(new_quad_points, new_quads, new_quad_N, FREQUENCY, I_vec, dalta_angle_degrees, plane);
 disp('<farfield> routine still needs some generalisation work');
 figure;
-semilogy(farfield_XY(:,1),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
+plot(farfield_XY(:,1),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_0.1.txt');
-% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_ZPlaneWave.txt');
-[E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_endcaps_xz.txt');
+[E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_ZPlaneWave.txt');
+% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_endcaps_xz.txt');
+% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_8m_xz.txt');
 hold on
-semilogy(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2));
+plot(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2));
 % 
 %---------------------------------------------------------------
 return;

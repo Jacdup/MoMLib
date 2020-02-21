@@ -137,6 +137,9 @@ for quad_index = 1:size(quadElements,1)
 %                     quadElements{quad_index}(direction_select(2)) = 1; % Last quad
 %                 end
 %                 
+if quadElements{quad_index}(doff_select(counter)) == 0
+    i = 1;
+end
             else
                 %we set the  direction to -1 and fetch the DOFF number from
                 %the lower triangle 
@@ -173,6 +176,9 @@ for quad_index = 1:size(quadElements,1)
 %                 if (mod(quad_index,vertices) == 0)
 %                     quadElements{quad_index}(direction_select(2)) = 1; % Last quad
 %                 end
+if quadElements{quad_index}(doff_select(counter)) == 0
+    i = 1;
+end
 
             end
             
@@ -180,12 +186,16 @@ for quad_index = 1:size(quadElements,1)
             % If we are in here it means the edge is not a DOFF and we
             % can simply put a -1 in the numbering system and a +1 in the
             % direction system.
+
             
             %set directional flag to +1
             quadElements{quad_index}(direction_select(counter)) = 1; 
             %The edge is not a DOFF so set number to -1
             quadElements{quad_index}(doff_select(counter)) = -1; 
         end
+                    if quadElements{quad_index}(doff_select(counter)) == 0
+    i = 1;
+end
     end
 end
 % quadElements{1}(direction_select(4)) = -1;
