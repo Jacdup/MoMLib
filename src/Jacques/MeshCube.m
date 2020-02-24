@@ -1,9 +1,10 @@
 function [node_coords, quad_elems] = MeshCube(points)
 
 a = 0.5; % Radius
-x = -1:0.4:1;
-y = -1:0.4:1;
-z = -1:0.4:1;
+increment = 2/(points-1);
+x = -1:increment:1;
+y = -1:increment:1;
+z = -1:increment:1;
 [X,Y,Z] = meshgrid(x);
 points = [X(:),Y(:),Z(:);zeros(1,3)];
 new_index = 1;

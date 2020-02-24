@@ -91,11 +91,11 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
     
     int i, j, ii, jj, iter;
     int oip;
-     FILE *fp;
-     FILE *fp1;
+//      FILE *fp;
+//      FILE *fp1;
 	
-                fp = fopen("Delta.txt","w");
-                fp1 = fopen("Ruv.txt","w");
+//                 fp = fopen("Delta.txt","w");
+//                 fp1 = fopen("Ruv.txt","w");
     
     for (i=0; i< T; i++) //Observation triangle
     {
@@ -178,8 +178,8 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
             
         }//this brace is new if statement
     }
-                fclose(fp);
-                fclose(fp1);
+//                 fclose(fp);
+//                 fclose(fp1);
 }
 
 /*====================================================================================================

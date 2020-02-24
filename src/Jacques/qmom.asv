@@ -102,31 +102,22 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
 //         i = 2;//z
 //         j = 1;//y
 //     }
-       if (fabs(E[0])< EPS && E[1] != 0 && F[0] != 0){ // Quad parallel to xy
-    	// printf("E = %f %f %f, F = %f %f %f\n", E[0], E[1], E[2],F[0], F[1], F[2]);
+         if (fabs(E[0])< EPS && E[1] != 0){ // Quad parallel to xy
+    	// printf("E\n");
     	 i = 1;//y
-         j = 0;//x
-     }else if (fabs(E[0])< EPS && E[1] != 0 && fabs(F[2]) != 0){
-    	 //printf("E2\n");
-    	 i = 1;
-    	 j = 2;
-     }
-     else if (fabs(F[1])< EPS && F[0] != 0)
+         j = 2;//x
+     }else if (fabs(F[1])< EPS && F[0] != 0)
      {
     	// printf("F\n");
  //         mexPrintf("in here\n");
-         i = 2;
-         j = 0;
+         i = 1;
+         j = 2;
      }else if (fabs(H[1]) < EPS && H[0] != 0)
      {
     	 //printf("H\n");
          i = 0;//z
         j = 2;//x
-     }else if (fabs(F[0]) < EPS && fabs(F[1]) < EPS) 
-     {
-    	 i = 1;
-    	 j = 2;
-    }else{
+     }else{
     	 //printf("Else\n");
          i = 0;//z
          j = 1;//y
@@ -179,25 +170,25 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
     else if ( !b1 &&  b2 ) {u = u2; v = v2;}
     else {u = u1; v = v1;}
     
-    if (fabs(u2)< EPS && fabs(v2) < EPS){ // This is sort of a check when the observation point is outside of quad (which is a valid scenario)
-        u = u1;
-        v = v1;
-    }else if (fabs(u1)< EPS && fabs(v1) < EPS){
-        u = u2;
-        v = v2;
-    }else if (fabs(u1) < fabs(u2) && fabs(v1) < fabs(v2)){
-        u = u1;
-        v = v1;
-    }
-    else{
-//         u = u*2 - 1;
-//         v = v*2 - 1;
-         u = u2;
-    	 v = v2;
-//          mexPrintf("u = %f\n", u);
-//         u = 1;
-//         v = 1;
-    }
+//     if (fabs(u2)< EPS && fabs(v2) < EPS){ // This is sort of a check when the observation point is outside of quad (which is a valid scenario)
+//         u = u1;
+//         v = v1;
+//     }else if (fabs(u1)< EPS && fabs(v1) < EPS){
+//         u = u2;
+//         v = v2;
+//     }else if (fabs(u1) < fabs(u2) && fabs(v1) < fabs(v2)){
+//         u = u1;
+//         v = v1;
+//     }
+//     else{
+// //         u = u*2 - 1;
+// //         v = v*2 - 1;
+//          u = u2;
+//     	 v = v2;
+// //          mexPrintf("u = %f\n", u);
+// //         u = 1;
+// //         v = 1;
+//     }
     
     uv[0] = u;
     uv[1] = v;

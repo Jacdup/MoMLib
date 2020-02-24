@@ -89,13 +89,13 @@ for ii = 1:size(quad_dofs,1)
             for kk = 1:2 % contributions at the edge vertices, not the origin vertex 
                          % (note that basis direction must be incorporated via 
                          % appropriate tri_dofs data) 
-                rho(1,1,1:3) = ((zv*drdv) + (zu *drdu));
-                Zeta = norm(elen(:,:,kk));
+                rho(1,1,1:3) = ((zu*drdv) + (zv *drdu));
+%                 Zeta = norm(elen(:,:,kk));
 %                 rho(1,1,1:3) = node_coords(edge_verts(kk),:) - node_coords(quad_dofs(ii,jj),:);
                 rho_edgevert(1,1,1:3) = node_coords(edge_verts(kk),:) - node_coords(quad_dofs(ii,jj),:); % origins of the three RWGs are the three tri nodes, in order
                 quad_vertices_currents(this_quad,local_edge_nodes_def(jj,kk),1:3) = ... % This whole thing will have to change, for quad basis function
                     quad_vertices_currents(this_quad,local_edge_nodes_def(jj,kk),1:3) + ... 
-                    I_vec(this_dof)*Zeta * (N/J_det) * quad_dofs(ii,9-jj) * 1;
+                    I_vec(this_dof)*1* (N/J_det) * quad_dofs(ii,9-jj) * rho;
 %                     I_vec(this_dof) * 0.5 * (ELength/TArea) * quad_dofs(ii,4+jj) * rho_edgevert;
             end
         end

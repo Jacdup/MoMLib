@@ -22,11 +22,16 @@ eta_pol                  = pi/4;              % plane wave spec
 flag_planewave           = true;
 flag_lumped              = false;           % lumped sources and/or loads are present
 interelem_VsrcZload      = [];             % init lumped circuit element specification
-mesh_create_option       = 5;
+mesh_create_option       = 5;              % 1 : Square plate
+                                           % 2 : NASTRAN
+                                           % 3 : Junction mesh
+                                           % 4 : Cylinder
+                                           % 5 : Sphere
 TextOn                   = true;           % mesh visualisation text
 flag_mesh_refine_uniform = false;
 h_split_num              = 3;
 quad                     = 1;
+MBF                      = 1;
 
 
 %oldpath = path;
@@ -81,19 +86,19 @@ if mesh_create_option == 4
     %  Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 3];
     %  Contour = [0 0 0; 0.1 0 0; 0.2 0 0; 0.3 0 0; 0.4 0 0; 0.5 0 0];
     Contour = [0 0 0; 1 0 0; 2 0 0];
-%     Contour = RefineMesh(Contour,1);
+    Contour = RefineMesh(Contour,1);
     [node_coords,quad_nodes, elements] = QuadMesh_v5(Contour,vertices,rho);
     [tri_nodes,triangles] = QuadtoTri(elements);
 %     PlotMesh(node_coords,elements, triangles)
 end
 
+% Mesh a sphere
 if mesh_create_option == 5
-    [node_coords, quad_nodes] = MeshCube(6);
-    quadElements = {};
-    for node = 1:length(element)
-    quadElements = [quadElements;element(node,1:4),[0 0 0 0 0 0 0 0]]; 
+    [node_coords, quad_elems] = MeshCube(6);
+    quad_nodes = {};
+    for node = 1:length(quad_elems)
+      quad_nodes = [quad_nodes;quad_elems(node,1:4),[0 0 0 0 0 0 0 0]]; 
     end
-
 end
 
 % Visualize the raw mesh data:
@@ -114,14 +119,16 @@ if quad == 1
     quad_dof_idx = (1:N)';
     [new_quads,new_quad_points, new_quad_N, quad_observer_map, quad_source_map] = QuadBasisFunctionSelect(quad_blah ,common_basis_functions,basis_supports_quad,node_coords);
     MODE = 1;
-    mex  GCC='/usr/bin/gcc-7' -R2018a src\\Jacques\qmom.c
+    mex GCC='/usr/bin/gcc-7' -R2018a src\\Jacques\qmom.c
     [Z_mat] = qmom(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map),int32(quad_source_map), num_obs, num_src, MODE);
     V_vec = qfillPlane(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map), num_obs,0, MODE);
-%     [U_Mat] = SelectDOFMBF(basis_supports_quad, vertices);
-%     Z_mat_redu = U_Mat.'*Z_mat*U_Mat;
-%     V_vec_redu = U_Mat.'*V_vec;
-%     Alpha_Vec_Redu = Z_mat_redu\V_vec_redu;
-%     I_vec_redu = U_Mat*Alpha_Vec_Redu;
+    if MBF == 1
+        [U_Mat] = SelectDOFMBF(basis_supports_quad, vertices);
+        Z_mat_redu = U_Mat.'*Z_mat*U_Mat;
+        V_vec_redu = U_Mat.'*V_vec;
+        Alpha_Vec_Redu = Z_mat_redu\V_vec_redu;
+        I_vec = U_Mat*Alpha_Vec_Redu;
+    end
 else
     [mesh_data] = CreateMeshData(node_coords,tri_nodes);
     clear node_coords tri_nodes;
@@ -210,7 +217,9 @@ else
     end
 end
 % Solve:
-I_vec = Z_mat\V_vec;
+if MBF == 0
+    I_vec = Z_mat\V_vec;
+end
 
 %---------------------------------------------------------------
 % Calculate and plot the surface current distribution.
@@ -223,15 +232,24 @@ if quad == 1
     
      % Calculate centroid and vertex current magnitudes:
     quad_currents_cent = zeros(num_quad,1);
-    quad_currents_vert = zeros(num_quad,3);
+    quad_currents_dir = zeros(num_quad,3);
+    quad_currents_vert = zeros(num_quad,4);
     for ii = 1:num_quad
         J_centroid              = (1/4)*[1 1 1 1]*squeeze(quads_vertices_currents(ii,1:4,1:3)); % Add each component at all 3 vertices and average
+        for kk = 1:4
+             quad_currents_dir(ii,1) =  quad_currents_dir(ii,1) + quads_vertices_currents(ii,kk,1);
+             quad_currents_dir(ii,2) =  quad_currents_dir(ii,2) + quads_vertices_currents(ii,kk,2);
+             quad_currents_dir(ii,3) =  quad_currents_dir(ii,3) + quads_vertices_currents(ii,kk,3);
+        end
+
         quad_currents_cent(ii,1) = sqrt(abs(J_centroid*J_centroid'));
         for jj = 1:4
             J_vertex                 = squeeze(quads_vertices_currents(ii,jj,1:3)).'; % non-conjugate transpose to make this a row vector
             quad_currents_vert(ii,jj) = sqrt(abs(J_vertex*J_vertex')); % Magnitude
         end
     end
+    quad_currents_dir_real = real(quad_currents_dir);
+    quad_currents_dir_imag = imag(quad_currents_dir);
     
 else
     num_tri = size(mesh_data.tri_nodes,1);
@@ -239,10 +257,19 @@ else
     
     % Calculate centroid and vertex current magnitudes:
     tri_currents_cent = zeros(num_tri,1);
+    tri_currents_dir = zeros(num_tri,3);
     tri_currents_vert = zeros(num_tri,3);
     for ii = 1:num_tri
         J_centroid              = (1/3)*[1 1 1]*squeeze(triangles_vertices_currents(ii,1:3,1:3)); % Add each component at all 3 vertices and average
         tri_currents_cent(ii,1) = sqrt(abs(J_centroid*J_centroid'));
+         for kk = 1:3
+             tri_currents_dir(ii,1) =  tri_currents_dir(ii,1) + triangles_vertices_currents(ii,kk,1);
+             tri_currents_dir(ii,2) =  tri_currents_dir(ii,2) + triangles_vertices_currents(ii,kk,2);
+             tri_currents_dir(ii,3) =  tri_currents_dir(ii,3) + triangles_vertices_currents(ii,kk,3);
+         end
+         tri_currents_dir = abs(tri_currents_dir);
+        
+        
         for jj = 1:3
             J_vertex                 = squeeze(triangles_vertices_currents(ii,jj,1:3)).'; % non-conjugate transpose to make this a row vector
             tri_currents_vert(ii,jj) = sqrt(abs(J_vertex*J_vertex')); % Magnitude
@@ -255,8 +282,10 @@ end
 % PlotCurrent3D(0,false,mesh_data.tri_nodes,mesh_data.node_coords,tri_currents_cent);
 if quad == 1
     PlotCurrent3DQuad(1,false,quad_blah,node_coords,quad_currents_vert);
+    PlotCurrentDir3D(0,quad_blah,node_coords,quad_currents_dir_real,quad_currents_dir_imag);
 else
     PlotCurrent3D(1,false,mesh_data.tri_nodes,mesh_data.node_coords,tri_currents_vert);
+    PlotCurrentDir3D(1,mesh_data.tri_nodes,mesh_data.node_coords,tri_currents_dir);
 end
 
 %---------------------------------------------------------------
@@ -281,7 +310,12 @@ end
 %   1        2            3           4            5          6
 plane               = 'XZ'; % set the observation plane: 'XY' or 'XZ' or 'YZ'
 dalta_angle_degrees = 2;    % degree increment for observation directions
-[farfield_XY] = qfarfield(new_quad_points, new_quads, new_quad_N, FREQUENCY, I_vec, dalta_angle_degrees, plane);
+if quad == 1
+    [farfield_XY] = qfarfield(new_quad_points, new_quads, new_quad_N, FREQUENCY, I_vec, dalta_angle_degrees, plane);
+else
+    [farfield_XY] = farfield(reduced_node_coords, reduced_tri_dofs, reduced_num_dofs, FREQUENCY, I_vec, dalta_angle_degrees, plane);
+end
+
 disp('<farfield> routine still needs some generalisation work');
 figure;
 plot(farfield_XY(:,1),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));

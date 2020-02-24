@@ -1,6 +1,7 @@
-function [node_coords, quad_elems] = MeshCube(
+function [node_coords, quad_elems] = MeshCube(points)
 
 a = 0.5; % Radius
+inc
 x = -1:0.4:1;
 y = -1:0.4:1;
 z = -1:0.4:1;
@@ -144,10 +145,7 @@ elems_f3_new(:,[3 4]) = elems_f3_new(:,[4 3]);
 elems_f4_new(:,[3 4]) = elems_f4_new(:,[4 3]);
 elems_f5_new(:,[3 4]) = elems_f5_new(:,[4 3]);
 elems_f6_new(:,[3 4]) = elems_f6_new(:,[4 3]);
-% third = elems(:,3);
-% fourth = elems(:,4);
-% elems(:,3) = fourth;
-% elems(:,4) = third;
+elems(:,[3 4]) = elems(:,[4 3]);
 
 % Make sphere
 for new_index = 1:length(new_Points(:,1))
@@ -160,13 +158,16 @@ end
 c1 = repelem(0.1,points_per_dim)';
 c2 = repelem(0.5,points_per_dim)';
 col = [c1; c2;c1;c2;c1;c2];
-patch('Faces', elems_f1_new(:,:), 'Vertices',r_s, 'FaceColor', 'r')
-patch('Faces', elems_f2_new(:,:), 'Vertices',r_s, 'FaceColor', 'b')
-patch('Faces', elems_f3_new(:,:), 'Vertices',r_s, 'FaceColor', 'g')
-patch('Faces', elems_f4_new(:,:), 'Vertices',r_s, 'FaceColor', 'y')
-patch('Faces', elems_f5_new(:,:), 'Vertices',r_s, 'FaceColor', 'm')
-patch('Faces', elems_f6_new(:,:), 'Vertices',r_s, 'FaceColor', 'c')
-axis equal
+% patch('Faces', elems_f1_new(:,:), 'Vertices',r_s, 'FaceColor', 'r')
+% patch('Faces', elems_f2_new(:,:), 'Vertices',r_s, 'FaceColor', 'b')
+% patch('Faces', elems_f3_new(:,:), 'Vertices',r_s, 'FaceColor', 'g')
+% patch('Faces', elems_f4_new(:,:), 'Vertices',r_s, 'FaceColor', 'y')
+% patch('Faces', elems_f5_new(:,:), 'Vertices',r_s, 'FaceColor', 'm')
+% patch('Faces', elems_f6_new(:,:), 'Vertices',r_s, 'FaceColor', 'c')
+% axis equal
+
+node_coords = r_s;
+quad_elems = elems;
 % patch('Faces', elems(:,:), 'Vertices',r_s, 'FaceColor','Green' )
 % plot3(r_s(:,1),r_s(:,2),r_s(:,3))
 % patch(r_s(:,1),r_s(:,2),r_s(:,3));
