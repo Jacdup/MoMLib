@@ -22,7 +22,7 @@ eta_pol                  = pi/4;              % plane wave spec
 flag_planewave           = true;
 flag_lumped              = false;           % lumped sources and/or loads are present
 interelem_VsrcZload      = [];             % init lumped circuit element specification
-mesh_create_option       = 5;              % 1 : Square plate
+mesh_create_option       = 4;              % 1 : Square plate
                                            % 2 : NASTRAN
                                            % 3 : Junction mesh
                                            % 4 : Cylinder
@@ -85,11 +85,11 @@ if mesh_create_option == 4
     %  Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 0.1; 5 0 0.2; 6 0.1 0.3; 7 0.2 0.4; 8 0.25 0.5; 9 0.2 0.6; 10 0.2 0.5; 11 0.2 0.4 ]; % Hardcode some contour
     %  Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 3];
     %  Contour = [0 0 0; 0.1 0 0; 0.2 0 0; 0.3 0 0; 0.4 0 0; 0.5 0 0];
-    Contour = [0 0 0; 1 0 0; 2 0 0];
+    Contour = [1 0 0; 1.5 0 0; 2 0 0];
     Contour = RefineMesh(Contour,1);
     [node_coords,quad_nodes, elements] = QuadMesh_v5(Contour,vertices,rho);
     [tri_nodes,triangles] = QuadtoTri(elements);
-%     PlotMesh(node_coords,elements, triangles)
+    PlotMesh(node_coords,elements, triangles, abs(quad-1))
 end
 
 % Mesh a sphere
@@ -118,8 +118,8 @@ if quad == 1
     [common_basis_functions, num_obs, num_src] = common_basis(obs_basis_select,src_basis_select);
     quad_dof_idx = (1:N)';
     [new_quads,new_quad_points, new_quad_N, quad_observer_map, quad_source_map] = QuadBasisFunctionSelect(quad_blah ,common_basis_functions,basis_supports_quad,node_coords);
-    MODE = 1;
-    mex GCC='/usr/bin/gcc-7' -R2018a src\\Jacques\qmom.c
+    MODE = 0;
+    mex GCC='/usr/bin/gcc-7' -O -R2018a src\\Jacques\qmom.c
     [Z_mat] = qmom(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map),int32(quad_source_map), num_obs, num_src, MODE);
     V_vec = qfillPlane(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map), num_obs,0, MODE);
     if MBF == 1
@@ -321,9 +321,9 @@ figure;
 plot(farfield_XY(:,1),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_0.1.txt');
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_ZPlaneWave.txt');
-% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_endcaps_xz.txt');
+[E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_endcaps_xz.txt');
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_8m_xz.txt');
-[E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\sphere_0.5.txt');
+% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\sphere_0.5.txt');
 hold on
 plot(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2));
 % 

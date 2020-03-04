@@ -1635,8 +1635,7 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                         //----------------------------------------------------------------------------------------------------------------------------------
                         //----------------------------------------------------------------------------------------------------------------------------------
                            for (ii=0; ii<3; ii++) //Edges of observation triangle
-                        {	// This checks if the edge is a DOF and returns the edges index in the edge list
-                            // pEdgeIndex will determine the row of this interaction on the Zmat
+                        {
 
                             int pEdgeIndex = pTri[6+(ii+2)%3];
                             int p_obs_index = obs_map[(pTri[6+(ii+2)%3]-1)];
@@ -1687,12 +1686,12 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                 }
                                    
                             }
-                        }
+                        }//ii
                         for (iter=0; iter < newNumInt; iter++)
                                     mxFree(InnerIntPoints[iter]);
                                 mxFree(InnerIntPoints);
                      
-                    }
+                    }//oip
                     
                     
                     for (iter=0; iter < NumOuterIntPoints; iter++)

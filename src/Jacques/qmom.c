@@ -102,35 +102,41 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
 //         i = 2;//z
 //         j = 1;//y
 //     }
-       if (fabs(E[0])< EPS && E[1] != 0 && F[0] != 0){ // Quad parallel to xy
-    	// printf("E = %f %f %f, F = %f %f %f\n", E[0], E[1], E[2],F[0], F[1], F[2]);
-    	 i = 1;//y
-         j = 0;//x
-     }else if (fabs(E[0])< EPS && E[1] != 0 && fabs(F[2]) != 0){
-    	 //printf("E2\n");
-    	 i = 1;
-    	 j = 2;
-     }
-     else if (fabs(F[1])< EPS && F[0] != 0)
-     {
-    	// printf("F\n");
- //         mexPrintf("in here\n");
-         i = 2;
-         j = 0;
-     }else if (fabs(H[1]) < EPS && H[0] != 0)
-     {
-    	 //printf("H\n");
-         i = 0;//z
+    if (fabs(E[0])< EPS && E[1] != 0 && F[0] != 0){ // Quad parallel to xy
+        // printf("E = %f %f %f, F = %f %f %f\n", E[0], E[1], E[2],F[0], F[1], F[2]);
+        i = 1;//y
+        j = 0;//x
+    }else if (fabs(E[0])< EPS && E[1] != 0 && fabs(F[2]) != 0){
+        //printf("E2\n");
+        i = 1;
+        j = 2;
+    }
+    else if (fabs(F[1])< EPS && F[0] != 0)
+    {
+        // printf("F\n");
+        //         mexPrintf("in here\n");
+        i = 2;
+        j = 0;
+    }else if (fabs(H[1]) < EPS && H[0] != 0)
+    {
+        //printf("H\n");
+        i = 0;//z
         j = 2;//x
-     }else if (fabs(F[0]) < EPS && fabs(F[1]) < EPS) 
-     {
-    	 i = 1;
-    	 j = 2;
-    }else{
-    	 //printf("Else\n");
-         i = 0;//z
-         j = 1;//y
-     }
+    }else if (fabs(F[0]) < EPS && fabs(F[1]) < EPS)
+    {
+        i = 1;
+        j = 2;
+    }else if (fabs(F[0]) < EPS && fabs(F[2]) < EPS && E[1] != 0){
+        //printf("else\n");
+        //printf("Else E = %f %f %f, F = %f %f %f\n", E[0], E[1], E[2],F[0], F[1], F[2]);
+        i = 2;
+        j = 1;
+    }
+    else{
+        //printf("Else\n");
+        i = 0;//z
+        j = 1;//y
+    }
     
     
     
@@ -192,8 +198,8 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
     else{
 //         u = u*2 - 1;
 //         v = v*2 - 1;
-         u = u2;
-    	 v = v2;
+        u = u2;
+        v = v2;
 //          mexPrintf("u = %f\n", u);
 //         u = 1;
 //         v = 1;
@@ -534,13 +540,11 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                         qQuadShape = 1;
                     }
                     int RAR_flag = 0;
-                    
-                    //I only want to assign the outer integration points here
+                    invert = 0;
                     
                     //outer integral
-                    for (oip=0; oip<NumOuterIntPoints; oip++) //outer integral points
+                    for (oip=1; oip<NumOuterIntPoints; oip++) //outer integral points
                     {
-                    
                         double **InnerIntPoints = NULL;
                         if(further_check_required && (i == j))
                         {
@@ -548,45 +552,48 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                             //if we come in here outer is already set to 16
                             //16 point outside and RAR inside
                             
-                            //we will use radial angular for the inner integral
-                            
-                            //NumInnerIntPoints is recieved by RAR, max of 10 is set
-                            //NumInnerIntPoints is defined by mode
                             NumInnerIntPoints = RAR_level[MODE];
-                            newNumInt = 4*(int)pow(NumInnerIntPoints,2);
-                            if (newNumInt > 400)
-                                newNumInt = 400;
-                            
-                            //allocate the memory for OuterIntPoints
-                            InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
-                            for (iter=0; iter < newNumInt; iter++)
-                                InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-                            
-                            //so the inner quadrilateral is now integrated using radial angular methods
-                            //Note that RAR1S also recieves the outer integration point and original NumInnerIntPoints
                             //17-10-2019 Edit
                             double ruv[3],drdu[3],drdv[3];
                             BilinearInt(pPoints, OuterIntPoints[oip], ruv, drdu,drdv); // Get the x,y,z coords for RAR1S
                             
-                           if ((pQuadShape == 1) || (qQuadShape == 1)){
-                               // if (i == (T-1)){
-                                //  fprintf(fp_ruv,"%f,%f,%f\n", ruv[0], ruv[1], ruv[2]);}
-                                  //mexPrintf("node = %f, pQuad = %d %d %d %d\n",pPoints[3][0], pQuad[0], pQuad[1],pQuad[2],pQuad[3]);
-                    //      fprintf(fp1,"%f,%f,%f\n", ruv[0],ruv[1],ruv[2]);
-                                //    mexPrintf("ruv = %f %f %f\n", ruv[0],ruv[1],ruv[2]);}
-                               RAR1STri(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
-                              
-                               // mexPrintf("inner points = %f %f %f\n", InnerIntPoints[0][0],InnerIntPoints[0][1],InnerIntPoints[0][2]);
+                            if ((pQuadShape == 1) || (qQuadShape == 1)){
+                                newNumInt = 3*(int)pow(NumInnerIntPoints,2);
+                                // mexPrintf("newNUmInt = %d\n", newNumInt);
+                                if (newNumInt > 300)
+                                    newNumInt = 300;
+                                InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
+                                for (iter=0; iter < newNumInt; iter++)
+                                    InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
+                                
+                                RAR1STri(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
+                                invert = 1;
+                                if (isnan(InnerIntPoints[146][0]) || (isnan(InnerIntPoints[146][1]))|| (isnan(InnerIntPoints[146][2]))){
+                                    mexPrintf("problem1\n");
+                                    mexPrintf("qPoints = %f,%f,%f %f,%f,%f %f,%f,%f, %f,%f,%f\n",qPoints[0][0],qPoints[0][1],qPoints[0][2],qPoints[1][0],qPoints[1][1],qPoints[1][2],qPoints[2][0],qPoints[2][1],qPoints[2][2],qPoints[3][0],qPoints[3][1],qPoints[3][2]);
+                                    mexPrintf("ruv = %f,%f,%f \n",ruv[0],ruv[1],ruv[2]);
+                                }
+                                //mexPrintf("inner points1 = %f %f %f\n", InnerIntPoints[0][0],InnerIntPoints[0][1],InnerIntPoints[0][2]);
+                                //mexPrintf("inner points2 = %f %f %f\n", InnerIntPoints[1][0],InnerIntPoints[1][1],InnerIntPoints[1][2]);
+                                // mexPrintf("inner points = %f %f %f\n", InnerIntPoints[0][0],InnerIntPoints[0][1],InnerIntPoints[0][2]);
                             }
                             else{
+                                newNumInt = 4*(int)pow(NumInnerIntPoints,2);
+                                
+                                if (newNumInt > 400)
+                                    newNumInt = 400;
+                                InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
+                                for (iter=0; iter < newNumInt; iter++)
+                                    InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
                                 RAR1S(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
+                                
 //                                   if (i == (T-1)){
 //                                 fprintf(fp_ruv,"%f,%f,%f\n", InnerIntPoints[2][0], InnerIntPoints[2][1], InnerIntPoints[2][2]);}
-                           }
+                            }
                             //RAR1S(qPoints, OuterIntPoints[oip], NumInnerIntPoints, InnerIntPoints);
                             count_16_RAR++;
                             RAR_flag = 1;
-                            invert = 1;
+                            
                             
                         }else if(further_check_required)
                         {
@@ -615,39 +622,46 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                 
                                 //level 4 outside and RAR inside
                                 //we will use radial angular for the inner integral
-                                
-                                //NumInnerIntPoints is recieved by RAR, this can be set higher max of 10 is set
                                 NumInnerIntPoints = RAR_level[MODE];
-                                newNumInt = 4*(int)pow(NumInnerIntPoints,2);
-                                if (newNumInt > 400)
-                                    newNumInt = 400;
                                 
-                                //allocate the memory for InnerIntPoints
-                                InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
-                                for (iter=0; iter < newNumInt; iter++)
-                                    InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-                                
-                                //so the inner quadrilateral is now integrated using radial angular methods
-                                //Note that RAR1S also recieves the outer integration point and original NumInnerIntPoints
                                 //17-10-2019 Edit
                                 double ruv[3],drdu[3],drdv[3];
                                 BilinearInt(pPoints, OuterIntPoints[oip], ruv, drdu,drdv);
                                 if ((pQuadShape == 1)|| (qQuadShape == 1)){
-                                    //    mexPrintf("ruv = %f %f %f\n", ruv[0],ruv[1],ruv[2]);}
+                                    newNumInt = 4*(int)pow(NumInnerIntPoints,2);
+                                    if (newNumInt > 400)
+                                        newNumInt = 400;
+                                    
+                                    InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
+                                    for (iter=0; iter < newNumInt; iter++)
+                                        InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
                                     RAR1STri(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
-                                    // mexPrintf("success\n");}
+                                    invert = 1;
+                                    if (isnan(InnerIntPoints[1][1]) || (isnan(InnerIntPoints[1][0]))|| (isnan(InnerIntPoints[2][0]))){
+                                        mexPrintf("problem2 %d %d\n",oip, NumOuterIntPoints);
+                                        mexPrintf("double qPoints = {{%f,%f,%f},{ %f,%f,%f},{ %f,%f,%f},{ %f,%f,%f}};\n",qPoints[0][0],qPoints[0][1],qPoints[0][2],qPoints[1][0],qPoints[1][1],qPoints[1][2],qPoints[2][0],qPoints[2][1],qPoints[2][2],qPoints[3][0],qPoints[3][1],qPoints[3][2]);
+                                        mexPrintf("double TestPoint = {%f,%f,%f}; \n",ruv[0],ruv[1],ruv[2]);
+                                    }
+                                    // mexPrintf("success\n");
+                                    // mexPrintf("inner points1 = %f %f %f\n", InnerIntPoints[0][0],InnerIntPoints[0][1],InnerIntPoints[0][2]);
+                                    // mexPrintf("inner points2 = %f %f %f\n", InnerIntPoints[1][0],InnerIntPoints[1][1],InnerIntPoints[1][2]);
                                 }
                                 else{
+                                    newNumInt = 3*(int)pow(NumInnerIntPoints,2);
+                                    if (newNumInt > 300)
+                                        newNumInt = 300;
+                                    InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
+                                    for (iter=0; iter < newNumInt; iter++)
+                                        InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
                                     RAR1S(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
-                               }
+                                    
+                                }
                                 // RAR1S(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
                                 //RAR1S(qPoints, OuterIntPoints[oip], NumInnerIntPoints, InnerIntPoints);
                                 count_16_RAR++;
                                 RAR_flag = 1;
-                                invert = 1;
+                                
                             }
-                            
-                            
                         }else if(!further_check_required  && (i != j))
                         {
                             newNumInt = NumInnerIntPoints;
@@ -664,28 +678,21 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                         //------------------------------------------------second round of checks complete---------------------------------------------------
                         //----------------------------------------------------------------------------------------------------------------------------------
                         //----------------------------------------------------------------------------------------------------------------------------------
-                        
-                        //AT THIS POINT MY OUTER AND INNER INTEGRATION POINTS ARE KNOWN
                         for (ii=0; ii<4; ii++) //Edges of observation quadrilateral
-                        {	// This checks if the edge is a DOF and returns the edges index in the edge list
-                            // pEdgeIndex will determine the row of this interaction on the Zmat
+                        {	//ii
                             
                             int pEdgeIndex = pQuad[(8 + (4-ii)%4)]; // AD -> AB -> BC -> DC
                             int p_obs_index = obs_map[(pQuad[8 + (4-ii)%4]-1)];
                             // 20/02/2020 Edit
                             
-                            
-                            
                             // below just checks that the edge index is any number other the -1, meaning it will be a DOF
                             // this if statement asks two questions, is it a basis function? and is it an observer?
                             if ((pEdgeIndex + 1) && (p_obs_index + 1))
                             {
-                                
                                 //------------Outer Basis Function------------//
                                 double pRho[3],OuterRuv[3],drdu_outer[3],drdv_outer[3];
                                 BilinearInt(pPoints, OuterIntPoints[oip], OuterRuv, drdu_outer,drdv_outer); // This function call is actually unnecessary, only need drdu/drdv
                                 double n_outer = BF(OuterIntPoints[oip], drdu_outer, drdv_outer, ii,pQuad[4+(4-ii)%4],pRho); // Get Basis Function
-                                
                                 for (jj=0; jj<4; jj++) //Edges of testing quadrilateral
                                 {
                                     
@@ -714,11 +721,12 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                              * since RAR1S returns R(u,v) and Gauss returns u,v */
                                             if (RAR_flag){
                                                 invBilinear(qPoints, InnerIntPoints[iip], uv); //Get uv, then do the magic with uv, drdu,drdv
-                                                 if (isnan(uv[0]) ){
-//                                                      mexPrintf("Problem inv\n");
-                                                     mexPrintf("qPoints = %f,%f,%f %f,%f,%f %f,%f,%f, %f,%f,%f, Inner = %f,%f,%f\n",qPoints[0][0],qPoints[0][1],qPoints[0][2],qPoints[1][0],qPoints[1][1],qPoints[1][2],qPoints[2][0],qPoints[2][1],qPoints[2][2],qPoints[3][0],qPoints[3][1],qPoints[3][2], InnerIntPoints[iip][0], InnerIntPoints[iip][1],InnerIntPoints[iip][2]);
-                                                     //invBilinear(qPoints, InnerIntPoints[iip], uv);
-                                                 }
+                                                if (isnan(uv[0]) ){
+//                                                      mexPrintf("iip = %d\n", iip);
+//                                                      mexPrintf("Problem inv %d\n", invert);
+//                                                      mexPrintf("qPoints = %f,%f,%f %f,%f,%f %f,%f,%f, %f,%f,%f, Inner = %f,%f,%f\n",qPoints[0][0],qPoints[0][1],qPoints[0][2],qPoints[1][0],qPoints[1][1],qPoints[1][2],qPoints[2][0],qPoints[2][1],qPoints[2][2],qPoints[3][0],qPoints[3][1],qPoints[3][2], InnerIntPoints[iip][0], InnerIntPoints[iip][1],InnerIntPoints[iip][2]);
+                                                    //invBilinear(qPoints, InnerIntPoints[iip], uv);
+                                                }
                                                 
 //                                                 if (i == (T-1)){
 //                                                      if (iip == newNumInt-1){
@@ -750,24 +758,25 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                             A[2] += ((qRho[2])*n*I*mu*w*temp)/(4*M_PI); //z
                                             
                                             Phi += (n*qQuad[4+(4-jj)%4]*temp)/(4*I*M_PI*w*eps);
-                                        }
+                                        }//iip
                                         complex double AdotpRho = A[0]*(pRho[0]) + A[1]*(pRho[1]) + A[2]*(pRho[2]);
                                         
                                         Zmat[(num_obs*(q_src_index-1)) + (p_obs_index-1)] += (n_outer*(OuterIntPoints[oip][3]))*(AdotpRho + (pQuad[4+(4-ii)%4]*Phi));
-                                    }
-                                }
-
+                                    }//qEdge
+                                }//jj
+                                
+                               
                                 // if (pEdgeIndex ==6){
                                 //   PhiTot = PhiTot + (OuterIntPoints[oip][3]*pQuad[4+(4-ii)%4]);
                                 //    mexPrintf("Grad1,Grad2 = %f,%f, Phi Total = %f\n",grad1_outer_abs, grad2_outer_abs,PhiTot);}
-                            }//oip iterator
+                            }//pEdge
                             
-                        }
-                        for (iter=0; iter < newNumInt; iter++)
+                        }//ii
+                         for (iter=0; iter < newNumInt; iter++)
                                     mxFree(InnerIntPoints[iter]);
                                 mxFree(InnerIntPoints);
                         
-                    }
+                    }//oip
                     for (iter=0; iter < NumOuterIntPoints; iter++)
                         mxFree(OuterIntPoints[iter]);
                     mxFree(OuterIntPoints);

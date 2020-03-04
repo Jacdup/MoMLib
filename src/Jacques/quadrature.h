@@ -596,6 +596,9 @@ void RAR1STri(double points[][3], double obsPoint[], int numIntPoints, double **
 			double R = Distance(returnPoints2D[j], newObsPoint);
 
 			MatrixMultiplyVector(rotationMatrix_inv, 3, returnPoints2D[j], returnPoints[(int)pow(newNumInt,2)*i + j]);
+//             if (isnan(returnPoints[(int)pow(newNumInt,2)*i + j][0])){
+//                 returnPoints[(int)pow(newNumInt,2)*i + j][0] = 0.0;
+//             }
 			returnPoints[(int)pow(newNumInt,2)*i + j][3] = posTri*R*returnPoints2D[j][3];
 		}
 		newObsPoint[2] -= zObsPoint;

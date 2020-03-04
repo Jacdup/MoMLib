@@ -70,7 +70,8 @@ for node = 1:num_nodes
             Q2 = [cos(angle/2),norm_vec(1)*sin(angle/2),norm_vec(2)*sin(angle/2),norm_vec(3)*sin(angle/2)];
             Q3 = quatmultiply(Q2,Q1);
             Q3 = quatmultiply(Q3,quatconj(Q2));
-            points(v,1:3) = Q3(2:4);
+            points(v,2:3) = Q3(3:4);
+            points(v,1) = Contour(node,1);
             
         end % Vertices
         
@@ -161,7 +162,7 @@ element(:,4) = third;
 % ------------------------------------------------------------------------
 % -------------------------New 19/02/2020---------------------------------
 % ------------------------------------------------------------------------
-% % Mesh degenerate quadrilaterals on the endcaps
+% Mesh degenerate quadrilaterals on the endcaps
 % points(point_index + 1, 1:3) = Contour(1,:);
 % points(point_index + 2, 1:3) = Contour(end,:);
 % for v = 1:num_vertices % There will be num_vertices degenerate quads on the endcaps
