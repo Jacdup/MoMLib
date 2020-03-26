@@ -7,7 +7,7 @@ for ii = 1:nr_centroids
     for jj = 1:(4-tri)
         centroid_coords(ii,1) = centroid_coords(ii,1) + node_coords(quad_nodes(ii,jj),1); % x
         centroid_coords(ii,2) = centroid_coords(ii,2) + node_coords(quad_nodes(ii,jj),2); % y
-        centroid_coords(ii,3) = centroid_coords(ii,3) + node_coords(quad_nodes(ii,jj),3); % y
+        centroid_coords(ii,3) = centroid_coords(ii,3) + node_coords(quad_nodes(ii,jj),3); % z
     end
     if tri
         centroid_coords(ii,:) = (1/3)*(centroid_coords(ii,:));

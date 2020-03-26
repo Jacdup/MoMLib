@@ -23,6 +23,7 @@ function [] = PlotCurrent3DQuad(InputDataFormat,ShowEdges,quad_nodes,node_coords
 % 2019-12-15: Created. MMB.
 
 % Init:
+CLim = [0; 1e-2];
 if ShowEdges
     EdgeColor_setting = 'black';
 else
@@ -37,6 +38,7 @@ if InputDataFormat == 0
     hold on;
     colormap jet;
     colorbar;
+    caxis(CLim);
     axis equal;
 elseif InputDataFormat == 1
     % Compose the expandend mesh data, such that current is linearly
@@ -57,6 +59,7 @@ elseif InputDataFormat == 1
     hold on;
     colormap jet;
     colorbar;
+    caxis(CLim);
     axis equal;
 else
     error('Invalid <InputDataFormat>');

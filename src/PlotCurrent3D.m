@@ -23,6 +23,7 @@ function [] = PlotCurrent3D(InputDataFormat,ShowEdges,tri_nodes,node_coords,tri_
 % 2019-12-15: Created. MMB.
 
 % Init:
+CLim = [0; 1e-2];
 if ShowEdges
     EdgeColor_setting = 'black';
 else
@@ -33,10 +34,11 @@ end
 figure;
 if InputDataFormat == 0
     %trisurf(tri_nodes,node_coords(:,1),node_coords(:,2),node_coords(:,3),tri_currents(:,1));
-    patch('Faces',tri_nodes,'Vertices',node_coords,'FaceVertexCData',tri_currents(:,1),'FaceColor','flat','EdgeColor',EdgeColor_setting);  % ,'LineWidth',2
+   p = patch('Faces',tri_nodes,'Vertices',node_coords,'FaceVertexCData',tri_currents(:,1),'FaceColor','flat','EdgeColor',EdgeColor_setting);  % ,'LineWidth',2
     hold on;
     colormap jet;
     colorbar;
+    caxis(CLim);
     axis equal;
 elseif InputDataFormat == 1
     % Compose the expandend mesh data, such that current is linearly
@@ -53,17 +55,17 @@ elseif InputDataFormat == 1
         plottrinodes(ii,1:3)        = [jj:jj+2];
         plotnodecurrents(jj:jj+2,1) = tri_currents(ii,1:3)';
     end 
-    patch('Faces',plottrinodes,'Vertices',plotnodecoords,'FaceVertexCData',plotnodecurrents,'FaceColor','interp','EdgeColor',EdgeColor_setting);  % ,'LineWidth',2
+    p = patch('Faces',plottrinodes,'Vertices',plotnodecoords,'FaceVertexCData',plotnodecurrents,'FaceColor','interp','EdgeColor',EdgeColor_setting);  % ,'LineWidth',2
     hold on;
     colormap jet;
     colorbar;
+    caxis(CLim);
     axis equal;
 else
     error('Invalid <InputDataFormat>');
 end
 
-
-
+p.CDataMapping = 'scaled';
 % set(0,'defaulttextinterpreter','latex')
 % % trimesh(TR,,MagnitudeCenterCurrent, );
 % 

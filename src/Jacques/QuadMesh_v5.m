@@ -27,7 +27,7 @@
 
 % Input arguments:
 % rho = 0.5;
-run = 1;
+% run = 1;
 
 %for vertices = 3:1:40
 % num_vertices = 12; % Number of vertices

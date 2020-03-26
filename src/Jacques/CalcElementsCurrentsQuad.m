@@ -41,27 +41,27 @@ for ii = 1:size(quad_dofs,1)
         this_dof = quad_dofs(ii,13-jj);
                 
         if this_dof > 0 % a dof is associated with this edge and its contribution must be added to the vertex currents of this triangle
-            edge_verts  = quad_dofs(ii,local_edge_nodes_def(jj,1:2)); % global nodes of current edge
+%             edge_verts  = quad_dofs(ii,local_edge_nodes_def(jj,1:2)); % global nodes of current edge
 %             if any(quad_dofs(ii,jj) ~= this_dof) && (quad_dofs(ii,jj) ~= -1) % If vertex is not part of the dof edge
 %                t = 1;  
 %             end
-            opp_indx = jj+2;
-            if opp_indx > 4
-                opp_indx = 1;
-            end
-            opposite_edge = quad_dofs(ii,local_edge_nodes_def(opp_indx,:));
+%             opp_indx = jj+2;
+%             if opp_indx > 4
+%                 opp_indx = 1;
+%             end
+%             opposite_edge = quad_dofs(ii,local_edge_nodes_def(opp_indx,:));
 %             edge2 = quad_dofs(ii,mod(local_edge_nodes_def(jj,2)+1,4));
 %             if edge1 == edge_verts(2)
 %                 edge1 = quad_dofs(ii,mod(local_edge_nodes_def(jj,1)+1,4));
 %             end
-            elen(1,:,1) = node_coords(edge_verts(1),:) - node_coords(opposite_edge(1),:);
-            elen(1,:,2) = node_coords(edge_verts(2),:) - node_coords(opposite_edge(2),:);
-            
-            
-            edgevectemp = node_coords(edge_verts(2),:) - node_coords(edge_verts(1),:);
-            ELength = norm(edgevectemp);
-            edgevectemp1 = edgevectemp/ELength;
-            ELength1 = norm(edgevectemp1);
+%             elen(1,:,1) = node_coords(edge_verts(1),:) - node_coords(opposite_edge(1),:);
+%             elen(1,:,2) = node_coords(edge_verts(2),:) - node_coords(opposite_edge(2),:);
+%             
+%             
+%             edgevectemp = node_coords(edge_verts(2),:) - node_coords(edge_verts(1),:);
+%             ELength = norm(edgevectemp);
+%             edgevectemp1 = edgevectemp/ELength;
+%             ELength1 = norm(edgevectemp1);
 %             Zeta = node_coords(edge_verts(1),:) - node_coords(quad_dofs(ii,jj),:);
 %             ELength1 = 
 %             ELength     = sqrt(edgevectemp*edgevectemp'); % TODO: get this to normalized coords
@@ -92,7 +92,7 @@ for ii = 1:size(quad_dofs,1)
                 rho(1,1,1:3) = ((zu*drdv) + (zv *drdu));
 %                 Zeta = norm(elen(:,:,kk));
 %                 rho(1,1,1:3) = node_coords(edge_verts(kk),:) - node_coords(quad_dofs(ii,jj),:);
-                rho_edgevert(1,1,1:3) = node_coords(edge_verts(kk),:) - node_coords(quad_dofs(ii,jj),:); % origins of the three RWGs are the three tri nodes, in order
+%                 rho_edgevert(1,1,1:3) = node_coords(edge_verts(kk),:) - node_coords(quad_dofs(ii,jj),:); % origins of the three RWGs are the three tri nodes, in order
                 quad_vertices_currents(this_quad,local_edge_nodes_def(jj,kk),1:3) = ... % This whole thing will have to change, for quad basis function
                     quad_vertices_currents(this_quad,local_edge_nodes_def(jj,kk),1:3) + ... 
                     I_vec(this_dof)*1* (N/J_det) * quad_dofs(ii,9-jj) * rho;

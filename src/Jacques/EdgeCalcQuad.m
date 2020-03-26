@@ -43,10 +43,12 @@ connectivity_data = {};
 % edge_select = [1 2 ;1 3 ;2 3]; AB; AC; BC
  
 %  edge_select = [1 2; 2 4; 3 4; 1 3];
-edge_select = [1 2; 2 3; 4 3; 1 4];
+% edge_select = [1 2; 2 3; 4 3; 1 4];
+edge_select = [1 2; 1 4; 4 3; 2 3];
 % Edge_select = [A B; B C; D C; A D];
 % direction_select = [6 5 4];
 direction_select = [8 7 6 5];
+% direction_select = [8 5 6 7];
 % doff_select = [9 8 7];
 doff_select = [12 11 10 9];
 DOFF_NUM = 0;

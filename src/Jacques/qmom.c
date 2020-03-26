@@ -1,9 +1,9 @@
 /*=========================================================
  * Name        : qmom.c
  * Author      : Jacques T du Plessis
- * Version     :
+ * Version     : 
  * Copyright   :
- * Description :
+ * Description : 
  *
  *
  *Author: JT du Plessis. Original RWG by Robey Beswick
@@ -58,9 +58,9 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
     
     /* See:
      * http://www.iquilezles.org/www/articles/ibilinear/ibilinear.htm
-     * for algorithm.
-     * **NB** This function has a check which only handles quads parallel
-     * to zx and yz plane. So if the cylinder is defined along the z axis,
+     * for algorithm. 
+     * **NB** This function has a check which only handles quads parallel 
+     * to zx and yz plane. So if the cylinder is defined along the z axis, 
      * we need another condition.
      */
     
@@ -70,13 +70,13 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
     double E[3],F[3],H[3],G[3];
     double temp[3], temp2[3];
     double u, v;
-    
+
     VectorSubtract(points[0], ruv, H); // H = X-A
     VectorSubtract(points[0], points[1], E); // E = B-A
     VectorSubtract(points[0], points[3], F); // F = D-A
     VectorSubtract(points[1],points[0], temp); // A-B
     VectorSubtract(points[3], points[2], temp2); //C-D
-    
+
     G[0] = temp[0] + temp2[0];
     G[1] = temp[1] + temp2[1];
     G[2] = temp[2] + temp2[2]; // G = A-B + C-D
@@ -86,62 +86,17 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
     //Very important: this check only handles quads parallel to zx and yz plane
     // So if the cylinder is defined along the z axis, we need another condition
     
-//     if (fabs(E[0])< EPS && E[1] != 0){ // Quad parallel to xy
-//         i = 1;//y
-//         j = 0;//x
-//     }else if (fabs(F[1])< EPS && F[0] != 0)
-//     {
-// //         mexPrintf("in here\n");
-//         i = 0;
-//         j = 2;
-//     }else if (fabs(H[1]) < EPS && H[0] != 0)
-//     {
-//         i = 2;//z
-//        j = 0;//x
-//     }else{
-//         i = 2;//z
-//         j = 1;//y
-//     }
-    if (fabs(E[0])< EPS && E[1] != 0 && F[0] != 0){ // Quad parallel to xy
-        // printf("E = %f %f %f, F = %f %f %f\n", E[0], E[1], E[2],F[0], F[1], F[2]);
+    if (fabs(E[0])< EPS && E[1] != 0){ 
         i = 1;//y
         j = 0;//x
-    }else if (fabs(E[0])< EPS && E[1] != 0 && fabs(F[2]) != 0){
-        //printf("E2\n");
-        i = 1;
-        j = 2;
-    }
-    else if (fabs(F[1])< EPS && F[0] != 0)
-    {
-        // printf("F\n");
-        //         mexPrintf("in here\n");
-        i = 2;
-        j = 0;
     }else if (fabs(H[1]) < EPS && H[0] != 0)
-    {
-        //printf("H\n");
-        i = 0;//z
-        j = 2;//x
-    }else if (fabs(F[0]) < EPS && fabs(F[1]) < EPS)
-    {
-        i = 1;
-        j = 2;
-    }else if (fabs(F[0]) < EPS && fabs(F[2]) < EPS && E[1] != 0){
-        //printf("else\n");
-        //printf("Else E = %f %f %f, F = %f %f %f\n", E[0], E[1], E[2],F[0], F[1], F[2]);
+    {  
+        i = 2;//z
+        j = 0;//x
+    }else{
         i = 2;
         j = 1;
     }
-    else{
-        //printf("Else\n");
-        i = 0;//z
-        j = 1;//y
-    }
-    
-    
-    
-    
-    
     double k2 = Wedge2D(G,F,i,j);
     double k1 = Wedge2D(E,F,i,j) + Wedge2D(H,G,i,j) ;
     double k0 = Wedge2D(H,E,i,j);
@@ -149,7 +104,7 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
     double k2u = Wedge2D(E,G,i,j);
     double k1u = Wedge2D(E,F,i,j) + Wedge2D(G,H,i,j);
     double k0u = Wedge2D(H,F,i,j);
-    
+
     double v1, u1, v2, u2;
     if (fabs(k2) < EPS){
         v1 = -k0/k1;
@@ -162,7 +117,7 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
     else{
         
         double w = k1*k1 - 4.0*k0*k2; // Discriminant
-        
+
         if (w<0.0) {
             u = -1;
             v = -1;
@@ -172,15 +127,15 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
         
         v1 = (-k1 -w)/(2.0*k2);
         u1 = (-k1u -w)/(2.0*k2u);
-        
+
         v2 = (-k1 +w)/(2.0*k2);
         u2 = (-k1u + w)/(2.0*k2u);
-        
+
     }
     
     bool b1 = ( v1>0.0 && v1<1.0 && u1>0.0 && u1<1.0 );
     bool b2 = ( v2>0.0 && v2<1.0 && u2>0.0 && u2<1.0);
-    
+
     if (  b1 && !b2 ) {u = u1; v = v1;}
     else if ( !b1 &&  b2 ) {u = u2; v = v2;}
     else {u = u1; v = v1;}
@@ -194,15 +149,9 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
     }else if (fabs(u1) < fabs(u2) && fabs(v1) < fabs(v2)){
         u = u1;
         v = v1;
-    }
-    else{
-//         u = u*2 - 1;
-//         v = v*2 - 1;
-        u = u2;
-        v = v2;
-//          mexPrintf("u = %f\n", u);
-//         u = 1;
-//         v = 1;
+    }else{
+        u = u*2 - 1;
+        v = v*2 - 1;
     }
     
     uv[0] = u;
@@ -211,7 +160,7 @@ void invBilinear(double points[][3], double ruv[3], double *uv){
     // Get the limits to -1 < u,v < 1
     //uv[0] = uv[0]*2 -1;
     //uv[1] = uv[1]*2 -1;
-    
+
 }
 
 
@@ -219,13 +168,13 @@ void BilinearInt(double points[][3], double uv[], double ruv[3], double drdu[3],
     
     double b10[3],b11[3],b00[3], b01[3];
     int coord;
-    
+
     for (coord=0; coord<3; coord++){
         b00[coord] =  points[0][coord];
         b10[coord] = -points[0][coord] + points[1][coord];
         b01[coord] = -points[0][coord] + points[3][coord] ;
         b11[coord] = (points[0][coord] - points[1][coord]- points[3][coord] + points[2][coord]);
-        drdv[coord] = (b01[coord] + b11[coord]*uv[0]);
+        drdv[coord] = (b01[coord] + b11[coord]*uv[0]); 
         drdu[coord] = (b10[coord] + b11[coord]*uv[1]);//b10*u
         ruv[coord] =   (b00[coord] + b01[coord]*uv[1] + b10[coord]*uv[0] + b11[coord]*uv[1]*uv[0]);
     }
@@ -290,8 +239,7 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
     //clock stuff
     clock_t StartInner, EndInner;
     double Inner_loop_time_used;
-    FILE *fp_ruv;
-    fp_ruv = fopen("ruv_bilinear.txt","w");
+    
     
     double prog = 0.0; //used to monitor progress
     
@@ -305,10 +253,10 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
         {points[P*0+(int)(triangles[T*1 + i]-1)],points[P*1+(int)(triangles[T*1 + i]-1)],points[P*2+(int)(triangles[T*1 + i]-1)]},
         {points[P*0+(int)(triangles[T*2 + i]-1)],points[P*1+(int)(triangles[T*2 + i]-1)],points[P*2+(int)(triangles[T*2 + i]-1)]},
         {points[P*0+(int)(triangles[T*3 + i]-1)],points[P*1+(int)(triangles[T*3 + i]-1)],points[P*2+(int)(triangles[T*3 + i]-1)]}};
-        
+
         //Outer quadrilateral
         // This is the quad nodes as well as directional and DOF data
-        int pQuad[12] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]-1), (int)(triangles[T*4 + i]),
+        int pQuad[12] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
         (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i]),(int)(triangles[T*9 + i]),
         (int)(triangles[T*10 + i]),(int)(triangles[T*11 + i])};
         
@@ -317,7 +265,7 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
         //VERSION 3.3 ADDITION
         if (ObserverOnElement(pbasisindex, obs_map))
         {
-            
+
             double pArea = quadArea(pPoints);
             
             //double **OuterIntPoints = NULL;
@@ -329,9 +277,9 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                 {points[P*0+(int)(triangles[T*1 + j]-1)],points[P*1+(int)(triangles[T*1 + j]-1)],points[P*2+(int)(triangles[T*1 + j]-1)]},
                 {points[P*0+(int)(triangles[T*2 + j]-1)],points[P*1+(int)(triangles[T*2 + j]-1)],points[P*2+(int)(triangles[T*2 + j]-1)]},
                 {points[P*0+(int)(triangles[T*3 + j]-1)],points[P*1+(int)(triangles[T*3 + j]-1)],points[P*2+(int)(triangles[T*3 + j]-1)]}};
-                
+
                 //inner quadrilateral
-                int qQuad[12] = {(int)(triangles[T*0 + j]-1), (int)(triangles[T*1 + j]-1), (int)(triangles[T*2 + j]-1),(int)(triangles[T*3 + j]-1), (int)(triangles[T*4 + j]),
+                int qQuad[12] = {(int)(triangles[T*0 + j]-1), (int)(triangles[T*1 + j]-1), (int)(triangles[T*2 + j]-1),(int)(triangles[T*3 + j]), (int)(triangles[T*4 + j]),
                 (int)(triangles[T*5 + j]), (int)(triangles[T*6 + j]), (int)(triangles[T*7 + j]),(int)(triangles[T*8 + j]),(int)(triangles[T*9 + j]),
                 (int)(triangles[T*10 + j]),(int)(triangles[T*11 + j])};
                 
@@ -364,7 +312,7 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                     QuadCentre(pPoints,pCentroid);
                     QuadCentre(qPoints,qCentroid);
                     d_centrepoints = Distance(pCentroid,qCentroid);
-                    
+
                     //find the quad diameters and the maximum of them
                     pDiameter = QuadDiameter(pPoints);
                     qDiameter = QuadDiameter(qPoints);
@@ -399,9 +347,9 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                             
                         }else
                         {
-                            //here we will perform a 9 point check to see how far apart they actually are
+                            //here we will perform a 9 point check to see how far apart they actually are                
                             d_9 = ApproxShortDistanceBetweenElements_9(pPoints,qPoints);
-                            
+   
                             if(d_9 > (1.5*max_diameter))
                             {
                                 //set to 6 point
@@ -420,7 +368,7 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                             {
                                 //This means the triangles are very close and we will do strict test
                                 //do 36 point check
-                                d_36 = ApproxShortDistanceBetweenElements_36(pPoints,qPoints);
+                                d_36 = ApproxShortDistanceBetweenElements_36(pPoints,qPoints);            
                                 if(d_36 > 0.375*max_diameter)
                                 {
                                     //set both to 12 point
@@ -513,7 +461,7 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                         invert = 0;
                     }else
                     {
-                        //This is a near interaction a check must now be done per outer integration point.
+                        //This is a near interaction a check must now be done per outer integration point. 
                         //set the outer integration points to a high value(level 4), I will play with this later
                         
                         OuterIntPoints = mxMalloc(sizeof(double *) * NumOuterIntPoints);
@@ -531,172 +479,141 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                     //------------------------------------------------First round of checks complete----------------------------------------------------
                     //----------------------------------------------------------------------------------------------------------------------------------
                     //----------------------------------------------------------------------------------------------------------------------------------
-                    int pQuadShape = 0;
-                    int qQuadShape = 0;
-                    if (pQuad[2] == pQuad[3]){ // If degenerate
-                        pQuadShape = 1;
-                    }
-                    if (qQuad[2] == qQuad[3]){
-                        qQuadShape = 1;
-                    }
-                    int RAR_flag = 0;
-                    invert = 0;
                     
-                    //outer integral
-                    for (oip=1; oip<NumOuterIntPoints; oip++) //outer integral points
-                    {
-                        double **InnerIntPoints = NULL;
-                        if(further_check_required && (i == j))
+                    for (ii=0; ii<4; ii++) //Edges of observation quadrilateral
+                    {	// This checks if the edge is a DOF and returns the edges index in the edge list
+                        // pEdgeIndex will determine the row of this interaction on the Zmat
+                        
+                        int pEdgeIndex = pQuad[(8 + (4-ii)%4)]; // AD -> AB -> BC -> DC
+                        int p_obs_index = obs_map[(pQuad[8 + (4-ii)%4]-1)];         
+                        
+                        // below just checks that the edge index is any number other the -1, meaning it will be a DOF
+                        // this if statement asks two questions, is it a basis function? and is it an observer?
+                        if ((pEdgeIndex + 1) && (p_obs_index + 1))
                         {
-                            
-                            //if we come in here outer is already set to 16
-                            //16 point outside and RAR inside
-                            
-                            NumInnerIntPoints = RAR_level[MODE];
-                            //17-10-2019 Edit
-                            double ruv[3],drdu[3],drdv[3];
-                            BilinearInt(pPoints, OuterIntPoints[oip], ruv, drdu,drdv); // Get the x,y,z coords for RAR1S
-                            
-                            if ((pQuadShape == 1) || (qQuadShape == 1)){
-                                newNumInt = 3*(int)pow(NumInnerIntPoints,2);
-                                // mexPrintf("newNUmInt = %d\n", newNumInt);
-                                if (newNumInt > 300)
-                                    newNumInt = 300;
-                                InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
-                                for (iter=0; iter < newNumInt; iter++)
-                                    InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-                                
-                                RAR1STri(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
-                                invert = 1;
-                                if (isnan(InnerIntPoints[146][0]) || (isnan(InnerIntPoints[146][1]))|| (isnan(InnerIntPoints[146][2]))){
-                                    mexPrintf("problem1\n");
-                                    mexPrintf("qPoints = %f,%f,%f %f,%f,%f %f,%f,%f, %f,%f,%f\n",qPoints[0][0],qPoints[0][1],qPoints[0][2],qPoints[1][0],qPoints[1][1],qPoints[1][2],qPoints[2][0],qPoints[2][1],qPoints[2][2],qPoints[3][0],qPoints[3][1],qPoints[3][2]);
-                                    mexPrintf("ruv = %f,%f,%f \n",ruv[0],ruv[1],ruv[2]);
-                                }
-                                //mexPrintf("inner points1 = %f %f %f\n", InnerIntPoints[0][0],InnerIntPoints[0][1],InnerIntPoints[0][2]);
-                                //mexPrintf("inner points2 = %f %f %f\n", InnerIntPoints[1][0],InnerIntPoints[1][1],InnerIntPoints[1][2]);
-                                // mexPrintf("inner points = %f %f %f\n", InnerIntPoints[0][0],InnerIntPoints[0][1],InnerIntPoints[0][2]);
-                            }
-                            else{
-                                newNumInt = 4*(int)pow(NumInnerIntPoints,2);
-                                
-                                if (newNumInt > 400)
-                                    newNumInt = 400;
-                                InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
-                                for (iter=0; iter < newNumInt; iter++)
-                                    InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-                                RAR1S(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
-                                
-//                                   if (i == (T-1)){
-//                                 fprintf(fp_ruv,"%f,%f,%f\n", InnerIntPoints[2][0], InnerIntPoints[2][1], InnerIntPoints[2][2]);}
-                            }
-                            //RAR1S(qPoints, OuterIntPoints[oip], NumInnerIntPoints, InnerIntPoints);
-                            count_16_RAR++;
-                            RAR_flag = 1;
-                            
-                            
-                        }else if(further_check_required)
-                        {
-                            //check accurate proximity from oip to inner quadrilateral
-                            double proximity = StrictDistance(qPoints, OuterIntPoints[oip]);
-                            if(proximity > 0.375*max_diameter)
+                            //I only want to assign the outer integration points here
+                            int RAR_flag = 0;
+                            //outer integral
+                            for (oip=0; oip<NumOuterIntPoints; oip++) //outer integral points
                             {
-                                //set both to 16 point
                                 
-                                //set inner inner integral to 16 point
-                                //mxMalloc inner integration points
-                                NumInnerIntPoints = mode_select[4][MODE];
-                                newNumInt = NumInnerIntPoints;
-                                //The pointer to InnerIntPoints was already set in last checks
-                                InnerIntPoints = mxMalloc(sizeof(double *) * NumInnerIntPoints);
-                                for (iter=0; iter < NumInnerIntPoints; iter++)
-                                    InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-                                
-                                GaussianQuadrature(qPoints, NumInnerIntPoints, InnerIntPoints);
-                                count_16_16++;
-                                RAR_flag = 0;
-                                invert = 0;
-                            }else
-                            {
-                                //if we come in here outer is already set to level 4
-                                
-                                //level 4 outside and RAR inside
-                                //we will use radial angular for the inner integral
-                                NumInnerIntPoints = RAR_level[MODE];
-                                
-                                //17-10-2019 Edit
-                                double ruv[3],drdu[3],drdv[3];
-                                BilinearInt(pPoints, OuterIntPoints[oip], ruv, drdu,drdv);
-                                if ((pQuadShape == 1)|| (qQuadShape == 1)){
-                                    newNumInt = 4*(int)pow(NumInnerIntPoints,2);
-                                    if (newNumInt > 400)
-                                        newNumInt = 400;
-                                    
-                                    InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
-                                    for (iter=0; iter < newNumInt; iter++)
-                                        InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-                                    RAR1STri(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
-                                    invert = 1;
-                                    if (isnan(InnerIntPoints[1][1]) || (isnan(InnerIntPoints[1][0]))|| (isnan(InnerIntPoints[2][0]))){
-                                        mexPrintf("problem2 %d %d\n",oip, NumOuterIntPoints);
-                                        mexPrintf("double qPoints = {{%f,%f,%f},{ %f,%f,%f},{ %f,%f,%f},{ %f,%f,%f}};\n",qPoints[0][0],qPoints[0][1],qPoints[0][2],qPoints[1][0],qPoints[1][1],qPoints[1][2],qPoints[2][0],qPoints[2][1],qPoints[2][2],qPoints[3][0],qPoints[3][1],qPoints[3][2]);
-                                        mexPrintf("double TestPoint = {%f,%f,%f}; \n",ruv[0],ruv[1],ruv[2]);
-                                    }
-                                    // mexPrintf("success\n");
-                                    // mexPrintf("inner points1 = %f %f %f\n", InnerIntPoints[0][0],InnerIntPoints[0][1],InnerIntPoints[0][2]);
-                                    // mexPrintf("inner points2 = %f %f %f\n", InnerIntPoints[1][0],InnerIntPoints[1][1],InnerIntPoints[1][2]);
-                                }
-                                else{
-                                    newNumInt = 3*(int)pow(NumInnerIntPoints,2);
-                                    if (newNumInt > 300)
-                                        newNumInt = 300;
-                                    InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
-                                    for (iter=0; iter < newNumInt; iter++)
-                                        InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-                                    RAR1S(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
-                                    
-                                }
-                                // RAR1S(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
-                                //RAR1S(qPoints, OuterIntPoints[oip], NumInnerIntPoints, InnerIntPoints);
-                                count_16_RAR++;
-                                RAR_flag = 1;
-                                
-                            }
-                        }else if(!further_check_required  && (i != j))
-                        {
-                            newNumInt = NumInnerIntPoints;
-                            InnerIntPoints = mxMalloc(sizeof(double *) * NumInnerIntPoints);
-                            for (iter=0; iter < NumInnerIntPoints; iter++)
-                                InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-                            
-                            //find the integration points for the inner quadrilateral
-                            GaussianQuadrature(qPoints, NumInnerIntPoints, InnerIntPoints);
-                            RAR_flag = 0;
-                        }
-                        //----------------------------------------------------------------------------------------------------------------------------------
-                        //----------------------------------------------------------------------------------------------------------------------------------
-                        //------------------------------------------------second round of checks complete---------------------------------------------------
-                        //----------------------------------------------------------------------------------------------------------------------------------
-                        //----------------------------------------------------------------------------------------------------------------------------------
-                        for (ii=0; ii<4; ii++) //Edges of observation quadrilateral
-                        {	//ii
-                            
-                            int pEdgeIndex = pQuad[(8 + (4-ii)%4)]; // AD -> AB -> BC -> DC
-                            int p_obs_index = obs_map[(pQuad[8 + (4-ii)%4]-1)];
-                            // 20/02/2020 Edit
-                            
-                            // below just checks that the edge index is any number other the -1, meaning it will be a DOF
-                            // this if statement asks two questions, is it a basis function? and is it an observer?
-                            if ((pEdgeIndex + 1) && (p_obs_index + 1))
-                            {
                                 //------------Outer Basis Function------------//
                                 double pRho[3],OuterRuv[3],drdu_outer[3],drdv_outer[3];
                                 BilinearInt(pPoints, OuterIntPoints[oip], OuterRuv, drdu_outer,drdv_outer); // This function call is actually unnecessary, only need drdu/drdv
                                 double n_outer = BF(OuterIntPoints[oip], drdu_outer, drdv_outer, ii,pQuad[4+(4-ii)%4],pRho); // Get Basis Function
+
+                                //----------------------------------------------------------------------------------------------------------------------------------
+                                //----------------------------------------------------------------------------------------------------------------------------------
+                                //---------------------------------------------------second round of checks---------------------------------------------------------
+                                //----------------------------------------------------------------------------------------------------------------------------------
+                                //----------------------------------------------------------------------------------------------------------------------------------
+                               double **InnerIntPoints = NULL;
+                                if(further_check_required && (i == j))
+                                {
+                                    
+                                    //if we come in here outer is already set to 16
+                                    //16 point outside and RAR inside
+                                    
+                                    //we will use radial angular for the inner integral
+                                    
+                                    //NumInnerIntPoints is recieved by RAR, max of 10 is set
+                                    //NumInnerIntPoints is defined by mode
+                                    NumInnerIntPoints = RAR_level[MODE];
+                                    newNumInt = 4*(int)pow(NumInnerIntPoints,2);
+                                    if (newNumInt > 400)
+                                        newNumInt = 400;
+                                    
+                                    //allocate the memory for OuterIntPoints
+                                    InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
+                                    for (iter=0; iter < newNumInt; iter++)
+                                        InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
+                                    
+                                    //so the inner quadrilateral is now integrated using radial angular methods
+                                    //Note that RAR1S also recieves the outer integration point and original NumInnerIntPoints
+                                    //17-10-2019 Edit
+                                    double ruv[3],drdu[3],drdv[3];
+                                    BilinearInt(pPoints, OuterIntPoints[oip], ruv, drdu,drdv); // Get the x,y,z coords for RAR1S
+                                    RAR1S(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
+                                    //RAR1S(qPoints, OuterIntPoints[oip], NumInnerIntPoints, InnerIntPoints);
+                                    count_16_RAR++;
+                                    RAR_flag = 1;
+                                    invert = 1;
+                                    
+                                }else if(further_check_required)
+                                {
+                                    //check accurate proximity from oip to inner quadrilateral
+                                    double proximity = StrictDistance(qPoints, OuterIntPoints[oip]);
+                                    if(proximity > 0.375*max_diameter)
+                                    {
+                                        //set both to 16 point
+                                        
+                                        //set inner inner integral to 16 point
+                                        //mxMalloc inner integration points
+                                        NumInnerIntPoints = mode_select[4][MODE];
+                                        newNumInt = NumInnerIntPoints;
+                                        //The pointer to InnerIntPoints was already set in last checks
+                                        InnerIntPoints = mxMalloc(sizeof(double *) * NumInnerIntPoints);
+                                        for (iter=0; iter < NumInnerIntPoints; iter++)
+                                            InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
+                                        
+                                        GaussianQuadrature(qPoints, NumInnerIntPoints, InnerIntPoints);
+                                        count_16_16++;
+                                        RAR_flag = 0;
+                                        invert = 0;
+                                    }else
+                                    {     
+                                        //if we come in here outer is already set to level 4
+                                        
+                                        //level 4 outside and RAR inside
+                                        //we will use radial angular for the inner integral
+                                        
+                                        //NumInnerIntPoints is recieved by RAR, this can be set higher max of 10 is set
+                                        NumInnerIntPoints = RAR_level[MODE];
+                                        newNumInt = 4*(int)pow(NumInnerIntPoints,2);
+                                        if (newNumInt > 400)
+                                            newNumInt = 400;
+                                        
+                                        //allocate the memory for InnerIntPoints
+                                        InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
+                                        for (iter=0; iter < newNumInt; iter++)
+                                            InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
+                                        
+                                        //so the inner quadrilateral is now integrated using radial angular methods
+                                        //Note that RAR1S also recieves the outer integration point and original NumInnerIntPoints
+                                        //17-10-2019 Edit
+                                        double ruv[3],drdu[3],drdv[3];
+                                        BilinearInt(pPoints, OuterIntPoints[oip], ruv, drdu,drdv);
+                                        RAR1S(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
+                                        //RAR1S(qPoints, OuterIntPoints[oip], NumInnerIntPoints, InnerIntPoints);
+                                        count_16_RAR++;
+                                        RAR_flag = 1;
+                                        invert = 1;
+                                    }
+                                    
+                                    
+                                }else if(!further_check_required  && (i != j))
+								{
+									newNumInt = NumInnerIntPoints;
+									InnerIntPoints = mxMalloc(sizeof(double *) * NumInnerIntPoints);
+									for (iter=0; iter < NumInnerIntPoints; iter++)
+									InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
+
+									//find the integration points for the inner quadrilateral
+									GaussianQuadrature(qPoints, NumInnerIntPoints, InnerIntPoints);	
+                                    RAR_flag = 0;
+								}
+                                //----------------------------------------------------------------------------------------------------------------------------------
+                                //----------------------------------------------------------------------------------------------------------------------------------
+                                //------------------------------------------------second round of checks complete---------------------------------------------------
+                                //----------------------------------------------------------------------------------------------------------------------------------
+                                //----------------------------------------------------------------------------------------------------------------------------------
+                                
+                                //AT THIS POINT MY OUTER AND INNER INTEGRATION POINTS ARE KNOWN
+
                                 for (jj=0; jj<4; jj++) //Edges of testing quadrilateral
                                 {
                                     
-                                    //VERSION 3.2.2
+                                    //VERSION 3.2.2  
                                     int qEdgeIndex = qQuad[(8 + (4-jj)%4)];
                                     int q_src_index = src_map[(qQuad[8 + (4-jj)%4]-1)];
                                     
@@ -716,74 +633,54 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                             //Edit 17/10/2019
                                             double print = 0;
                                             double uv[2];
-                                            
+
                                             /* This just checks if the inner integral was computed with RAR1S or Gaussian Quadrature,
                                              * since RAR1S returns R(u,v) and Gauss returns u,v */
-                                            if (RAR_flag){
-                                                invBilinear(qPoints, InnerIntPoints[iip], uv); //Get uv, then do the magic with uv, drdu,drdv
-                                                if (isnan(uv[0]) ){
-//                                                      mexPrintf("iip = %d\n", iip);
-//                                                      mexPrintf("Problem inv %d\n", invert);
-//                                                      mexPrintf("qPoints = %f,%f,%f %f,%f,%f %f,%f,%f, %f,%f,%f, Inner = %f,%f,%f\n",qPoints[0][0],qPoints[0][1],qPoints[0][2],qPoints[1][0],qPoints[1][1],qPoints[1][2],qPoints[2][0],qPoints[2][1],qPoints[2][2],qPoints[3][0],qPoints[3][1],qPoints[3][2], InnerIntPoints[iip][0], InnerIntPoints[iip][1],InnerIntPoints[iip][2]);
-                                                    //invBilinear(qPoints, InnerIntPoints[iip], uv);
-                                                }
-                                                
-//                                                 if (i == (T-1)){
-//                                                      if (iip == newNumInt-1){
-//                                                          fprintf(fp_ruv,"%f,%f,%f\n", InnerIntPoints[iip][0], InnerIntPoints[iip][1],InnerIntPoints[iip][2]);}}
+                                            if (RAR_flag){          
+                                                invBilinear(qPoints, InnerIntPoints[iip], uv); //Get uv, then do the magic with uv, drdu,drdv              
                                             }
                                             else{
                                                 uv[0] = InnerIntPoints[iip][0];
                                                 uv[1] = InnerIntPoints[iip][1];
                                             }
-                                            
+
                                             //Edit 21/10/2019
                                             //Compute basis function for inner integration
                                             double ruv[3],drdu[3],drdv[3];
-                                            BilinearInt(qPoints, uv, ruv, drdu,drdv);
-                                            double n = BF(uv, drdu, drdv, jj,qQuad[4+(4-jj)%4], qRho); // Get Basis Function
-                                            
+                                            BilinearInt(qPoints, uv, ruv, drdu,drdv); // This function call is actually unnecessary, only need drdu/drdv
+                                            double n = BF(uv, drdu, drdv, jj,qQuad[4+(4-jj)%4], qRho); // Get Basis Function                
+
                                             double Rm = Distance(OuterRuv, ruv);
                                             complex double temp = ((InnerIntPoints[iip][3])/(Rm))*cexp(-I*k*Rm); // Green's Function
-                                            if (isnan(cimag(temp))){
-//                                                 mexPrintf("outer, ruv = %f %f %f, %f %f %f\n", OuterRuv[0],OuterRuv[1],OuterRuv[2],ruv[0],ruv[1],ruv[2]);
-                                            }
-                                            
-//                                             if (isnan(cimag(temp))){
-//                                                 mexPrintf("imag temp\n");
-//                                             }
                                             
                                             A[0] += ((qRho[0])*n*I*mu*w*temp)/(4*M_PI); //x
                                             A[1] += ((qRho[1])*n*I*mu*w*temp)/(4*M_PI); //y
                                             A[2] += ((qRho[2])*n*I*mu*w*temp)/(4*M_PI); //z
-                                            
+
                                             Phi += (n*qQuad[4+(4-jj)%4]*temp)/(4*I*M_PI*w*eps);
-                                        }//iip
+                                        }
                                         complex double AdotpRho = A[0]*(pRho[0]) + A[1]*(pRho[1]) + A[2]*(pRho[2]);
                                         
-                                        Zmat[(num_obs*(q_src_index-1)) + (p_obs_index-1)] += (n_outer*(OuterIntPoints[oip][3]))*(AdotpRho + (pQuad[4+(4-ii)%4]*Phi));
-                                    }//qEdge
-                                }//jj
-                                
-                               
-                                // if (pEdgeIndex ==6){
-                                //   PhiTot = PhiTot + (OuterIntPoints[oip][3]*pQuad[4+(4-ii)%4]);
-                                //    mexPrintf("Grad1,Grad2 = %f,%f, Phi Total = %f\n",grad1_outer_abs, grad2_outer_abs,PhiTot);}
-                            }//pEdge
-                            
-                        }//ii
-                         for (iter=0; iter < newNumInt; iter++)
+                                        Zmat[(num_obs*(q_src_index-1)) + (p_obs_index-1)] += (n_outer*(OuterIntPoints[oip][3]))*(AdotpRho + (pQuad[4+(4-ii)%4]*Phi));       
+                                    }
+                                }
+
+                                for (iter=0; iter < newNumInt; iter++)
                                     mxFree(InnerIntPoints[iter]);
                                 mxFree(InnerIntPoints);
+                               // if (pEdgeIndex ==6){
+                                 //   PhiTot = PhiTot + (OuterIntPoints[oip][3]*pQuad[4+(4-ii)%4]);
+                                //    mexPrintf("Grad1,Grad2 = %f,%f, Phi Total = %f\n",grad1_outer_abs, grad2_outer_abs,PhiTot);}
+                            }//oip iterator
+                            
+                        }
                         
-                    }//oip
+                    }
                     for (iter=0; iter < NumOuterIntPoints; iter++)
                         mxFree(OuterIntPoints[iter]);
                     mxFree(OuterIntPoints);
                 }//the brace is new inner if statement
             }
-            
-            
             //EndInner = clock();
             //Inner_loop_time_used = ((double) (EndInner - StartInner)) / CLOCKS_PER_SEC;
             //mexPrintf("inner loop took %f seconds to execute \n", Inner_loop_time_used);
@@ -791,7 +688,6 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
         }//this brace is new if statement
     }
     //prints the occurences of how many times each domain was used
-    fclose(fp_ruv);
     mexPrintf("\n%d %d: %d\n%d %d: %d\n%d %d: %d\n%d %d: %d\n%d %d: %d\n%d RAR: %d\n",mode_select[0][MODE],mode_select[0][MODE] ,count_4_4, mode_select[1][MODE],mode_select[1][MODE],count_6_6, mode_select[2][MODE],mode_select[2][MODE],count_7_7, mode_select[3][MODE],mode_select[3][MODE],count_12_12, mode_select[4][MODE],mode_select[4][MODE], count_16_16,mode_select[4][MODE], count_16_RAR);
 }
 

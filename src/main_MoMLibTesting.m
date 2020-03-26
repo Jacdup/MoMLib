@@ -31,7 +31,7 @@ TextOn                   = true;           % mesh visualisation text
 flag_mesh_refine_uniform = false;
 h_split_num              = 3;
 quad                     = 1;
-MBF                      = 0;
+MBF                      = 1;
 
 
 %oldpath = path;
@@ -79,17 +79,18 @@ end
 % Mesh a hollow cylinder
 if mesh_create_option == 4
     
-    rho = 0.5;
-    vertices = 12;
+    rho = 0.1;
+    vertices = 40;
     % vertices =10 + (9); % Number of vertices
     %  Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 0.1; 5 0 0.2; 6 0.1 0.3; 7 0.2 0.4; 8 0.25 0.5; 9 0.2 0.6; 10 0.2 0.5; 11 0.2 0.4 ]; % Hardcode some contour
     %  Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 3];
     %  Contour = [0 0 0; 0.1 0 0; 0.2 0 0; 0.3 0 0; 0.4 0 0; 0.5 0 0];
-    Contour = [1 0 0; 1.5 0 0; 2 0 0];
-    Contour = RefineMesh(Contour,1);
+    Contour = [0 0 0; 1 0 0; 2 0 0];
+    Contour = RefineMesh(Contour,3);
     [node_coords,quad_nodes, elements] = QuadMesh_v5(Contour,vertices,rho);
     [tri_nodes,triangles] = QuadtoTri(elements);
-    PlotMesh(node_coords,elements, triangles, abs(quad-1))
+    numNodes = length(Contour(:,1))-2;
+%      PlotMesh(node_coords,elements, triangles, abs(quad-1))
 end
 
 % Mesh a sphere
@@ -113,20 +114,26 @@ end
 % Create the mesh data, which includes edge definitions and connectivity:
 if quad == 1
     [quad_blah,N,basis_supports_quad] = EdgeCalcQuad(quad_nodes,1);
+    
     obs_basis_select = {1:N};
     src_basis_select      = {1:N};
     [common_basis_functions, num_obs, num_src] = common_basis(obs_basis_select,src_basis_select);
     quad_dof_idx = (1:N)';
     [new_quads,new_quad_points, new_quad_N, quad_observer_map, quad_source_map] = QuadBasisFunctionSelect(quad_blah ,common_basis_functions,basis_supports_quad,node_coords);
-    MODE = 0;
+    MODE = 1;
     mex GCC='/usr/bin/gcc-7' -O -R2018a src\\Jacques\qmom.c
     [Z_mat] = qmom(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map),int32(quad_source_map), num_obs, num_src, MODE);
     V_vec = qfillPlane(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map), num_obs,0, MODE);
     if MBF == 1
-        [U_Mat] = SelectDOFMBF(basis_supports_quad, vertices);
+        numMBF = 6;
+        [U_Mat] = SelectDOFMBF(basis_supports_quad, vertices,numNodes,numMBF);
+%         U_Mat = zeros(length(basis_supports_quad),1);
+        [U_Mat] = SelectDOFMBF_2(basis_supports_quad, vertices, U_Mat,numNodes,numMBF);
+%         [U_Mat] = SelectDOFMBF_Circ(basis_supports_quad, vertices);
         Z_mat_redu = U_Mat.'*Z_mat*U_Mat;
         V_vec_redu = U_Mat.'*V_vec;
         Alpha_Vec_Redu = Z_mat_redu\V_vec_redu;
+        New_N = size(Alpha_Vec_Redu,1);
         I_vec = U_Mat*Alpha_Vec_Redu;
     end
 else
@@ -155,7 +162,7 @@ else
     % Assign the dofs and define each associated basis function:
     [dof_data,num_dofs] = CreateBasisFunctions(mesh_data);
     %PlotTriangleMeshDofs(mesh_data,dof_data,TextOn);
-    
+    N = num_dofs;
     %---------------------------------------------------------------
     % Reduce the matrix if required; set up the excitation vector, system
     % matrix, and solve.
@@ -267,7 +274,7 @@ else
              tri_currents_dir(ii,2) =  tri_currents_dir(ii,2) + triangles_vertices_currents(ii,kk,2);
              tri_currents_dir(ii,3) =  tri_currents_dir(ii,3) + triangles_vertices_currents(ii,kk,3);
          end
-         tri_currents_dir = abs(tri_currents_dir);
+         tri_currents_dir = real(tri_currents_dir);
         
         
         for jj = 1:3
@@ -297,7 +304,7 @@ if flag_lumped
         edgevectemp = mesh_data.node_coords(28,:) - mesh_data.node_coords(24,:);
         ELength     = sqrt(edgevectemp*edgevectemp');
         Z_11        = 1/(ELength*I_vec(49,1))
-        disp('General source impedance calculation must still be implemented');
+%         disp('General source impedance calculation must still be implemented');
     end
 end
 
@@ -316,16 +323,25 @@ else
     [farfield_XY] = farfield(reduced_node_coords, reduced_tri_dofs, reduced_num_dofs, FREQUENCY, I_vec, dalta_angle_degrees, plane);
 end
 
-disp('<farfield> routine still needs some generalisation work');
+% disp('<farfield> routine still needs some generalisation work');
 figure;
 plot(farfield_XY(:,1),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
-% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_0.1.txt');
+[E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_0.1.txt');
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_ZPlaneWave.txt');
-[E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_endcaps_xz.txt');
+% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_endcaps_xz.txt');
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_8m_xz.txt');
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\sphere_0.5.txt');
 hold on
 plot(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2));
+title('|E_{\phi}|')
+if MBF == 1
+    legend("Matlab, N = " + New_N, "FEKO")
+else
+    legend("Matlab, N = " + N, "FEKO")
+end
+xlabel('\phi')
+ylabel('|E_{\phi}|');
+
 % 
 %---------------------------------------------------------------
 return;
