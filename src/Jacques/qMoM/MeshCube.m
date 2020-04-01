@@ -1,6 +1,6 @@
-function [node_coords, quad_elems] = MeshCube(points)
+function [node_coords, quad_elems] = MeshCube(points, radius)
 
-a = 0.5; % Radius
+a = radius; % Radius
 increment = 2/(points-1);
 x = -1:increment:1;
 y = -1:increment:1;

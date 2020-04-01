@@ -238,7 +238,7 @@ void farfield(double freq, int P, int T, double *points, double  *triangles, int
             GaussianQuadrature(pPoints, NumIntPoints, IntPoints);
 
             //Outer triangle
-            int pTri[12] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
+            int pTri[12] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]-1), (int)(triangles[T*4 + i]),
             (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i]),(int)(triangles[T*9 + i]),
             (int)(triangles[T*10 + i]),(int)(triangles[T*11 + i])};
             //mexPrintf("pTri = %d %d %d %d %d %d %d %d %d\n",pTri[0],pTri[1],pTri[2],pTri[3],pTri[4],pTri[5],pTri[6],pTri[7],pTri[8]);

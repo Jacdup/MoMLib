@@ -41,7 +41,7 @@ end
 % Triangle plot
 % -------------------------------------------------------------------------
 
-if tri 
+if tri>0 
     triangle_points = [points(triangles(node_val,1),1),points(triangles(node_val,1),2),points(triangles(node_val,1),3)];
     figure();
     hold on 

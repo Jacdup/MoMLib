@@ -12,7 +12,8 @@ quad_vertices_currents = zeros(num_quad,4,3);
 % local_edge_nodes_def        = [2 3
 %                                1 3
 %                                1 2];
-local_edge_nodes_def = [1 2; 2 3; 4 3; 1 4];
+% local_edge_nodes_def = [1 2; 2 3; 4 3; 1 4];
+local_edge_nodes_def = [1 2;1 4 ; 4 3; 2 3];
 
 % Cycle over all tri_dofs (list of triangles, possibly listing some twice,
 % with dofs associated with each listed triangle). Triangles are listed

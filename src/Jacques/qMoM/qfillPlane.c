@@ -107,7 +107,7 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
             {points[P*0+(int)(triangles[T*2 + i]-1)],points[P*1+(int)(triangles[T*2 + i]-1)],points[P*2+(int)(triangles[T*2 + i]-1)]},
             {points[P*0+(int)(triangles[T*3 + i]-1)],points[P*1+(int)(triangles[T*3 + i]-1)],points[P*2+(int)(triangles[T*3 + i]-1)]}};
         //Outer triangle
-        int pTri[12] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
+        int pTri[12] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]-1), (int)(triangles[T*4 + i]),
             (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i]),(int)(triangles[T*9 + i]),
             (int)(triangles[T*10 + i]),(int)(triangles[T*11 + i])};
         int pbasisindex[4] = {pTri[8],pTri[9],pTri[10],pTri[11]};

@@ -42,13 +42,13 @@ function [quadElements,N, basis_supports] = EdgeCalcQuad(quadElements,vertices)%
 connectivity_data = {};
 % edge_select = [1 2 ;1 3 ;2 3]; AB; AC; BC
  
-%  edge_select = [1 2; 2 4; 3 4; 1 3];
+%  edge_select = [1 2; 2 3; 4 3; 1 4];
 edge_select = [1 2;1 4 ; 4 3; 2 3];
 % Edge_select = [A B; B C; D C; A D];
 % direction_select = [6 5 4];
-direction_select = [8 7 6 5];
+direction_select = [8 5 6 7];
 % doff_select = [9 8 7];
-doff_select = [12 11 10 9];
+doff_select = [12 9 10 11];
 DOFF_NUM = 0;
 % tri = [0, 0, 0];
 % quad = [0, 0, 0, 0];
@@ -151,24 +151,26 @@ for quad_index = 1:size(quadElements,1)
                 %of.
                 previous_quad = quadElements{common_quads(1)}(1:4);
               
-                %Now we must find the edge in the previous quad and 
+                %Now we must find the edge in the previous quad and
                 %retrieve the DOF number
                 if curr_edge == previous_quad([1 2])
                     % DOFF 1 (12) is then edge AB
                     quadElements{quad_index}(doff_select(counter)) = quadElements{common_quads(1)}(doff_select(1));
-                elseif curr_edge == previous_quad([1 4])
+                                    elseif curr_edge == previous_quad([1 4])
+%                 elseif curr_edge == previous_quad([2 3])
                     % DOFF 2 (11) is then edge BC
                     quadElements{quad_index}(doff_select(counter)) = quadElements{common_quads(1)}(doff_select(2));
                 elseif curr_edge == previous_quad([4 3])
                     % DOFF 3 (10) is then edge CD
                     quadElements{quad_index}(doff_select(counter)) = quadElements{common_quads(1)}(doff_select(3));
-                elseif curr_edge == previous_quad([2 3])
+%                 elseif curr_edge == previous_quad([1 4])
+                                    elseif curr_edge == previous_quad([2 3])
                     % DOFF 4 (9) is then edge AD
                     quadElements{quad_index}(doff_select(counter)) = quadElements{common_quads(1)}(doff_select(4));
                 end
-%                 
-%                                if (mod(quad_index,vertices) == 1) % First quad at contour point
-%                     quadElements{quad_index}(direction_select(4)) = -1;
+                %
+                %                                if (mod(quad_index,vertices) == 1) % First quad at contour point
+                %                     quadElements{quad_index}(direction_select(4)) = -1;
 %                 end
 %                 if (mod(quad_index,vertices) == 0)
 %                     quadElements{quad_index}(direction_select(2)) = 1; % Last quad
