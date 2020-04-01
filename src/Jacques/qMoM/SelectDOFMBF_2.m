@@ -22,7 +22,7 @@ phi = 360/numVertices;
 for phi_var = 0:2 % All 3 MBFs
     total_DOFS_selected = 0;
     phi_step = -1;
-    MBF_DOF_Number = 4+phi_var;
+    MBF_DOF_Number = (numMBF-2)+phi_var;
     iter =1 ;
     u_row = 1;
     for i = 1:numDOFS % Total number of DOFS
@@ -39,10 +39,11 @@ for phi_var = 0:2 % All 3 MBFs
                 % OR U_Mat(u_row:i-1,MBF_DOF_Number) = U_Vec(u_row:i-1);
                iter = iter +1;
                 if (iter > numNodes)
-                    MBF_DOF_Number = MBF_DOF_Number + 3;
+                    MBF_DOF_Number = MBF_DOF_Number + numMBF-3;
                 else
                     MBF_DOF_Number = MBF_DOF_Number + numMBF;
                 end
+                
                 u_row = i;
                 phi_step = 0;
             end
@@ -52,9 +53,11 @@ for phi_var = 0:2 % All 3 MBFs
                 case 0
                     U_Vec(i) = 1;
                 case 1 
-                    U_Vec(i) = sind(phi_step*phi);
+%                     U_Vec(i) = 1;
+                    U_Vec(i) = 1*sind(phi_step*phi);
                 case 2
-                    U_Vec(i) = cosd(phi_step*phi);
+%                     U_Vec(i) = 1;
+                    U_Vec(i) = 1*cosd(phi_step*phi);
             end
 %             U_Vec_sin(i) = sind(phi_step*phi);
 %             U_Vec_cos(i) = cosd(phi_step*phi);

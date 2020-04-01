@@ -30,8 +30,14 @@ mesh_create_option       = 4;              % 1 : Square plate
 TextOn                   = true;           % mesh visualisation text
 flag_mesh_refine_uniform = false;
 h_split_num              = 3;
+
+%---------------------------------------------------------------
+% Solver select:
+%---------------------------------------------------------------
 quad                     = 1;
+first_order              = 0;
 MBF                      = 1;
+
 
 
 %oldpath = path;
@@ -79,14 +85,14 @@ end
 % Mesh a hollow cylinder
 if mesh_create_option == 4
     
-    rho = 0.1;
-    vertices = 40;
+    rho = 0.5;
+    vertices = 18;
     % vertices =10 + (9); % Number of vertices
-    %  Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 0.1; 5 0 0.2; 6 0.1 0.3; 7 0.2 0.4; 8 0.25 0.5; 9 0.2 0.6; 10 0.2 0.5; 11 0.2 0.4 ]; % Hardcode some contour
-    %  Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 3];
+%      Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 0.1; 5 0 0.2; 6 0.1 0.3; 7 0.2 0.4; 8 0.25 0.5; 9 0.2 0.6; 10 0.2 0.5; 11 0.2 0.4 ]; % Hardcode some contour
+%      Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 3];
     %  Contour = [0 0 0; 0.1 0 0; 0.2 0 0; 0.3 0 0; 0.4 0 0; 0.5 0 0];
     Contour = [0 0 0; 1 0 0; 2 0 0];
-    Contour = RefineMesh(Contour,3);
+    Contour = RefineMesh(Contour,1);
     [node_coords,quad_nodes, elements] = QuadMesh_v5(Contour,vertices,rho);
     [tri_nodes,triangles] = QuadtoTri(elements);
     numNodes = length(Contour(:,1))-2;
@@ -121,11 +127,11 @@ if quad == 1
     quad_dof_idx = (1:N)';
     [new_quads,new_quad_points, new_quad_N, quad_observer_map, quad_source_map] = QuadBasisFunctionSelect(quad_blah ,common_basis_functions,basis_supports_quad,node_coords);
     MODE = 1;
-    mex GCC='/usr/bin/gcc-7' -O -R2018a src\\Jacques\qmom.c
+%     mex GCC='/usr/bin/gcc-7' -O -R2018a src\\Jacques\qmom.c
     [Z_mat] = qmom(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map),int32(quad_source_map), num_obs, num_src, MODE);
     V_vec = qfillPlane(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map), num_obs,0, MODE);
     if MBF == 1
-        numMBF = 6;
+        numMBF =6;
         [U_Mat] = SelectDOFMBF(basis_supports_quad, vertices,numNodes,numMBF);
 %         U_Mat = zeros(length(basis_supports_quad),1);
         [U_Mat] = SelectDOFMBF_2(basis_supports_quad, vertices, U_Mat,numNodes,numMBF);
@@ -326,8 +332,8 @@ end
 % disp('<farfield> routine still needs some generalisation work');
 figure;
 plot(farfield_XY(:,1),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
-[E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_0.1.txt');
-% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_ZPlaneWave.txt');
+% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_0.1.txt');
+[E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_speed\Jacques\FEKO\Hollow_Cylinder_ZPlaneWave.txt');
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_endcaps_xz.txt');
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_8m_xz.txt');
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\sphere_0.5.txt');

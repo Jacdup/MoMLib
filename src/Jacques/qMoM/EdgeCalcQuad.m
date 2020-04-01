@@ -1,4 +1,4 @@
-function [quadElements,N, basis_supports] = EdgeCalc(quadElements,vertices)%filename recieved is a string
+function [quadElements,N, basis_supports] = EdgeCalcQuad(quadElements,vertices)%filename recieved is a string
 %Jacques T du Plessis
 %September 2019
 %19083688@sun.ac.za
@@ -43,12 +43,10 @@ connectivity_data = {};
 % edge_select = [1 2 ;1 3 ;2 3]; AB; AC; BC
  
 %  edge_select = [1 2; 2 4; 3 4; 1 3];
-% edge_select = [1 2; 2 3; 4 3; 1 4];
-edge_select = [1 2; 1 4; 4 3; 2 3];
+edge_select = [1 2;1 4 ; 4 3; 2 3];
 % Edge_select = [A B; B C; D C; A D];
 % direction_select = [6 5 4];
 direction_select = [8 7 6 5];
-% direction_select = [8 5 6 7];
 % doff_select = [9 8 7];
 doff_select = [12 11 10 9];
 DOFF_NUM = 0;
@@ -139,9 +137,6 @@ for quad_index = 1:size(quadElements,1)
 %                     quadElements{quad_index}(direction_select(2)) = 1; % Last quad
 %                 end
 %                 
-if quadElements{quad_index}(doff_select(counter)) == 0
-    i = 1;
-end
             else
                 %we set the  direction to -1 and fetch the DOFF number from
                 %the lower triangle 
@@ -161,13 +156,13 @@ end
                 if curr_edge == previous_quad([1 2])
                     % DOFF 1 (12) is then edge AB
                     quadElements{quad_index}(doff_select(counter)) = quadElements{common_quads(1)}(doff_select(1));
-                elseif curr_edge == previous_quad([2 3])
+                elseif curr_edge == previous_quad([1 4])
                     % DOFF 2 (11) is then edge BC
                     quadElements{quad_index}(doff_select(counter)) = quadElements{common_quads(1)}(doff_select(2));
                 elseif curr_edge == previous_quad([4 3])
                     % DOFF 3 (10) is then edge CD
                     quadElements{quad_index}(doff_select(counter)) = quadElements{common_quads(1)}(doff_select(3));
-                elseif curr_edge == previous_quad([1 4])
+                elseif curr_edge == previous_quad([2 3])
                     % DOFF 4 (9) is then edge AD
                     quadElements{quad_index}(doff_select(counter)) = quadElements{common_quads(1)}(doff_select(4));
                 end
@@ -178,9 +173,6 @@ end
 %                 if (mod(quad_index,vertices) == 0)
 %                     quadElements{quad_index}(direction_select(2)) = 1; % Last quad
 %                 end
-if quadElements{quad_index}(doff_select(counter)) == 0
-    i = 1;
-end
 
             end
             
@@ -188,16 +180,12 @@ end
             % If we are in here it means the edge is not a DOFF and we
             % can simply put a -1 in the numbering system and a +1 in the
             % direction system.
-
             
             %set directional flag to +1
             quadElements{quad_index}(direction_select(counter)) = 1; 
             %The edge is not a DOFF so set number to -1
             quadElements{quad_index}(doff_select(counter)) = -1; 
         end
-                    if quadElements{quad_index}(doff_select(counter)) == 0
-    i = 1;
-end
     end
 end
 % quadElements{1}(direction_select(4)) = -1;
