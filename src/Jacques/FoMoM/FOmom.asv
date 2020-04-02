@@ -21,6 +21,42 @@
 #include "FO_basis_function.h"
 #include "triangle_functions.h"
 
+
+
+
+
+
+
+// void InverseBarycentric(double points[][3], double R[3], double Zeta[]){
+//     // Computes the parent/simplex/barycentric coordinate from the 3D cartesian point
+//     
+//     double temp1[3];
+//     double temp2[3], temp3[3], temp4[3], temp5[3], temp6[3], temp7[3];
+//     double v_n[3];
+//     
+//     VectorSubtract(points[2], points[1], temp1);
+//     VectorSubtract(points[1], points[0], temp2);
+//     VectorCross(temp1, temp2, v_n);
+//     
+//     double A = VectorSize(v_n);
+//     MultiplyVectorByConstant(v_n, 3, 1/A);
+//     VectorSubtract(points[1], R, temp3);
+//     VectorCross(temp1,temp3,temp4);
+//     MultiplyVectorByConstant(v_n,3,1/A);
+//     //MultiplyVectorByConstant(
+//     Zeta[0] = dotProduct(v_n,temp4 );
+//     
+//     VectorSubtract(points[2],points[0],temp5);
+//     VectorSubtract(points[2],R,temp6);
+//     VectorCross(temp5, temp6, temp7);
+//     Zeta[1] = dotProduct(v_n, temp7);
+//     
+//     Zeta[2] = 1 - Zeta[0] - Zeta[1];
+//     
+// }
+//void Barycentric(double R[3], double points[][3], double Zeta[])
+
+
 /*
    return the integration points and weights based on a gaussian rule
  */
@@ -544,6 +580,121 @@ void PrintMatrix(double **a, int n)
 	}
 }
 
+//-------------------------NEW ROUTINES--------------------------------
+
+
+
+// double BF(double Zeta[3],double points[][3], int edge, int sign, double Delta[]){
+//  // Computes the basis function from the simplex coordinates
+//     
+//     double N; // Normalisation constant
+//     //edge = edge; // C indexes from 0
+//     int ii,jj;
+//    // double a1[3],a2[3],a3[3];
+//     double drdu[3],drdv[3];
+//     double l[3][3];
+//     double t[3][3];
+//     double Area = TriangleArea(points);
+//     
+//    for (ii=0; ii<3; ii++){
+//         l[0][ii] = -points[1][ii];
+//         l[1][ii] = points[0][ii];
+//         l[2][ii] = points[1][ii]-points[0][ii];
+// 
+//         t[0][ii] = (points[2][ii] - points[1][ii]); // This is just the side length
+//         t[1][ii] = (points[0][ii] - points[2][ii]);
+//         t[2][ii] = (points[1][ii] - points[0][ii]);
+//         
+//         drdu[ii] = points[0][ii] - points[2][ii];
+//         drdv[ii] = points[1][ii] - points[2][ii];
+//     }
+//     
+//     //N = VectorSize(l[(edge)%3]);
+//     
+//     double J[3],J_det;
+//     VectorCross(drdu, drdv, J);
+//     J_det = VectorSize(J);
+//     double t_len = VectorSize(t[(edge-1)%3]);
+// 
+//     double temp1[3], temp2[3];
+//     for (ii=0;ii<3;ii++){
+//         //temp1[ii] = l[(edge-1)%3][ii] * Zeta[(edge+1)%3];
+//         //temp2[ii] = l[(edge+1)%3][ii] * Zeta[(edge-1)%3];
+//         temp1[ii] = t[(edge)%3][ii] * Zeta[(edge+1)%3];
+//         temp2[ii] = t[(edge+1)%3][ii] * Zeta[(edge)%3];
+// 
+//         Delta[ii] = (temp2[ii] - temp1[ii]);
+//     }
+//     
+//     //return (sign*N*(1/J_det));
+//     //return (sign*(1/(2*Area)));
+//    //return (sign*N);
+//     //return (1/(2*Area))*t_len*sign;
+//     return (sign);
+// }
+
+// double BF(double Zeta[3],double points[][3], int edge, int sign, double Delta[]){
+//  // Computes the basis function from the simplex coordinates
+//     
+//     double N; // Normalisation constant
+//     int ii;
+//     double t[3][3];
+//     double Area = TriangleArea(points);
+//     if (Area== 0){
+//         mexPrintf("points = %f %f %f\n", points);
+//     }
+//     double normal[3];
+//     
+//    for (ii=0; ii<3; ii++){
+//         t[0][ii] = (points[2][ii] - points[1][ii]); // This is just the side length
+//         t[1][ii] = (points[0][ii] - points[2][ii]);
+//         t[2][ii] = (points[1][ii] - points[0][ii]);
+//        //t[2][ii] = -t[0][ii] - t[1][ii];
+//     }
+//     
+//     double t_len = VectorSize(t[(edge)%3]);
+//     int t_index,t_index1;
+//     int l_index,l_index1;
+//     
+//     int first_order = -1;
+//     double sf = 1;
+//     double div = 1;
+//     double sign_sf = sign;
+// //     mexPrintf("%f\n", sign_sf);
+//     //VectorCross(t[1],t[2],normal);
+//     //double ns[3];
+//     
+//     if (abs(sign) == 2){ // (if sign is 2 or -2)
+//         t_index = (edge+1)%3;
+//         l_index = (edge+2)%3;
+//         sf = 1;
+//         first_order = 1;
+//         div =2;
+//         sign_sf = 0.5*sign;
+//     }else{
+//         //sign_sf = sign;
+//         t_index = (edge+1)%3;
+//         l_index = (edge+2)%3;
+//     }
+//     
+//     for (ii=0;ii<3;ii++){
+//         //ns[ii] = 2*Area*normal[ii];
+//         Delta[ii] = sf*((t_len/(2*Area)))*sign_sf*(first_order*(t[t_index][ii]*Zeta[l_index]) + (t[l_index][ii]*Zeta[t_index]));
+//     }
+//     
+// // (sign_sf*(t_len/(2*Area)))
+// //     if (div == 0){
+// //         mexPrintf("div = %f\n", div);
+//     
+// //     }
+// //     if (div*((1/(2*Area))) == 0){
+// //         mexPrintf("what on earth\n");
+// //     }
+//     return div*((t_len*sign_sf/(2*Area)));
+// }
+
+
+
 //void MoM(double freq, int P, double **points, int T, int **triangles, int N, int **edges, complex double **Zmat, complex double *Vvec)
 void MoM(double freq, int P, double *points, int T, double *triangles, int N, complex double *Zmat,int *obs_map, int *src_map, int num_obs, int num_src, int MODE)
 {
@@ -569,9 +720,9 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
     
 	double c0 = 299792456.2;
 	double k = (2*M_PI*freq)/c0;
-    double mu = 1.25663706143592e-06;
-    double w = 2*M_PI*freq;
-    double eps = 8.85418781761e-12;
+    	double mu = 1.25663706143592e-06;
+    	double w = 2*M_PI*freq;
+    	double eps = 8.85418781761e-12;
 
 	int i, j, ii, jj, iter;
 	int oip, iip;
@@ -585,10 +736,13 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
 	int count_16_16 = 0;
     int count = 0;
     
+    
+  
     //clock stuff
 	clock_t StartInner, EndInner;
     double Inner_loop_time_used;
-
+    
+    
 	double prog = 0.0; //used to monitor progress
 
 	for (i=0; i< T; i++) //Observation triangle
@@ -604,11 +758,17 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
 		int pTri[9] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
 					   (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i])}; 
 		
+        //
+       // mexPrintf("pPoints = %f %f %f\n", pPoints[0][0],pPoints[0][1], pPoints[0][2]);
+        //only need to do once
         int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
+        //VERSION 3.3 ADDITION 
         if (ObserverOnTriangle(pbasisindex, obs_map))
         {    
+        //mexPrintf("pTri %d = %d %d %d \n",i, pTri[0],pTri[1],pTri[2]);     
             
             double pArea = TriangleArea(pPoints);
+
 
             //double **OuterIntPoints = NULL;
             //StartInner = clock();
@@ -630,6 +790,7 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                 {
                     //Because we now know outer and inner integration points will be allocated memory
 					double **OuterIntPoints = NULL;
+					//double **InnerIntPoints = NULL;
                     // Find the area and centrepoint of the triangle
                     double qArea = TriangleArea(qPoints);
         //----------------------------------------------------------------------------------------------------------------------------------
@@ -651,14 +812,19 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                     int further_check_required = 0;
                     int newNumInt = 0;
 
+                    
+
+
                     //find triangle centroids and distance between them
                     TriangleCentre(pPoints,pCentroid);
                     TriangleCentre(qPoints,qCentroid);
                     d_centrepoints = Distance(pCentroid,qCentroid);
 
+
                     //find the triangle diameters and the maximum of them
                     pDiameter = TriangleDiameter(pPoints);
                     qDiameter = TriangleDiameter(qPoints);
+
 
                     if (pDiameter > qDiameter)
                     {	
@@ -669,6 +835,8 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                     }
                     //shortest possible distance between triangles given the centroid
                     d_conservative = d_centrepoints - (2.0/3.0)*(pDiameter + qDiameter);
+                    //printf("\nd_conservative = %lf \n\n",d_conservative);
+
 
                     //d conservative is the shortest possible distance between the triangles given the centroid
                     if (0 > d_conservative)
@@ -678,18 +846,33 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                         int DontTouch = TrianglesDontTouch(pTri, qTri);//can only be used locally
                         if (!DontTouch)
                         {	
-                            //if we are in here it means the triangles touch      
+                            //if we are in here it means the triangles touch
+                            //instantly set outer to 16 and further_checks = 1
+                            //no inner points set yet, further checks handles that
+                            //set mode to level 4
                             NumOuterIntPoints = mode_select[4][MODE];
+                            
+                            //NumOuterIntPoints = 16;
                             further_check_required = 1;
+
+
+
                         }else
                         {
                             //here we will perform a 9 point check to see how far apart they actually are 
+
                             d_9 = ApproxShortDistanceBetweenTriangles_9(pPoints,qPoints);
+
 
                             if(d_9 > (1.5*max_diameter))
                             {
+                                //set to 6 point
+                                
+                                //set mode to level 1
                                 NumOuterIntPoints = mode_select[1][MODE];
                                 NumInnerIntPoints = mode_select[1][MODE];
+                                //NumOuterIntPoints = 6;
+                                //NumInnerIntPoints = 6;
                                 count_6_6++;
                             }else if(d_9 > (0.75*max_diameter))
                             {
@@ -802,7 +985,11 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                             //outer integral 
                             for (oip=0; oip<NumOuterIntPoints; oip++) //outer integral points
                             {  	
-                 
+                        //----------------------------------------------------------------------------------------------------------------------------------
+                        //----------------------------------------------------------------------------------------------------------------------------------
+                        //---------------------------------------------------second round of checks---------------------------------------------------------
+                        //----------------------------------------------------------------------------------------------------------------------------------
+                        //----------------------------------------------------------------------------------------------------------------------------------
                                 double **InnerIntPoints = NULL;
                                 if(further_check_required && (i == j))
                                 {	

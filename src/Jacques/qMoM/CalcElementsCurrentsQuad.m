@@ -42,7 +42,7 @@ for ii = 1:size(quad_dofs,1)
         this_dof = quad_dofs(ii,13-jj);
                 
         if this_dof > 0 % a dof is associated with this edge and its contribution must be added to the vertex currents of this triangle
-%             edge_verts  = quad_dofs(ii,local_edge_nodes_def(jj,1:2)); % global nodes of current edge
+            edge_verts  = quad_dofs(ii,local_edge_nodes_def(jj,1:2)); % global nodes of current edge
 %             if any(quad_dofs(ii,jj) ~= this_dof) && (quad_dofs(ii,jj) ~= -1) % If vertex is not part of the dof edge
 %                t = 1;  
 %             end
@@ -90,11 +90,14 @@ for ii = 1:size(quad_dofs,1)
             for kk = 1:2 % contributions at the edge vertices, not the origin vertex 
                          % (note that basis direction must be incorporated via 
                          % appropriate tri_dofs data) 
-                rho(1,1,1:3) = ((zu*drdv) + (zv *drdu));
+                         switch kk
+                             case 1:
+                                 Zeta = 
+                rho(1,1,1:3) =  Zeta *((zu*drdv) + (zv *drdu));
 %                 Zeta = norm(elen(:,:,kk));
 %                 rho(1,1,1:3) = node_coords(edge_verts(kk),:) - node_coords(quad_dofs(ii,jj),:);
 %                 rho_edgevert(1,1,1:3) = node_coords(edge_verts(kk),:) - node_coords(quad_dofs(ii,jj),:); % origins of the three RWGs are the three tri nodes, in order
-                quad_vertices_currents(this_quad,local_edge_nodes_def(jj,kk),1:3) = ... % This whole thing will have to change, for quad basis function
+                quad_vertices_currents(this_quad,local_edge_nodes_def(jj,kk),1:3) = ... 
                     quad_vertices_currents(this_quad,local_edge_nodes_def(jj,kk),1:3) + ... 
                     I_vec(this_dof)*1* (N/J_det) * quad_dofs(ii,9-jj) * rho;
 %                     I_vec(this_dof) * 0.5 * (ELength/TArea) * quad_dofs(ii,4+jj) * rho_edgevert;
