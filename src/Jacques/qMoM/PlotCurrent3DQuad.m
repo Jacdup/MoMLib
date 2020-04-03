@@ -23,7 +23,8 @@ function [] = PlotCurrent3DQuad(InputDataFormat,ShowEdges,quad_nodes,node_coords
 % 2019-12-15: Created. MMB.
 
 % Init:
-CLim = [0; 1e-2];
+maxVal = max(max(quad_currents));
+CLim = [0; maxVal];
 if ShowEdges
     EdgeColor_setting = 'black';
 else

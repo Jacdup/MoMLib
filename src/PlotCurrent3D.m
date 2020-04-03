@@ -23,7 +23,8 @@ function [] = PlotCurrent3D(InputDataFormat,ShowEdges,tri_nodes,node_coords,tri_
 % 2019-12-15: Created. MMB.
 
 % Init:
-CLim = [0; 1e-2];
+maxVal = max(max(tri_currents));
+CLim = [0; maxVal];
 if ShowEdges
     EdgeColor_setting = 'black';
 else
@@ -34,7 +35,7 @@ end
 figure;
 if InputDataFormat == 0
     %trisurf(tri_nodes,node_coords(:,1),node_coords(:,2),node_coords(:,3),tri_currents(:,1));
-   p = patch('Faces',tri_nodes,'Vertices',node_coords,'FaceVertexCData',tri_currents(:,1),'FaceColor','flat','EdgeColor',EdgeColor_setting);  % ,'LineWidth',2
+   p = patch('Faces',tri_nodes(:,1:3),'Vertices',node_coords,'FaceVertexCData',tri_currents(:,1),'FaceColor','flat','EdgeColor',EdgeColor_setting);  % ,'LineWidth',2
     hold on;
     colormap jet;
     colorbar;

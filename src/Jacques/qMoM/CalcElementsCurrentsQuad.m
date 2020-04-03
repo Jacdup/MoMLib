@@ -90,10 +90,8 @@ for ii = 1:size(quad_dofs,1)
             for kk = 1:2 % contributions at the edge vertices, not the origin vertex 
                          % (note that basis direction must be incorporated via 
                          % appropriate tri_dofs data) 
-                         switch kk
-                             case 1:
-                                 Zeta = 
-                rho(1,1,1:3) =  Zeta *((zu*drdv) + (zv *drdu));
+
+                rho(1,1,1:3) =  ((zu*drdv) + (zv *drdu));
 %                 Zeta = norm(elen(:,:,kk));
 %                 rho(1,1,1:3) = node_coords(edge_verts(kk),:) - node_coords(quad_dofs(ii,jj),:);
 %                 rho_edgevert(1,1,1:3) = node_coords(edge_verts(kk),:) - node_coords(quad_dofs(ii,jj),:); % origins of the three RWGs are the three tri nodes, in order

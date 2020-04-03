@@ -1,4 +1,4 @@
-function [triangles_vertices_currents] = CalcElementsCurrents(I_vec, tri_dofs, tri_dofs_idx, num_tri, node_coords)
+function [triangles_vertices_currents] = CalcElementsCurrentsFO(I_vec, tri_dofs, tri_dofs_idx, num_tri, node_coords)
 % This postprocessing routine calculates the values (Jx,Jy,Jz) at the three
 % vertices of each triangle in the mesh, as evaluated from the perspective of that triangle.  
 %
@@ -34,9 +34,10 @@ for ii = 1:size(tri_dofs,1)
         this_dof = tri_dofs(ii,6+jj);
         edge = mod(jj+2,3)+1;
         if this_dof > 0 % a dof is associated with this edge and its contribution must be added to the vertex currents of this triangle
-            edge_verts  = tri_dofs(ii,local_edge_nodes_def(jj,1:2)); % global nodes of current edge
-            edgevectemp = node_coords(edge_verts(2),:) - node_coords(edge_verts(1),:);
-            ELength     = sqrt(edgevectemp*edgevectemp');
+%             edge_verts  = tri_dofs(ii,local_edge_nodes_def(jj,1:2)); % global nodes of current edge
+%             edgevectemp = node_coords(edge_verts(2),:) - node_coords(edge_verts(1),:);
+%             ELength     = sqrt(edgevectemp*edgevectemp')
+            ELength     = norm(t(mod(edge,3)+1));
             first_order = -1;
             sign = tri_dofs(ii,3+jj);
             if (abs(tri_dofs(ii, 3+jj)) == 2)
@@ -55,19 +56,25 @@ for ii = 1:size(tri_dofs,1)
                         
             switch jj 
                 case 1
-                    Zeta1 = mod(kk,2);
-                    Zeta2 = mod(kk+1,2);
+%                     Zeta1 = mod(kk,2);
+%                     Zeta2 = mod(kk+1,2);
+                     Zeta1 = mod(kk+1,2);
+                    Zeta2 = mod(kk,2);
                 case 2
                     Zeta1 = mod(kk,2);
                     Zeta2 = mod(kk+1,2);
+%                     Zeta1 = mod(kk+1,2);
+%                     Zeta2 = mod(kk,2);
                 case 3
-                    Zeta1 = mod(kk,2);
-                    Zeta2 = mod(kk+1,2);
+                     Zeta1 = mod(kk+1,2);
+                    Zeta2 = mod(kk,2);
+%                     Zeta1 = mod(kk,2);
+%                     Zeta2 = mod(kk+1,2);
             end
                     
 %                 Zeta(2) = node_coords(edge_verts(kk),2);
 %                 Zeta(3) = node_coords(edge_verts(kk),3);
-                 rho_edgevert(1,1,1:3) = (t(l_index,:)*1) + (first_order*(t(t_index,:)*Zeta2));
+                 rho_edgevert(1,1,1:3) = (t(t_index,:)*Zeta2) + (first_order*(t(l_index,:)*Zeta1));
                 triangles_vertices_currents(this_tri,local_edge_nodes_def(jj,kk),1:3) = ...
                     triangles_vertices_currents(this_tri,local_edge_nodes_def(jj,kk),1:3) + ... 
                     I_vec(this_dof) * 0.5 * (ELength/TArea) * sign * rho_edgevert;

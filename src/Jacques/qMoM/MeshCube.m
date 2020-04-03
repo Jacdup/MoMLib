@@ -31,30 +31,12 @@ iter = 0;
 iter1 = 0;
 left_offset = 0;
     for f = 1:points_per_face  % All points in face       
-%         for vert = 1:2
             if mod(f+iter,points_per_dim) == 0
                 iter = iter + 1;
                 iter1 = iter1 + 1;
             end
-            % Bottom face
-%             quad_element(f, 1) = (f)+iter;
-%             quad_element(f, 2) = (f)+iter+1;
-%             quad_element(f, 3) = (f)+points_per_dim+iter; 
-%             quad_element(f, 4) = (f)+points_per_dim+iter+1;
-            
-            % Left face
-
-%             if f + points_per_face > 42
-%                 left_offset = 20;
-%             end
-%             quad_element(f + points_per_face, 1) = f + iter+left_offset;
-%             quad_element(f + points_per_face, 2) = f + iter + 1+left_offset;
-% %             quad_element(f + points_per_dim, 2) = (f + points_per_dim) + iter + 1;
-%             quad_element(f + points_per_face, 3) = (f + points_per_face)+ iter;
-%             quad_element(f + points_per_face, 4) = (f + points_per_face) + iter + 1;
-%         end
     end
-% end
+
 
 elem_idx = 0;
 % face1_idx = 1:points_per_face;
@@ -116,12 +98,12 @@ for i = 1:points_per_dim
     elems_f6(i,:) = quad_element(6,i:points_per_dim:end);
 end
 iter = 1;
-elems_f1_new = zeros(25,4);
-elems_f2_new = zeros(25,4);
-elems_f3_new = zeros(25,4);
-elems_f4_new = zeros(25,4);
-elems_f5_new = zeros(25,4);
-elems_f6_new = zeros(25,4);
+% elems_f1_new = zeros(25,4);
+% elems_f2_new = zeros(25,4);
+% elems_f3_new = zeros(25,4);
+% elems_f4_new = zeros(25,4);
+% elems_f5_new = zeros(25,4);
+% elems_f6_new = zeros(25,4);
 %Select every 'block' in the matrix to form the elements
 for i = 1:points_per_dim-1
     for j = 1:points_per_dim-1
