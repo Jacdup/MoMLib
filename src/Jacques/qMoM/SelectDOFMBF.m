@@ -4,15 +4,8 @@ function [U_Mat] = SelectDOFMBF(basis_supports, numVertices, numNodes,numMBF)
 
 
 numDOFS = length(basis_supports);
-MBF_DOF_Number = 1;
-total_DOFS_selected = 0;
-u_row = 1;
-phi_step = 0;
-iter =1;
 U_Vec = zeros(numDOFS,1);
-U_Vec_sin = zeros(numDOFS,1);
-U_Vec_cos = zeros(numDOFS,1);
-phi_var = 0;
+
 % U_Mat = zeros(numDOFS, numDOFS);
 % ----------------------------------------------------------------
 % Parse through geometry and assign MBF DOF numbers to each node.

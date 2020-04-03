@@ -53,7 +53,7 @@ elseif InputDataFormat == 1
     for ii = 1:numtri
         jj                          = 3*(ii-1) + 1;
         plotnodecoords(jj:jj+2,1:3) = node_coords(tri_nodes(ii,1:3),:);
-        plottrinodes(ii,1:3)        = [jj:jj+2];
+        plottrinodes(ii,1:3)        = jj:jj+2;
         plotnodecurrents(jj:jj+2,1) = tri_currents(ii,1:3)';
     end 
     p = patch('Faces',plottrinodes,'Vertices',plotnodecoords,'FaceVertexCData',plotnodecurrents,'FaceColor','interp','EdgeColor',EdgeColor_setting);  % ,'LineWidth',2
