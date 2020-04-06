@@ -601,18 +601,17 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
         {points[P*0+(int)(triangles[T*1 + i]-1)],points[P*1+(int)(triangles[T*1 + i]-1)],points[P*2+(int)(triangles[T*1 + i]-1)]},
         {points[P*0+(int)(triangles[T*2 + i]-1)],points[P*1+(int)(triangles[T*2 + i]-1)],points[P*2+(int)(triangles[T*2 + i]-1)]}};
         //Outer triangle
-//         int pTri[15];
-//         if (order == 0){
-//             int pTri[9] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
-//                            (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i])};
-//             int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
-//         }else{
+        if (order == 0){
+            int pTri[9] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
+                           (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i])};
+            int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
+        }else{
             int pTri[15] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
                             (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i]),
                             (int)(triangles[T*9 + i]),(int)(triangles[T*10 + i]),(int)(triangles[T*11 + i]),(int)(triangles[T*12 + i]),
                             (int)(triangles[T*13 + i]),(int)(triangles[T*14 + i])};
             int pbasisindex[6] = {pTri[6],pTri[7],pTri[8],pTri[12], pTri[13], pTri[14]};
-//         }
+        }
         
         
         if (ObserverOnTriangle(pbasisindex, obs_map, order))
@@ -630,17 +629,17 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                         {points[P*0+(int)(triangles[T*2 + j]-1)],points[P*1+(int)(triangles[T*2 + j]-1)],points[P*2+(int)(triangles[T*2 + j]-1)]}};
                 
                 //inner triangle
-//                 if (order == 0){
-//                     int qTri[9] = {(int)(triangles[T*0 + j]-1), (int)(triangles[T*1 + j]-1), (int)(triangles[T*2 + j]-1),(int)(triangles[T*3 + j]), (int)(triangles[T*4 + j]),
-//                                     (int)(triangles[T*5 + j]), (int)(triangles[T*6 + j]), (int)(triangles[T*7 + j]),(int)(triangles[T*8 + j])};
-//                     int qbasisindex[3] = {qTri[6],qTri[7],qTri[8]};
-//                 }else{
+                if (order == 0){
+                    int qTri[9] = {(int)(triangles[T*0 + j]-1), (int)(triangles[T*1 + j]-1), (int)(triangles[T*2 + j]-1),(int)(triangles[T*3 + j]), (int)(triangles[T*4 + j]),
+                                    (int)(triangles[T*5 + j]), (int)(triangles[T*6 + j]), (int)(triangles[T*7 + j]),(int)(triangles[T*8 + j])};
+                    int qbasisindex[3] = {qTri[6],qTri[7],qTri[8]};
+                }else{
                     int qTri[15] = {(int)(triangles[T*0 + j]-1), (int)(triangles[T*1 + j]-1), (int)(triangles[T*2 + j]-1),(int)(triangles[T*3 + j]), (int)(triangles[T*4 + j]),
                                     (int)(triangles[T*5 + j]), (int)(triangles[T*6 + j]), (int)(triangles[T*7 + j]),(int)(triangles[T*8 + j]),
                                     (int)(triangles[T*9 + j]),(int)(triangles[T*10 + j]),(int)(triangles[T*11 + j]),(int)(triangles[T*12 + j]),
                                     (int)(triangles[T*13 + j]),(int)(triangles[T*14 + j])};
                     int qbasisindex[6] = {qTri[6],qTri[7],qTri[8],qTri[12],qTri[13],qTri[14]};
-//                 }
+                }
                 //below checks if any single edge in the triangle has a basis function defined over it
                 
                 //WIll only come in here if there is source and observer, this is the only time actual memory will be allocated for the solutions
@@ -854,38 +853,38 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                     if(proximity > 0.375*max_diameter)
                                     {
                                         
-//                                         NumInnerIntPoints = RAR_level[MODE];
-//                                         newNumInt = 3*(int)pow(NumInnerIntPoints,2);
-//                                         if (newNumInt > 300)
-//                                             newNumInt = 300;
-// 
-//                                         //allocate the memory for InnerIntPoints
-//                                         InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
-//                                         for (iter=0; iter < newNumInt; iter++)
-//                                             InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-//                                         
-//                                         double ruv[3];
-//                                          ParametricMap(pPoints, OuterIntPoints[oip], ruv);
-//                                          
-//                                         //so the inner triangle is now integrated using radial angular methods 
-//                                         //Note that RAR1S also recieves the outer integration point and original NumInnerIntPoints
-//                                         RAR1S(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
-//                                         count_16_RAR++;
-                                        RAR_flag = 0;
+                                        NumInnerIntPoints = RAR_level[MODE];
+                                        newNumInt = 3*(int)pow(NumInnerIntPoints,2);
+                                        if (newNumInt > 300)
+                                            newNumInt = 300;
+
+                                        //allocate the memory for InnerIntPoints
+                                        InnerIntPoints = mxMalloc(sizeof(double *)*newNumInt);
+                                        for (iter=0; iter < newNumInt; iter++)
+                                            InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
+                                        
+                                        double ruv[3];
+                                         ParametricMap(pPoints, OuterIntPoints[oip], ruv);
+                                         
+                                        //so the inner triangle is now integrated using radial angular methods 
+                                        //Note that RAR1S also recieves the outer integration point and original NumInnerIntPoints
+                                        RAR1S(qPoints, ruv, NumInnerIntPoints, InnerIntPoints);
+                                        count_16_RAR++;
+                                        RAR_flag = 1;
 //                                         //set both to 16 point
 // 
 //                                         //set inner inner integral to 16 point
 //                                         //mxMalloc inner integration points
-                                        NumInnerIntPoints = mode_select[4][MODE];
-                                        newNumInt = NumInnerIntPoints;
-                                        //The pointer to InnerIntPoints was already set in last checks
-                                        InnerIntPoints = mxMalloc(sizeof(double *) * NumInnerIntPoints);	
-                                        for (iter=0; iter < NumInnerIntPoints; iter++)
-                                            InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-                                        
-                                        GaussianQuadrature(qPoints, NumInnerIntPoints, InnerIntPoints);
-                                        count_16_16++;
-                                        RAR_flag = 0;
+//                                         NumInnerIntPoints = mode_select[4][MODE];
+//                                         newNumInt = NumInnerIntPoints;
+//                                         //The pointer to InnerIntPoints was already set in last checks
+//                                         InnerIntPoints = mxMalloc(sizeof(double *) * NumInnerIntPoints);	
+//                                         for (iter=0; iter < NumInnerIntPoints; iter++)
+//                                             InnerIntPoints[iter] = mxMalloc(sizeof(double) * 4);
+//                                         
+//                                         GaussianQuadrature(qPoints, NumInnerIntPoints, InnerIntPoints);
+//                                         count_16_16++;
+//                                         RAR_flag = 0;
 
                                     }else
                                     {
@@ -970,21 +969,20 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                 //AT THIS POINT MY OUTER AND INNER INTEGRATION POINTS ARE KNOWN
                                 double pRho[3];
                                 double outerRuv[3];
-                                int iiSignSelector = 0;
+                                int signSelector = 0;
                                 if (ii>=3){
-                                   iiSignSelector = 6;   
+                                   signSelector = 6;   
                                 }
 
-                                double N_outer = BF(OuterIntPoints[oip], pPoints, (ii+2)%3, pTri[3+iiSignSelector+(ii+2)%3], pRho);
+                                double N_outer = BF(OuterIntPoints[oip], pPoints, (ii+2)%3, pTri[3+signSelector+(ii+2)%3], pRho);
                                 ParametricMap(pPoints, OuterIntPoints[oip], outerRuv);
-                                
                                 int qEdgeIndex;
                                 for (jj=0; jj<(3+(3*order)); jj++) //Edges of testing triangle
                                 { 
-                                    if (jj<3){
+                                    if (ii<3){
                                         qEdgeIndex = qTri[6+(jj+2)%3];
                                     }else{
-                                        qEdgeIndex = qTri[12+(jj+2)%3];
+                                        qEdgeIndex = qTri[6+(jj+2)%3];
                                     }
                                     int q_src_index = src_map[(qEdgeIndex-1)]; 
 
@@ -1009,17 +1007,12 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                                 Zeta[1] = InnerIntPoints[iip][1];
                                                 Zeta[2] = InnerIntPoints[iip][2];
                                             }
-                                            
-                                            int jjSignSelector = 0;
-                                            if (jj>=3){
-                                                jjSignSelector = 6;   
-                                            }
 
-                                            double N = BF(Zeta,qPoints, (jj+2)%3,qTri[3+jjSignSelector+(jj+2)%3], qRho);
+                                            double N = BF(Zeta,qPoints, (jj+2)%3,qTri[3+(jj+2)%3], qRho);
 
                                             ParametricMap(qPoints, Zeta, ruv);
                                             Rm = Distance(outerRuv, ruv);
-//                                             double lq = Distance(qPoints[jj], qPoints[(jj+1)%3]); // Length of edge
+                                            double lq = Distance(qPoints[jj], qPoints[(jj+1)%3]); // Length of edge
 
                                             complex double temp = (InnerIntPoints[iip][3]/(Rm*1))*cexp(-I*k*Rm);
 
@@ -1123,7 +1116,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    // mexPrintf("%d %d %d\n",obs_map[0],obs_map[1],obs_map[2]);
     //mexPrintf("%d %d %d\n",src_map[0],src_map[1],src_map[2]);
     MODE = mxGetScalar(prhs[8]);
-    int order = mxGetScalar(prhs[9]);
+    order = mxGetScalar(prhs[9]);
 //     mexPrintf("MODE = %d\n", MODE);
     //mexPrintf("%d\n", num_src);
 /*-----------------make internal pointer z matrix-------------------------------*/  

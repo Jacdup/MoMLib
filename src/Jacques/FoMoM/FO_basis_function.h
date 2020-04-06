@@ -14,16 +14,12 @@ double BF(double Zeta[3],double points[][3], int edge, int sign, double Delta[])
     double t[3][3];
     
     double Area = TriangleArea(points);
-    if (Area== 0){
-        mexPrintf("points = %f %f %f\n", points);
-    }
     double normal[3];
     
    for (ii=0; ii<3; ii++){
         t[0][ii] = (points[2][ii] - points[1][ii]); // This is just the side length
         t[1][ii] = (points[0][ii] - points[2][ii]);
         t[2][ii] = (points[1][ii] - points[0][ii]);
-       //t[2][ii] = -t[0][ii] - t[1][ii];
     }
     
     double t_len = VectorSize(t[(edge)%3]);

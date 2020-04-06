@@ -195,7 +195,7 @@ void PrintMatrix(double **a, int n)
 
 
 
-void FillPlane(double freq, int P, double *points, int T, double *triangles, int N, complex double *Vvec, int *obs_map, int num_obs, int incident_dir, int MODE)
+void FillPlane(double freq, int P, double *points, int T, double *triangles, int N, complex double *Vvec, int *obs_map, int num_obs, int incident_dir, int MODE, int order)
 {
     //This code choses the default number of integration points per triangle
     int NumOuterIntPoints = 0;
@@ -244,15 +244,22 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
         {points[P*0+(int)(triangles[T*2 + i]-1)],points[P*1+(int)(triangles[T*2 + i]-1)],points[P*2+(int)(triangles[T*2 + i]-1)]}
         };
         //Outer triangle
-        int pTri[9] = {
-            (int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),
-            (int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]), (int)(triangles[T*5 + i]),
-            (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i])
-        };
+//         if (order == 0){
+//             int pTri[9] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
+//                            (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i])};
+//             int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
+//         }else{
+            int pTri[15] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
+                            (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i]),
+                            (int)(triangles[T*9 + i]),(int)(triangles[T*10 + i]),(int)(triangles[T*11 + i]),(int)(triangles[T*12 + i]),
+                            (int)(triangles[T*13 + i]),(int)(triangles[T*14 + i])};
+            int pbasisindex[6] = {pTri[6],pTri[7],pTri[8],pTri[12], pTri[13], pTri[14]};
+//         }
         
-        int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
+        
+//         int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
 
-        if (ObserverOnTriangle(pbasisindex, obs_map))
+        if (ObserverOnTriangle(pbasisindex, obs_map, order))
         {
             double pArea = TriangleArea(pPoints);
             double **OuterIntPoints = NULL;
@@ -267,12 +274,17 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
             //find the integration points for the outer triangle
             GaussianQuadrature(pPoints, NumOuterIntPoints, OuterIntPoints);
             
-            for (ii=0; ii<3; ii++) //Edges of observation triangle
+            int pEdgeIndex ;
+            for (ii=0; ii<(3+(3*order)); ii++) //Edges of observation triangle
             {	// This checks if the edge is a DOF and returns the edges index in the edge list
                 // pEdgeIndex will determine the row of this interaction on the Zmat
                 
-                int pEdgeIndex = pTri[6+(ii+2)%3];
-                int p_obs_index = obs_map[(pTri[6+(ii+2)%3]-1)];
+                if (ii<3){
+                    pEdgeIndex = pTri[6+(ii+2)%3];
+                }else{
+                     pEdgeIndex = pTri[12+(ii+2)%3];
+                }
+                int p_obs_index = obs_map[pEdgeIndex-1];
                 
                 // below just checks that the edge index is any number other the -1, meaning it will be a DOF
                 // this if statement asks two questions, is it a basis function? and is it an observer?
@@ -281,7 +293,7 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
                     //mexPrintf("edge = %d\n", pEdgeIndex);
                     
                     // find the length of the outer edge in question
-                    double lp = Distance(pPoints[ii+1], pPoints[(ii+2)%3]);
+//                     double lp = Distance(pPoints[ii+1], pPoints[(ii+2)%3]);
         
                     //outer integral
                     for (oip=0; oip<NumOuterIntPoints; oip++) //outer integral points
@@ -292,7 +304,13 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
                         // (ii+2)%3 goes 2,0,1 
                          ParametricMap(pPoints, OuterIntPoints[oip], ruv);// this is just for plotting purposes
                          //mexPrintf("%f %f %f\n", OuterIntPoints[oip][0], OuterIntPoints[oip][1], OuterIntPoints[oip][2]);
-                         double N = BF(OuterIntPoints[oip],pPoints, (ii+2)%3, pTri[3+(ii+2)%3], pRho);
+                         
+                         int iiSignSelector = 0;
+                         if (ii>=3){
+                            iiSignSelector = 6;   
+                         }
+                         
+                         double N = BF(OuterIntPoints[oip],pPoints, (ii+2)%3, pTri[3+iiSignSelector+(ii+2)%3], pRho);
                          if (isnan(pRho[0])){
                              mexPrintf("error fillPlane\n");
                          }
@@ -388,6 +406,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     num_obs = mxGetScalar(prhs[5]);
     incident_dir = mxGetScalar(prhs[6]);
     MODE = mxGetScalar(prhs[7]);
+    int order = mxGetScalar(prhs[8]);
     mexPrintf("MODE = %d\n", MODE);
 
     Vvec = mxMalloc(sizeof(complex double) * N);
@@ -399,7 +418,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     
     /*==========================================================================================*/
     /*==========================================================================================*/
-    FillPlane(freq, P, points, T, triangles, N, Vvec, obs_map, num_obs, incident_dir, MODE);
+    FillPlane(freq, P, points, T, triangles, N, Vvec, obs_map, num_obs, incident_dir, MODE, order);
     /*==========================================================================================*/
     /*==========================================================================================*/
     

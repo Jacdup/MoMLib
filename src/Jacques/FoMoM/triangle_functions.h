@@ -316,10 +316,10 @@ double ApproxShortDistanceBetweenTriangles_9(double TriPoints_1[3][3], double Tr
 
 //added 15/07/2019
 //create a function that checks whether a triangle is using a 
-int ObserverOnTriangle(int basisindex[3], int *obs_map)//not a problem because its passed by reference
+int ObserverOnTriangle(int basisindex[], int *obs_map, int order)//not a problem because its passed by reference
 {
 	int i;
-	for (i = 0; i <3;i++)
+	for (i = 0; i <(3+(3*order));i++)
 	{
 		//index the obs map using the basis functions
 		

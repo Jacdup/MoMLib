@@ -358,17 +358,17 @@ void farfield(double freq, int P, int T, double *points, double  *triangles, int
 			//for(i= 0;i<NumIntPoints;i++)
 				//mexPrintf("IntPoints %d = %f %f %f %f\n",i, IntPoints[i][0], IntPoints[i][1], IntPoints[i][2], IntPoints[i][3]);
 			//Outer triangle 
-// 			if (order == 0){
-//                   int pTri[9] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
-//                            (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i])};
-// //                   int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
-//            }else{
+			if (order == 0){
+                  int pTri[9] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
+                           (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i])};
+                  int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
+           }else{
                   int pTri[15] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
                             (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i]),
                             (int)(triangles[T*9 + i]),(int)(triangles[T*10 + i]),(int)(triangles[T*11 + i]),(int)(triangles[T*12 + i]),
                             (int)(triangles[T*13 + i]),(int)(triangles[T*14 + i])};
-//                   int pbasisindex[6] = {pTri[6],pTri[7],pTri[8],pTri[12], pTri[13], pTri[14]};
-//         }
+                  int pbasisindex[6] = {pTri[6],pTri[7],pTri[8],pTri[12], pTri[13], pTri[14]};
+        }
 			double pArea = TriangleArea(pPoints);
 			//mexPrintf("area %d = %f\n", i,pArea);
 			
@@ -376,18 +376,13 @@ void farfield(double freq, int P, int T, double *points, double  *triangles, int
 			//new method
 			complex double E_per_tri_theta = {0.0+0.0*I};
 			complex double E_per_tri_phi = {0.0+0.0*I};
-            
-            int pEdgeIndex;
+
 			//now I have a triangle,pick an edge and see if the edge is a basis function edge 
-			for (ii=0; ii<(3+(3*order)); ii++) //Edges of observation triangle
+			for (ii=0; ii<3; ii++) //Edges of observation triangle
 		    {	
                 
 				//The basis function number is the solution in this case
-		        if (ii<3){
-                    pEdgeIndex = pTri[6+(ii+2)%3];
-                }else{
-                     pEdgeIndex = pTri[12+(ii+2)%3];
-                }
+		        int pEdgeIndex = pTri[6+(ii+2)%3];//this will also give the current coefficient value
 		        if (pEdgeIndex + 1)
 				{
 					//if there is a basis function on the edge it will have an effect
@@ -396,7 +391,7 @@ void farfield(double freq, int P, int T, double *points, double  *triangles, int
 					complex double I_m = I_M[pEdgeIndex-1];
 					//mexPrintf("I_m[%d] = %f j%f", pEdgeIndex, creal(I_M[pEdgeIndex]), cimag(I_M[pEdgeIndex]));
 					// find the length of the outer edge in question
-// 		            double lp = Distance(pPoints[ii], pPoints[(ii+1)%3]);
+		            double lp = Distance(pPoints[ii], pPoints[(ii+1)%3]);
 					//mexPrintf("selected edge = %d %d the edges length is %f \n",pTri[ii], pTri[(ii+1)%3], lp);
 					//mexPrintf("vertex = %d\n",pTri[(ii+2)%3]);
 					
@@ -415,12 +410,7 @@ void farfield(double freq, int P, int T, double *points, double  *triangles, int
 						//mexPrintf("%d\n", pTri[3+(ii+2)%3]);
 						//mexPrintf("pRho %d = %f %f %f\n",ip, pRho_cart[0], pRho_cart[1], pRho_cart[2] );
                         double ruv[3];
-                        int iiSignSelector = 0;
-                        if (ii>=3){
-                            iiSignSelector = 6;   
-                        }
-                        
-                        double N = BF(IntPoints[ip],pPoints, (ii+2)%3,pTri[3+iiSignSelector+(ii+2)%3], pRho_cart);
+                        double N = BF(IntPoints[ip],pPoints, (ii+2)%3,pTri[3+(ii+2)%3], pRho_cart);
 
 						ParametricMap(pPoints, IntPoints[ip], ruv);
 						
