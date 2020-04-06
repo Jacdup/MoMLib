@@ -214,14 +214,14 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
     //the RAR level is dependant oon the mode as well.
     int RAR_level[4] = {7,7,7,7};
     
-       FILE *fp;
-      FILE *fp1;
-       fp = fopen("Delta1.txt","w");
-        fp1 = fopen("Ruv1.txt","w");
-          FILE *fp2;
-      FILE *fp3;
-       fp2 = fopen("Delta.txt","w");
-        fp3 = fopen("Ruv.txt","w");
+//        FILE *fp;
+//       FILE *fp1;
+//        fp = fopen("Delta1.txt","w");
+//         fp1 = fopen("Ruv1.txt","w");
+//           FILE *fp2;
+//       FILE *fp3;
+//        fp2 = fopen("Delta.txt","w");
+//         fp3 = fopen("Ruv.txt","w");
     
     
     double c0 = 299792456.2;
@@ -343,10 +343,10 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
             
         }//this brace is new if statement
     }
-    fclose(fp);
-    fclose(fp1);
-    fclose(fp2);
-    fclose(fp3);
+//     fclose(fp);
+//     fclose(fp1);
+//     fclose(fp2);
+//     fclose(fp3);
 }
 
 /*====================================================================================================

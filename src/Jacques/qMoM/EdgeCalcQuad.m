@@ -130,12 +130,12 @@ for quad_index = 1:size(quadElements,1)
                 %The edge is a DOFF so give it a number
                 quadElements{quad_index}(doff_select(counter)) = DOFF_NUM;
                 
-%                 if (mod(quad_index,vertices) == 1) % First quad at contour point
-%                     quadElements{quad_index}(direction_select(4)) = -1;
-%                 end
-%                 if (mod(quad_index,vertices) == 0)
-%                     quadElements{quad_index}(direction_select(2)) = 1; % Last quad
-%                 end
+                if (mod(quad_index,vertices) == 1) % First quad at contour point
+                    quadElements{quad_index}(direction_select(2)) = -1;
+                end
+                if (mod(quad_index,vertices) == 0) % Last quad
+                    quadElements{quad_index}(direction_select(4)) = 1; 
+                end
 %                 
             else
                 %we set the  direction to -1 and fetch the DOFF number from
@@ -169,12 +169,12 @@ for quad_index = 1:size(quadElements,1)
                     quadElements{quad_index}(doff_select(counter)) = quadElements{common_quads(1)}(doff_select(4));
                 end
                 %
-                %                                if (mod(quad_index,vertices) == 1) % First quad at contour point
-                %                     quadElements{quad_index}(direction_select(4)) = -1;
-%                 end
-%                 if (mod(quad_index,vertices) == 0)
-%                     quadElements{quad_index}(direction_select(2)) = 1; % Last quad
-%                 end
+                if (mod(quad_index,vertices) == 1) % First quad at contour point
+                    quadElements{quad_index}(direction_select(2)) = -1;
+                end
+                if (mod(quad_index,vertices) == 0)
+                    quadElements{quad_index}(direction_select(4)) = 1; % Last quad
+                end
 
             end
             

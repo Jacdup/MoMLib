@@ -60,7 +60,7 @@ elseif InputDataFormat == 1
     hold on;
     colormap jet;
     colorbar;
-    caxis(CLim);
+%     caxis(CLim);
     axis equal;
 else
     error('Invalid <InputDataFormat>');

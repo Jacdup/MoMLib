@@ -1,6 +1,6 @@
-function [U_Mat] = SelectDOFMBF_FO_2(basis_supports, numVertices, numNodes,numMBF,triangle_blah, U_Mat)
+function [U_Mat] = SelectDOFMBF_FO_2(numVertices, numNodes,numMBF,triangle_blah, U_Mat)
 
-numDOFS = length(basis_supports);
+% numDOFS = length(basis_supports);
 % U_Mat = zeros(numDOFS,numNodes*3);
 
 
