@@ -19,14 +19,11 @@ for phi_var = 0:2
         phi_step = phi_step + 1;
         total_dofs_selected = total_dofs_selected + 1;
         % Assign the three edges (RWG and FO) of each azimuth point
-        % TODO: add sine and cosine
         % This is specific to how the DOF's are assigned in the
         % preprocessing step
         if i == ((vert_num+1)*iter)-1
-            
             last = 1;
-            iter = iter + 1;
-            
+            iter = iter + 1;       
         else
             last = 0;
         end
@@ -54,7 +51,7 @@ for phi_var = 0:2
         U_Mat(triangle_blah(i+vert_num+1,13+last),col+col_iter) = U_Mat_num;
         
         if last == 1
-            col = col + 3;
+            col = col + numMBF;
         end
         
         

@@ -22,7 +22,7 @@ double BF(double Zeta[3],double points[][3], int edge, int sign, double Delta[])
         t[2][ii] = (points[1][ii] - points[0][ii]);
     }
     
-    double t_len = VectorSize(t[(edge)%3]);
+    double t_len = VectorSize(t[(edge+1)%3]);
     int t_index;
     int l_index;
     
@@ -43,7 +43,7 @@ double BF(double Zeta[3],double points[][3], int edge, int sign, double Delta[])
     
     for (ii=0;ii<3;ii++){
         //ns[ii] = 2*Area*normal[ii];
-        Delta[ii] = (t_len/(2*Area))*sign_sf*(first_order*(t[l_index][ii]*Zeta[t_index]) + ((t[t_index][ii]*Zeta[l_index])) );
+        Delta[ii] = (t_len/(2*Area))*sign_sf*(first_order*(t[l_index][ii]*Zeta[t_index]) + ((t[t_index][ii]*Zeta[l_index])));
     }
     
     return div*((t_len*sign_sf/(Area)));
