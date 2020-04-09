@@ -39,12 +39,12 @@ for phi_var = 0:2 % All 3 MBFs
             end
             
             switch phi_var
-                case 2
-                    U_Vec(i) = 1;
                 case 0
+                    U_Vec(i) = 1;
+                case 1
                     %                     U_Vec(i) = 1;
                     U_Vec(i) = 1*sind(phi_step*phi);
-                case 1
+                case 2
                     %                     U_Vec(i) = 1;
                     U_Vec(i) = 1*cosd(phi_step*phi);
             end

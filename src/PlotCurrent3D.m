@@ -50,7 +50,7 @@ elseif InputDataFormat == 1
     plotnodecoords   = zeros(numplotnodes,3);
     plotnodecurrents = zeros(numplotnodes,1);
     plottrinodes     = zeros(numtri,3);
-    for ii = 1:numtri
+    for ii = 1:numtri % TODO: iterate once more to get contributions from 
         jj                          = 3*(ii-1) + 1;
         plotnodecoords(jj:jj+2,1:3) = node_coords(tri_nodes(ii,1:3),:);
         plottrinodes(ii,1:3)        = jj:jj+2;
@@ -60,7 +60,7 @@ elseif InputDataFormat == 1
     hold on;
     colormap jet;
     colorbar;
-%     caxis(CLim);
+    caxis(CLim);
     axis equal;
 else
     error('Invalid <InputDataFormat>');

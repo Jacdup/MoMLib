@@ -6,7 +6,7 @@ function [U_Mat] = SelectDOFMBF_FO_New_2(numVertices, numNodes,numMBF,triangle_b
 phi = 360/numVertices;
 
 for phi_var = 0:2
-    col = 4;
+    col = numMBF-2;
     col_iter = 1;
     total_dofs_selected = 0;
     phi_step = -1;

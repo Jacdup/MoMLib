@@ -22,7 +22,7 @@ double BF(double Zeta[3],double points[][3], int edge, int sign, double Delta[])
         t[2][ii] = (points[1][ii] - points[0][ii]);
     }
     
-    double t_len = VectorSize(t[(edge+1)%3]);
+    double t_len = VectorSize(t[(edge)%3]);
     int t_index;
     int l_index;
     
