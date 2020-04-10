@@ -1,4 +1,4 @@
- function [points,quadElements, element] = QuadMesh_v5(Contour,num_vertices,rho)
+ function [points,quadElements, element] = QuadMesh_v5(Contour,num_vertices,rho, endcap_flag)
 % -------------------------------------------------------------------------
 %     Create tube with planar quadrilateral meshing
 %     V5.0 This function meshes a straight or curved section of wire
@@ -163,22 +163,24 @@ element(:,4) = third;
 % -------------------------New 19/02/2020---------------------------------
 % ------------------------------------------------------------------------
 % Mesh degenerate quadrilaterals on the endcaps
-% points(point_index + 1, 1:3) = Contour(1,:);
-% points(point_index + 2, 1:3) = Contour(end,:);
-% for v = 1:num_vertices % There will be num_vertices degenerate quads on the endcaps
-%     % The elements at the start
-%     % 'p' is the last element (#elements)
-%     element(p+v, 1) = element(v,1);
-%     element(p+v, 2) = element(v,2);
-%     element(p+v, 3) = element(p,4) + 1; % Add extra
-%     element(p+v, 4) = element(p,4) + 1; % Degenerate coordinate
-%     
-%     % The elements at the end
-%     element(p+v+num_vertices, 1) = element(p-v+1,4);
-%     element(p+v+num_vertices, 2) = element(p-v+1,3);
-%     element(p+v+num_vertices, 3) = element(p,4) + 2; % Add extra
-%     element(p+v+num_vertices, 4) = element(p,4) + 2; % Degenerate coordinate
-% end
+if endcap_flag
+    points(point_index + 1, 1:3) = Contour(1,:);
+    points(point_index + 2, 1:3) = Contour(end,:);
+    for v = 1:num_vertices % There will be num_vertices degenerate quads on the endcaps
+        % The elements at the start
+        % 'p' is the last element (#elements)
+        element(p+v, 1) = element(v,1);
+        element(p+v, 2) = element(v,2);
+        element(p+v, 3) = element(p,4) + 1; % Add extra
+        element(p+v, 4) = element(p,4) + 1; % Degenerate coordinate
+
+        % The elements at the end
+        element(p+v+num_vertices, 1) = element(p-v+1,4);
+        element(p+v+num_vertices, 2) = element(p-v+1,3);
+        element(p+v+num_vertices, 3) = element(p,4) + 2; % Add extra
+        element(p+v+num_vertices, 4) = element(p,4) + 2; % Degenerate coordinate
+    end
+end
 
 
 quadElements = {};

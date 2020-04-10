@@ -131,6 +131,7 @@ for ii = 1:numedg
                     tri_dofs_struct(t1).dofs(2,e1)   = 1;
                 end
             else
+%                 tri_dofs_struct(t1).dofs(2,3+e1) = -1; % Revert back, since this edge is probably shared  
                 error('Attempt at assigning a third dof to a triangle edge');
             end
             
