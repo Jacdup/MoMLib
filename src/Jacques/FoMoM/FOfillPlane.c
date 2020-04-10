@@ -195,7 +195,7 @@ void PrintMatrix(double **a, int n)
 
 
 
-void FillPlane(double freq, int P, double *points, int T, double *triangles, int N, complex double *Vvec, int *obs_map, int num_obs, int incident_dir, int MODE, int order)
+void FillPlane(double freq, int P, double *points, int T, double *triangles, int N, complex double *Vvec, int *obs_map, int num_obs, int MODE, int order,double theta_inc, double phi_inc, double eta_pol)
 {
     //This code choses the default number of integration points per triangle
     int NumOuterIntPoints = 0;
@@ -213,6 +213,15 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
         {7,13,16,25}};
     //the RAR level is dependant oon the mode as well.
     int RAR_level[4] = {7,7,7,7};
+    
+    double unitvec_theta[3] = {cos(theta_inc)*cos(phi_inc), cos(theta_inc)*sin(phi_inc), -sin(theta_inc)};
+    double unitvec_phi[3]   = { -sin(phi_inc) ,cos(phi_inc) ,0  };
+    double unitvec_beta[3]  = {  -sin(theta_inc)*cos(phi_inc),  -sin(theta_inc)*sin(phi_inc) ,-cos(theta_inc)  };
+    double unitvec_eta[3];
+    int coord;
+    for (coord =0;coord<3; coord++){     
+        unitvec_eta[coord] = (-cos(eta_pol)*unitvec_theta[coord])+ (sin(eta_pol)*unitvec_phi[coord]);
+    }
     
 //        FILE *fp;
 //       FILE *fp1;
@@ -345,7 +354,29 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
                         // incident_dir is 0 -> z
                         //                 1 -> x
                         //                 2 -> y
-                         Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3]/(1))*(cexp(I*k*ruv[2])*pRho[0]);
+                          int coord;
+                        double Ruv_eval;
+                        complex double Einc_eval[3];
+//                         complex double int_eval[3];
+                        double temp[3][1] = {{1}, {1}, {1}};
+                        Ruv_eval = dotProduct(ruv,unitvec_beta);
+                        for (coord = 0; coord < 3; coord++){
+                            Einc_eval[coord] = cexp(-I*k*Ruv_eval) * unitvec_eta[coord]*  pRho[coord];
+//                             Einc_eval[coord] = Einc_eval[coord]
+//                             int_eval[coord] = Einc_eval[coord] *  pRho[coord];
+                        }
+//                         complex double int_eval  = dotProduct(Einc_eval, temp);
+                        complex double int_eval = 0.0 + 0.0j;
+                        
+                        for (coord = 0;coord < 3;coord++){
+                            int_eval += Einc_eval[coord]*temp[coord][1];
+                        }
+                        
+                        Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*int_eval;
+                         
+                         
+                         
+//                          Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3]/(1))*(cexp(I*k*ruv[2])*pRho[0]);
                         //Vvec[p_obs_index-1] += (OuterIntPoints[oip][3]/pArea)*(-lp/2)*(cexp(I*k*OuterIntPoints[oip][2])*pRho[0]);
                         //Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*(cexp(I*k*ruv[2])*n*pRho[0]);
 //printf("%d\n", pEdgeIndex);
@@ -404,9 +435,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     /*Get the observer and source map*/
     obs_map = mxGetInt32s(prhs[4]);
     num_obs = mxGetScalar(prhs[5]);
-    incident_dir = mxGetScalar(prhs[6]);
-    MODE = mxGetScalar(prhs[7]);
-    int order = mxGetScalar(prhs[8]);
+//     incident_dir = mxGetScalar(prhs[6]);
+    MODE = mxGetScalar(prhs[6]);
+    int order = mxGetScalar(prhs[7]);
+    double theta_inc = mxGetScalar(prhs[8]);
+    double phi_inc = mxGetScalar(prhs[9]);
+    double eta_pol = mxGetScalar(prhs[10]);
     mexPrintf("MODE = %d\n", MODE);
 
     Vvec = mxMalloc(sizeof(complex double) * N);
@@ -418,7 +452,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     
     /*==========================================================================================*/
     /*==========================================================================================*/
-    FillPlane(freq, P, points, T, triangles, N, Vvec, obs_map, num_obs, incident_dir, MODE, order);
+    FillPlane(freq, P, points, T, triangles, N, Vvec, obs_map, num_obs, MODE, order,theta_inc, phi_inc, eta_pol);
     /*==========================================================================================*/
     /*==========================================================================================*/
     
