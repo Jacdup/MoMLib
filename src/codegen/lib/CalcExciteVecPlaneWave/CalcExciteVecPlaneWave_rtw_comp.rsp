@@ -1,0 +1,7 @@
+-IC:/Users/19083688/Desktop/Masters/MoMLib/src/codegen/lib/CalcExciteVecPlaneWave
+-IC:/Users/19083688/Desktop/Masters/MoMLib/src
+-IC:/Program\ Files/MATLAB/R2019a/extern/include
+-IC:/Program\ Files/MATLAB/R2019a/simulink/include
+-IC:/Program\ Files/MATLAB/R2019a/rtw/c/src
+-IC:/Program\ Files/MATLAB/R2019a/rtw/c/src/ext_mode/common
+-IC:/Program\ Files/MATLAB/R2019a/rtw/c/ert

@@ -11,7 +11,7 @@ function [V_vec] = CalcExciteVecPlaneWave(tri_dofs, node_coords, observer_map, k
 % 2019-12-16: Created. MMB.
 
 % Init:
-V_vec                = complex(zeros(size(observer_map,2)));
+V_vec                = zeros(size(observer_map,2));
 % V_vec                = uint16(complex(size(ob
 local_edge_nodes_def = [2 3
                         1 3
