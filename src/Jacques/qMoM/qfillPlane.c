@@ -178,15 +178,21 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
                         double Ruv_eval;
                         complex double Einc_eval[3];
 //                         complex double int_eval[3];
-                        double temp[3] = {{1}, {1}, {1}};
+                        double temp[3][1] = {{1}, {1}, {1}};
                         Ruv_eval = dotProduct(ruv,unitvec_beta);
                         for (coord = 0; coord < 3; coord++){
-                            Einc_eval[coord] = cexp(I*k*Ruv_eval) * unitvec_eta[coord]*  pRho[coord];
+                            Einc_eval[coord] = cexp(-I*k*Ruv_eval) * unitvec_eta[coord]*  pRho[coord];
+//                             Einc_eval[coord] = Einc_eval[coord]
 //                             int_eval[coord] = Einc_eval[coord] *  pRho[coord];
                         }
-                        complex double int_eval  = dotProduct(Einc_eval, temp);
+//                         complex double int_eval  = dotProduct(Einc_eval, temp);
+                        complex double int_eval = 0.0 + 0.0j;
                         
-                        Vvec[p_obs_index-1] += (OuterIntPoints[oip][3])*int_eval*n;
+                        for (coord = 0;coord < 3;coord++){
+                            int_eval += Einc_eval[coord]*temp[coord][1];
+                        }
+                        
+                        Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*int_eval*n;
 //                         Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*(cexp(I*k*ruv[1])*n*pRho[2]); // This integral is not in reference coordinates
                     }
                 }

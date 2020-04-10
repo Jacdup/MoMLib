@@ -88,7 +88,7 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
     double unitvec_eta[3];
     int coord;
     for (coord =0;coord<3; coord++){     
-        unitvec_eta[coord] = -cos(eta_pol)*unitvec_theta[ii]+ sin(eta_pol)*unitvec_phi[ii];
+        unitvec_eta[coord] = (-cos(eta_pol)*unitvec_theta[coord])+ (sin(eta_pol)*unitvec_phi[coord]);
     }
     
     double c0 = 299792456.2;
@@ -176,14 +176,22 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
                         //                 2 -> y
                         int coord;
                         double Ruv_eval;
-                        Ruv_eval = dotproduct(ruv,unitvec_beta);
+                        complex double Einc_eval[3];
+//                         complex double int_eval[3];
+                        double temp[3][1] = {{1}, {1}, {1}};
+                        Ruv_eval = dotProduct(ruv,unitvec_beta);
                         for (coord = 0; coord < 3; coord++){
-                            
-                            
+                            Einc_eval[coord] = cexp(I*k*Ruv_eval) * unitvec_eta[coord]*  pRho[coord];
+//                             Einc_eval[coord] = Einc_eval[coord]
+//                             int_eval[coord] = Einc_eval[coord] *  pRho[coord];
                         }
+                        complex double int_eval  = dotProduct(Einc_eval, temp);
+                        complex double int_eval;
                         
+                        for (coord = 0;coord < 3;coord++)
                         
-                        Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*(cexp(I*k*ruv[1])*n*pRho[2]); // This integral is not in reference coordinates
+                        Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*int_eval*n;
+//                         Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*(cexp(I*k*ruv[1])*n*pRho[2]); // This integral is not in reference coordinates
                     }
                 }
             }
@@ -251,7 +259,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     
     /*==========================================================================================*/
     /*==========================================================================================*/
-    FillPlane(freq, P, points, T, triangles, N, Vvec, obs_map, num_obs, incident_dir, MODE,theta_inc, phi_inc, eta_pol);
+    FillPlane(freq, P, points, T, triangles, N, Vvec, obs_map, num_obs, MODE,theta_inc, phi_inc, eta_pol);
     /*==========================================================================================*/
     /*==========================================================================================*/
     
