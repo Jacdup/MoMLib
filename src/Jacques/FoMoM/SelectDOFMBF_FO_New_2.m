@@ -1,9 +1,18 @@
-function [U_Mat] = SelectDOFMBF_FO_New_2(numVertices, numNodes,numMBF,triangle_blah, U_Mat)
+function [U_Mat] = SelectDOFMBF_FO_New_2(numVertices, numNodes,numMBF,triangle_blah, U_Mat,endCap)
 
 % numDOFS = length(basis_supports);
 % U_Mat = zeros(numDOFS,numNodes*3);
 
 phi = 360/numVertices;
+
+if endCap == 1
+    
+    % exclude last (2*numVerttices) from i/row assignment
+    endCapExclude = (2*numVertices);
+    
+else
+    endCapExclude = 0;
+end
 
 for phi_var = 0:2
     col = numMBF-2;
@@ -11,7 +20,7 @@ for phi_var = 0:2
     total_dofs_selected = 0;
     phi_step = -1;
     i_iter = 0;
-    for i = 1:2:length(triangle_blah)% Every odd row
+    for i = 1:2:length(triangle_blah)-endCapExclude% Every odd row
         i_iter = i_iter + 1;
         phi_step = phi_step + 2;
         total_dofs_selected = total_dofs_selected + 1;

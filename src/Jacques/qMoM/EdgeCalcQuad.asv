@@ -1,4 +1,4 @@
-function [quadElements,N, basis_supports, edges, dofs_to_edges] = EdgeCalcQuad(quadElements,vertices)%filename recieved is a string
+function [quadElements,N, basis_supports, edges] = EdgeCalcQuad(quadElements,vertices)%filename recieved is a string
 %Jacques T du Plessis
 %September 2019
 %19083688@sun.ac.za
@@ -85,7 +85,7 @@ end
 %-----------Now we will simultaneously number the DOF's and assign the current-----------
 %-----------directions for the quadrilaterals.-----------
 %-----------%-----------%-----------%-----------%-----------%-----------%-----------%-----------
-edge_index = 0;
+
 
 %Now we will iterate through the quadrilaterals
 
@@ -95,8 +95,7 @@ for quad_index = 1:size(quadElements,1)
         %once we have selected a quadrilateral T_n then we will select an edge
         %from that quadrilateral
         curr_edge = [quad(edge_select(counter,1)),quad(edge_select(counter,2))];
-        edge_index = edge_index + 1;
-        edges(edge_index, :) = curr_edge;
+        edges(count
         %once the edge of the quadrilateral is selected then we go to the
         %connectivity_list and check if the edge shares two quadElements, if
         %the edges does indeed share two elements then it is a DOF. see
@@ -125,7 +124,6 @@ for quad_index = 1:size(quadElements,1)
             %tri_index to the last number in common_triangles
             if common_quads(2) ~= quad_index %hasn't been numbered 
                 DOFF_NUM = DOFF_NUM + 1;
-                dofs_to_edges(DOFF_NUM,1)    = edge_index; % Edge index
                 N = N + 1;
                 basis_supports = [basis_supports;common_quads'];
                 %simply number the triangle and set the direction to +1
