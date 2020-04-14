@@ -12,7 +12,12 @@ U_Vec = zeros(numDOFS,1);
 % The row index of the U_Vec is the previous DOF number.
 % ----------------------------------------------------------------
 phi = 360/numVertices;
-for phi_var = 0:2 % All 3 MBFs
+if numMBF == 1
+    phi_ter = 0;
+else
+    phi_ter = 2;
+end
+for phi_var = 0:phi_ter % All 3 MBFs
     total_DOFS_selected = 0;
     phi_step = -1;
     MBF_DOF_Number = 1+phi_var;
