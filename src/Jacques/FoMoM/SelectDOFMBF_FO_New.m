@@ -63,7 +63,7 @@ edge_nodes_2 = mesh_data.edges(dof_data.dofs_to_edges(temp2(1:2:end,1)),:);
 edge_nodes_3 = mesh_data.edges(dof_data.dofs_to_edges(temp3(1:2:end,1)),:);
 
 B1 = (edge_nodes_1 == MBF_mat(:,1))'; % TODO, this should be all ones, since edge_nodes_1 contain all nodes in MBF_mat
-B1 = ones(numVertices*numNodes,2);
+% B1 = ones(numVertices*numNodes,2)';
 B2 = (edge_nodes_2 == MBF_mat(:,1))'; 
 
 % TODO, do this generically. I can do this now because I know a priori how
@@ -77,20 +77,20 @@ Rho = [1,1;1,-1];
 U_Mat = zeros(numDofs, numNodes);
 for MBF_node = 1:numNodes
     
-    B1 = B1(:,:) .* [MBF_mat(:,1+MBF_node),MBF_mat(:,1+MBF_node)]';
+    B1 = B1(:,:) .* [MBF_mat(:,2),MBF_mat(:,2)]';
     X1 = Rho\B1;
-    U_Mat(DOF_mat2(1:2:end,MBF_node),MBF_node) = X1(1); % RWG 
-    U_Mat(DOF_mat2(2:2:end,MBF_node),MBF_node) = 0; % Linear
+    U_Mat(DOF_mat1(1:2:end,MBF_node),MBF_node) = X1(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG 
+    U_Mat(DOF_mat1(2:2:end,MBF_node),MBF_node) = 0; % Linear
 
-    B2 = B2(:,:) .* [MBF_mat(:,1+MBF_node),MBF_mat(:,1+MBF_node)]';
+    B2 = B2(:,:) .* [MBF_mat(:,2),MBF_mat(:,2)]';
     X2 = Rho\B2;
-    U_Mat(DOF_mat2(1:2:end,MBF_node),MBF_node) = X2(1); % RWG 
-    U_Mat(DOF_mat2(2:2:end,MBF_node),MBF_node) = X2(2); % Linear
+    U_Mat(DOF_mat2(1:2:end,MBF_node),MBF_node) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG 
+    U_Mat(DOF_mat2(2:2:end,MBF_node),MBF_node) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
     
-    B3 = B3(:,:) .* [MBF_mat(:,1+MBF_node),MBF_mat(:,1+MBF_node)]';
+    B3 = B3(:,:) .* [MBF_mat(:,2),MBF_mat(:,2)]';
     X3 = Rho\B3;
-    U_Mat(DOF_mat2(1:2:end,MBF_node),MBF_node) = X3(1); % RWG 
-    U_Mat(DOF_mat2(2:2:end,MBF_node),MBF_node) = X3(2); % Linear
+    U_Mat(DOF_mat3(1:2:end,MBF_node),MBF_node) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG 
+    U_Mat(DOF_mat3(2:2:end,MBF_node),MBF_node) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
     
     
     % Assign the constant vals
