@@ -30,9 +30,9 @@ for ii = 1:size(tri_dofs,1)
     TArea     = 0.5*sqrt(cross_val*cross_val');
     mesh_TR = triangulation(mesh_data.tri_nodes,mesh_data.node_coords);
 
-        t(1,:) = node_coords(n3,:) - node_coords(n2,:); 
-        t(2,:) = node_coords(n1,:) - node_coords(n3,:);
-        t(3,:) = node_coords(n2,:) - node_coords(n1,:);
+    t(1,:) = node_coords(n3,:) - node_coords(n2,:);
+    t(2,:) = node_coords(n1,:) - node_coords(n3,:);
+    t(3,:) = node_coords(n2,:) - node_coords(n1,:);
 
 
     for jj = 1:(3+(3*order)) % cycle over the three edges of this triangle
@@ -76,7 +76,7 @@ for ii = 1:size(tri_dofs,1)
 %                     Zeta(1) = mod(kk,2);
 %                     Zeta(2) = mod(kk+1,2);
 %                     Zeta(3) = mod(kk+1,2);
-%             Zeta = cartesianToBarycentric(mesh_TR,this_tri,node_coords(edge_verts(kk),:)); % Get local coord of vertex point
+            Zeta = cartesianToBarycentric(mesh_TR,this_tri,node_coords(edge_verts(kk),:)); % Get local coord of vertex point
             switch edge 
                 case 1
                     Zeta1 = mod(kk,2);
@@ -111,8 +111,8 @@ for ii = 1:size(tri_dofs,1)
 %                 Zeta(2) = node_coords(edge_verts(kk),2);
 %                 Zeta(3) = node_coords(edge_verts(kk),3);
 
-%                  rho_edgevert(1,1,1:3) = (t(t_index,:)*Zeta(l_index)) + (first_order*(t(l_index,:)*Zeta(t_index)));
-                rho_edgevert(1,1,1:3) = (t(t_index,:)*Zeta1) + (first_order*(t(l_index,:)*Zeta2));
+                 rho_edgevert(1,1,1:3) = (t(t_index,:)*Zeta(l_index)) + (first_order*(t(l_index,:)*Zeta(t_index)));
+%                 rho_edgevert(1,1,1:3) = (t(t_index,:)*Zeta1) + (first_order*(t(l_index,:)*Zeta2));
                 triangles_vertices_currents(this_tri,local_edge_nodes_def(edge,kk),1:3) = ...
                     triangles_vertices_currents(this_tri,local_edge_nodes_def(edge,kk),1:3) + ... 
                     I_vec(this_dof) * 0.5 * (ELength/TArea) * sign * rho_edgevert;
