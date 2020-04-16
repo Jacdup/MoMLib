@@ -5,6 +5,7 @@ total_dofs_selected = 0; %TODO: divide this by 3 to get one column DOFs
 phi = 360/numVertices;
 vert_num = (2*numVertices)-1;
 numDofs = size(dof_data.basis_supports,1);
+numMBFNodes = numVertices*numNodes;
 % numDOFS = length(basis_supports);
 % triangle_blah = mesh_data.reduced
 % U_Mat = zeros(numDOFS,numNodes*numMBF);
@@ -20,14 +21,14 @@ len_tri_mat = (length(triangle_blah)-vert_num-1-endCapExclude);
 % MBF matrix is the analytical MBF
 % MBF_mat has the value of the MBF at each contour node point
 % num_nodes x [nodes,constant,sin,cos]
-sin_mat = sind(phi*(1:(numVertices*numNodes)));
-cos_mat = cosd(phi*(1:(numVertices*numNodes)));
+sin_mat = sind(phi*(1:(numMBFNodes)));
+cos_mat = cosd(phi*(1:(numMBFNodes)));
 % DOF_mat1 = zeros(numVertices*2,numNodes);
 % DOF_mat2 = zeros(numVertices*2,numNodes);
 % DOF_mat3 = zeros(numVertices*2,numNodes);
 
 contour_nodes = (triangle_blah(2,2):(numVertices*(numNodes+1)))'; % All the nodes associated with the analytical MBF
-MBF_mat = [contour_nodes,ones(numVertices*numNodes, 1),sin_mat',cos_mat'];
+MBF_mat = [contour_nodes,ones(numMBFNodes, 1),sin_mat',cos_mat'];
 % DOF_Mat = ismember(triangle_blah(:,1:3),MBF_mat(:,1)); % Find which triangles contain the node
 % DOF_Mat = DOF_Mat .* triangle_blah(:,7:9);
 % DOF_Mat = find(triangle_blah(:,1:3) == MBF_mat(:,1));
@@ -63,32 +64,38 @@ edge_nodes_2 = mesh_data.edges(dof_data.dofs_to_edges(temp2(1:2:end,1)),:);
 edge_nodes_3 = mesh_data.edges(dof_data.dofs_to_edges(temp3(1:2:end,1)),:);
 
 B1 = (edge_nodes_1 == MBF_mat(:,1))'; % TODO, this should be all ones, since edge_nodes_1 contain all nodes in MBF_mat
-% B1 = ones(numVertices*numNodes,2)';
 B2 = (edge_nodes_2 == MBF_mat(:,1))'; 
-
-% TODO, do this generically. I can do this now because I know a priori how
+B3(1:numMBFNodes,1:2) = [ones(numMBFNodes,1), zeros(numMBFNodes,1)];% TODO, do this generically. I can do this now because I know a priori how
 % this should look
-B3(1:numVertices*numNodes,1:2) = [ones(numVertices*numNodes,1), zeros(numVertices*numNodes,1)];
 B3 = logical(B3');
 
 Rho = [1,1;1,-1];
+Rho = repmat(Rho,1,1,numMBFNodes);
+temp = (B1(2,:) == 1); 
+Rho(:,:,temp(:) == 1) = Rho(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
 % DOF_mat(1:2:end,:) is the RWG
 % DOF_mat(2:2:end,:) is linear
 U_Mat = zeros(numDofs, numNodes);
 for MBF_node = 1:numNodes
     
     B1 = B1(:,:) .* [MBF_mat(:,2),MBF_mat(:,2)]';
-    X1 = Rho\B1;
+    for i = 1:numMBFNodes % There must be a better/more matrixy way to do this
+        X1(:,i) = Rho(:,:,i)\B1(:,i);
+    end
     U_Mat(DOF_mat1(1:2:end,MBF_node),MBF_node) = X1(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG 
     U_Mat(DOF_mat1(2:2:end,MBF_node),MBF_node) = 0; % Linear
 
     B2 = B2(:,:) .* [MBF_mat(:,2),MBF_mat(:,2)]';
-    X2 = Rho\B2;
+    for i = 1:numMBFNodes
+        X2(:,i) = Rho(:,:,i)\B2(:,i);
+    end
     U_Mat(DOF_mat2(1:2:end,MBF_node),MBF_node) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG 
     U_Mat(DOF_mat2(2:2:end,MBF_node),MBF_node) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
     
     B3 = B3(:,:) .* [MBF_mat(:,2),MBF_mat(:,2)]';
-    X3 = Rho\B3;
+    for i = 1:numMBFNodes
+        X3(:,i) = Rho(:,:,i)\B3(:,i);
+    end
     U_Mat(DOF_mat3(1:2:end,MBF_node),MBF_node) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG 
     U_Mat(DOF_mat3(2:2:end,MBF_node),MBF_node) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
     

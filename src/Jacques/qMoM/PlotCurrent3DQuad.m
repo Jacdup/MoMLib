@@ -25,6 +25,7 @@ function [] = PlotCurrent3DQuad(InputDataFormat,ShowEdges,quad_nodes,node_coords
 % Init:
 maxVal = max(max(quad_currents));
 CLim = [0; maxVal];
+% CLim = [0; 2.1e-3];
 if ShowEdges
     EdgeColor_setting = 'black';
 else
