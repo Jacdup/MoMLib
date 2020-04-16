@@ -21,8 +21,8 @@ double BF(double Zeta[3],double points[][3], int edge, int sign, double Delta[])
         t[1][ii] = (points[0][ii] - points[2][ii]);
         t[2][ii] = (points[1][ii] - points[0][ii]);
     }
-    double t_len = Distance(points[edge], points[(edge+1)%3]);
-//     double t_len = VectorSize(t[(edge)%3]);
+//     double t_len = Distance(points[edge], points[(edge+1)%3]);
+    double t_len = VectorSize(t[(edge)%3]);
     int t_index;
     int l_index;
     

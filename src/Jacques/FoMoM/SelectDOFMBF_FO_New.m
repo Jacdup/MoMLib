@@ -12,6 +12,7 @@ DOF_mat3 = zeros(numVertices*2,numNodes);
 X1       = zeros(2,numMBFNodes);
 X2       = zeros(2,numMBFNodes);
 X3       = zeros(2,numMBFNodes);
+U_Mat = zeros(numDofs, numNodes*numMBF);
 % triangle_blah = mesh_data.reduced
 % U_Mat = zeros(numDOFS,numNodes*numMBF);
 
@@ -82,177 +83,50 @@ B3(1:numMBFNodes,1:2) = [ones(numMBFNodes,1), zeros(numMBFNodes,1)];% TODO, do t
 % this should look
 B3 = logical(B3');
 
-
-
-
 Rho = [1,1;1,-1];
 Rho = repmat(Rho,1,1,numMBFNodes);
 temp = (B1(2,:) == 1); 
 Rho(:,:,temp(:) == 1) = Rho(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
+B1 = ones(2,numMBFNodes);
 
-B1 = B1(:,:) .* [MBF_mat(:,2),MBF_mat(:,2)]';
-B2 = B2(:,:) .* [MBF_mat(:,2).*sind(theta_1),MBF_mat(:,2).*sind(theta_1)]';
-B3 = B3(:,:) .* [MBF_mat(:,2).*sind(theta_2),MBF_mat(:,2).*sind(theta_2)]';
+for MBF_num = 1:numMBF
+    
+    B1 = B1(:,:) .* [MBF_mat(:,1+MBF_num),circshift(MBF_mat(:,1+MBF_num),-1)]';
+    B2 = B2(:,:) .* [MBF_mat(:,1+MBF_num).*sind(theta_1),circshift(MBF_mat(:,1+MBF_num).*sind(theta_1),-1)]';
+    B3 = B3(:,:) .* [MBF_mat(:,1+MBF_num).*sind(theta_2),circshift(MBF_mat(:,1+MBF_num).*sind(theta_2),-1)]';
+    
+    for i = 1:numMBFNodes
+        X1(:,i) = Rho(:,:,i)\B1(:,i);
+        X2(:,i) = Rho(:,:,i)\B2(:,i);
+        X3(:,i) = Rho(:,:,i)\B3(:,i);
+    end
 
-for i = 1:numMBFNodes
-    X1(:,i) = Rho(:,:,i)\B1(:,i);
-    X2(:,i) = Rho(:,:,i)\B2(:,i);
-    X3(:,i) = Rho(:,:,i)\B3(:,i);
+    col_iter = 1;
+    for MBF_node = 1:numNodes
+        col_index = col_iter + (MBF_num-1);
+        col_iter = col_iter + numMBF;
+
+        U_Mat(DOF_mat1(1:2:end,MBF_node),col_index) = X1(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
+        U_Mat(DOF_mat1(2:2:end,MBF_node),col_index) = X1(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
+
+        U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
+        U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
+        
+        U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
+        U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
+        
+    end
 end
 
 
-% DOF_mat(1:2:end,:) is the RWG
-% DOF_mat(2:2:end,:) is linear
-U_Mat = zeros(numDofs, numNodes);
-for MBF_node = 1:numNodes
-    
-%     X1 = pagefun(@mldivide,gpuArray(Rho),gpuArray(B1));
-%     U_Mat(DOF_mat1(1:2:end,MBF_node),MBF_node) = X1(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG 
-    U_Mat(DOF_mat1(1:2:end,MBF_node),MBF_node) = 1;
-    U_Mat(DOF_mat1(2:2:end,MBF_node),MBF_node) = 0; % Linear
-
-    U_Mat(DOF_mat2(1:2:end,MBF_node),MBF_node) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG 
-    U_Mat(DOF_mat2(2:2:end,MBF_node),MBF_node) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-
-    U_Mat(DOF_mat3(1:2:end,MBF_node),MBF_node) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG 
-    U_Mat(DOF_mat3(2:2:end,MBF_node),MBF_node) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-    
- 
-end
-
-% U_Mat(DOF_mat1(numVertices+1:numVertices*2,2)) = MBF_mat(:,2); % Assign the vals. TODO, multiply by B
-% U_Mat(DOF_mat2(numVertices+1:numVertices*2,2)) = MBF_mat(:,2);
-% U_Mat(DOF_mat3(numVertices+1:numVertices*2,2)) = MBF_mat(:,2);
 
 
-% dof_data.dofs_to_edges = dof_data.dofs_to_edges(1:2:end,:); % Every 2nd element
-
-% for phi_var = 0:2
-%     col = 1;
-%     %     col_iter = 1;
-%     
-%     phi_step = -1;
-%     iter = 1;
-%     row = 0;
-%     for i = 1:2:len_tri_mat % triangle_blah is reduced matrix
-%         %         tri_num = tri_num + 4; % Every reduced matrix increment by 2 means the original is incremented by 4
-%         phi_step = phi_step + 1;
-%         total_dofs_selected = total_dofs_selected + 1;
-%         row = row + 1;
-%         % Assign the three edges (RWG and FO) of each azimuth point
-%         % This is specific to how the DOF's are assigned in the
-%         % preprocessing step
-%         if i == ((vert_num+1)*iter)-1
-%             last = 1;
-%             iter = iter + 1;
-%         else
-%             last = 0;
-%         end
-%         
-%         %         if tri_num > 192
-%         %             test = 1;
-%         %         end
-%         edge = 1 + last;% Local edge
-%         
-%         
-%         switch phi_var
-%             case 0
-%                 U_Mat_num = 1;
-%                 %                 X(1) = 1;
-%                 %                 X(2) = 0; % For constant, set linear to 0.
-%                 col_iter =  0;
-%             case 1
-%                 %                 U_Mat_num = sind(phi*phi_step);
-%                 col_iter =  1;
-%                 
-%                 %                 trig_mat = sin_mat;
-%                 %                 U_Mat_num = trig_mat(mod(phi_step+1, numVertices)+1);
-%                 %                 B = [sin_mat(mod(phi_step, numVertices)+1); sin_mat(mod(phi_step+1,numVertices)+1)];
-%                 %                 X = Rho\B; % Calculate coefficients for both RWG and Linear
-%             case 2
-%                 %                 U_Mat_num = cosd(phi*phi_step);
-%                 %                 trig_mat = cos_mat;
-%                 %                 U_Mat_num = trig_mat(mod(phi_step+1, numVertices)+1);
-%                 %                 B = [cos_mat(mod(phi_step, numVertices)+1); cos_mat(mod(phi_step+1,numVertices)+1)];
-%                 %                 X = Rho\B; % Calculate coefficients for both RWG and Linear
-%                 col_iter =  2;
-%         end
-%         Rho          = [1,1;1,-1];
-%         edge_nodes_1 = mesh_data.edges(dof_data.dofs_to_edges(triangle_blah(i+1,7)),:); % This
-%         %              gives nodes associated with edge. edge_nodes(1) gives lower
-%         %              node.
-%         edge_nodes_2 = mesh_data.edges(dof_data.dofs_to_edges(triangle_blah(i+last,7+last)),:);
-%         edge_nodes_3 = mesh_data.edges(dof_data.dofs_to_edges(triangle_blah(i+vert_num+1, 7+last)),:);
-%         if edge_nodes_1(2) == MBF_mat(row, 1) % If the higher number is a contour node
-%             % TODO: check this
-%             Rho = [1,-1;1,1];
-%         end
-%         
-%         if phi_var == 0
-%             X1(1) = 1;
-%             X1(2) = 0; % Linear is zero for constant case
-%         else
-%             next_val = mod(row+1, numVertices) ;
-%             if next_val == 0
-%                 next_val = next_val + 1;
-%             end
-%             if edge_nodes_1(1) == MBF_mat(row,1)
-%                 % TODO: check this
-%                 B1 = [MBF_mat(row,2+phi_var); MBF_mat(next_val,2+phi_var)];
-%             else
-%                 B1 = [MBF_mat(mod(row+1,numVertices)+1,2+phi_var);MBF_mat(row,2+phi_var) ];
-%             end
-%             X1 = Rho\B1;
-%         end
-%         
-%         if edge_nodes_2(1) == MBF_mat(row,1)
-%             B2 = [MBF_mat(row,2+phi_var);0];
-%         else %elseif edge_nodes_2(2) = MBF_mat(row,1) % This should also be true
-%             B2 = [0;MBF_mat(row,2+phi_var)];
-%         end
-%         
-%         if edge_nodes_3(1) == MBF_mat(row,1)
-%             B3 = [MBF_mat(row,2+phi_var);0];
-%         else %elseif edge_nodes_3(2) = MBF_mat(row,1) % This should also be true
-%             B3 = [0;MBF_mat(row,2+phi_var)];
-%         end
-%         
-%         
-%         % Node edge
-%         U_Mat(triangle_blah(i+1,7),col+col_iter) = X1(1);
-%         U_Mat(triangle_blah(i+1,13),col+col_iter) = X1(2);
-%         
-%         % First diagonal edge
-%         %          B = [0;trig_mat(mod(phi_step+1, numVertices)+1)];
-%         X2 = Rho\B2;
-%         U_Mat(triangle_blah(i+last,7+last),col+col_iter) = X2(1);
-%         U_Mat(triangle_blah(i+last,13+last), col+col_iter) = X2(2);
-%         
-%         % Second diagonal edge
-%         %         B = [trig_mat(mod(phi_step, numVertices)+1);0 ];
-%         X3 = Rho\B3;
-%         U_Mat(triangle_blah(i+vert_num+1,7+last),col+col_iter) = X3(1);
-%         U_Mat(triangle_blah(i+vert_num+1,13+last),col+col_iter) = X3(2);
-%         
-%         
-%         if last == 1
-%             col = col + numMBF;
-%         end
-%         
-%         
-%     end
-%     U_Mat(max(max(triangle_blah))-1,:) = 0;
-%     U_Mat(max(max(triangle_blah)),:) = 0;
-% end
-
+% -----------------------------Endcap stuff--------------------------------
 % Add the first endcap MBF
 if endCap == 1
     for phi_var = 0:2
         phi_step = -1;
         phi_step1 = -1;
-        
-        
-        
         
         for i = 1:2:(vert_num) % triangle_blah is reduced matrix
             last = 0;
@@ -303,11 +177,7 @@ if endCap == 1
             U_Mat(triangle_blah(i,13),col+col_iter+numMBF) = U_Mat_num;
             U_Mat(triangle_blah(i,9-last),col+col_iter+numMBF) = U_Mat_num;
             U_Mat(triangle_blah(i,15-last),col+col_iter+numMBF) = U_Mat_num;
-        end
-        
-        
+        end        
     end
-    
-    
     
 end
