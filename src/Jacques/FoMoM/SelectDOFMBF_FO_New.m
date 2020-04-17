@@ -1,7 +1,8 @@
 function [U_Mat] = SelectDOFMBF_FO_New(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap)
 
-
-total_dofs_selected = 0; %TODO: divide this by 3 to get one column DOFs
+% -------------------------------------------------------------------------
+% Init
+% -------------------------------------------------------------------------
 phi = 360/numVertices;
 vert_num = (2*numVertices)-1;
 numDofs = size(dof_data.basis_supports,1);
@@ -13,18 +14,14 @@ X1       = zeros(2,numMBFNodes);
 X2       = zeros(2,numMBFNodes);
 X3       = zeros(2,numMBFNodes);
 U_Mat = zeros(numDofs, numNodes*numMBF);
-% triangle_blah = mesh_data.reduced
 % U_Mat = zeros(numDOFS,numNodes*numMBF);
-
-if endCap == 1
-    % exclude last (2*numVerttices) from i/row assignment
-    endCapExclude = (2*numVertices);
-else
-    endCapExclude = 0;
-end
+if endCap;   endCapExclude = (2*numVertices); % exclude last (2*numVerttices) from i/row assignment
+else;    endCapExclude = 0; end
 len_tri_mat = (length(triangle_blah)-vert_num-1-endCapExclude);
 
+% -------------------------------------------------------------------------
 % Set up MBF matrix
+% -------------------------------------------------------------------------
 % MBF matrix is the analytical MBF
 % MBF_mat has the value of the MBF at each contour node point
 % num_nodes x [nodes,constant,sin,cos]
@@ -40,6 +37,7 @@ MBF_mat = [contour_nodes,ones(numMBFNodes, 1),sin_mat',cos_mat'];
 row = -1;
 iter = 1;
 col = 1;
+% Select DOFs associated with the MBF
 for i = 1:2:len_tri_mat
     row = row + 2;
     if i == ((vert_num+1)*iter)-1
@@ -75,22 +73,24 @@ theta_1      =  abs(90 - acosd(dot(edge_vecs_1,edge_vecs_2,2)./(vecnorm(edge_vec
 theta_2      =  abs(90 - acosd(dot(edge_vecs_1,edge_vecs_3,2)./(vecnorm(edge_vecs_1,2,2).*vecnorm(edge_vecs_3,2,2))));
 
 % quiver3(mesh_data.node_coords(edge_nodes_2(:,1),1),mesh_data.node_coords(edge_nodes_2(:,1),2),mesh_data.node_coords(edge_nodes_2(:,1),3),edge_vecs_2(:,1),edge_vecs_2(:,2),edge_vecs_2(:,3))
-% theta_3      = (pi/2) - acos(dot(edge_vecs_1,edge_vecs_2,2)/(norm(edge_vecs_1)*norm(edge_vecs_2)));
 
+% This code below actually does nothing, though it is useful if the mesh
+% generation is arbitrary
 B1 = (edge_nodes_1 == MBF_mat(:,1))'; % TODO, this should be all ones, since edge_nodes_1 contain all nodes in MBF_mat
-B2 = (edge_nodes_2 == MBF_mat(:,1))'; 
-B3(1:numMBFNodes,1:2) = [ones(numMBFNodes,1), zeros(numMBFNodes,1)];% TODO, do this generically. I can do this now because I know a priori how
-% this should look
-B3 = logical(B3');
-
 Rho = [1,1;1,-1];
 Rho = repmat(Rho,1,1,numMBFNodes);
 temp = (B1(2,:) == 1); 
 Rho(:,:,temp(:) == 1) = Rho(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
-B1 = ones(2,numMBFNodes);
 
-for MBF_num = 1:numMBF
+for MBF_num = 1:3
     
+    B1 = ones(2,numMBFNodes);
+    B2 = (edge_nodes_2 == MBF_mat(:,1))'; 
+    B3(1:2,1:numMBFNodes) = [ones(numMBFNodes,1), zeros(numMBFNodes,1)]';% TODO, do this generically. I can do this now because I know a priori how
+% this should look
+%     B3 = (edge_nodes_3 == circshift(MBF_mat(:,1),-1))'; % This works
+%     except for the indices at multiples of numVertices
+
     B1 = B1(:,:) .* [MBF_mat(:,1+MBF_num),circshift(MBF_mat(:,1+MBF_num),-1)]';
     B2 = B2(:,:) .* [MBF_mat(:,1+MBF_num).*sind(theta_1),circshift(MBF_mat(:,1+MBF_num).*sind(theta_1),-1)]';
     B3 = B3(:,:) .* [MBF_mat(:,1+MBF_num).*sind(theta_2),circshift(MBF_mat(:,1+MBF_num).*sind(theta_2),-1)]';
