@@ -1,8 +1,8 @@
-function [dof_data,num_dofs] = CreateBasisFunctions(mesh_data, first_order)
+function [dof_data,num_dofs] = CreateBasisFunctions(mesh_data, first_order, numVertices)
 % This function assigns RWG degrees of freedom (dofs) to all shared edges of
 % the entire mesh <tri_nodes> and assigns the current directions over each
 % edge, such that the RWGs are uniquely defined. Unshared edges do not get
-% dofs. The function supports meshes with junctions (edges shared by more 
+% dofs. The function supports meshes with junctions (edges shared by more
 % than two triangles). In the special case of no junctions (e.g. a flat plate)
 % the dimension of <tri_dofs> will be the same or less than num triangles. It
 % can be less when a given triangles has no dofs. With junctions, its
@@ -14,7 +14,7 @@ function [dof_data,num_dofs] = CreateBasisFunctions(mesh_data, first_order)
 %
 % Definition of values in a row of <tri_dofs>:
 %       A  B  C || D  E  F || G  H  I
-%       
+%
 %       triangle node numbers:
 %       A -> node 1
 %       B -> node 2
@@ -37,11 +37,11 @@ function [dof_data,num_dofs] = CreateBasisFunctions(mesh_data, first_order)
 %       [  triangle_RWG_current_flows_out_of  triangle_RWG_current_flows_into  ]
 %
 % Definition of <tri_dofs_idx>. Column vector with length equal to size of
-% <tri_dofs>. Each row contain one value: 
+% <tri_dofs>. Each row contain one value:
 % [  global_triangle_number_of_this_row_in_<tri_dofs>  ]
 %
 % Definition of <dofs_to_edges>. Column vector with length equal to size of
-% <num_dofs>. Each row contain one value: 
+% <num_dofs>. Each row contain one value:
 % [  global_edge_associated_with_this_dof  ]
 %
 % Definition of <tri_to_dofs>. Struct of size num tri, with the dofs
@@ -72,66 +72,78 @@ dofs_to_edges  = zeros(3*numtri,2);
 num_dofs       = 0;
 
 % Assign dofs and creat basis functions by filling a structure with the
-% values and then converting the structure to a standard array containing 
+% values and then converting the structure to a standard array containing
 % only the relevant nonzero entries. The structure allows for assigning two
-% dofs to each triangle edge, which is the absolute maximum possible.  
+% dofs to each triangle edge, which is the absolute maximum possible.
 
 % Update 2020/04/06: Maintaining max of 2 DOFs per edge, but now with first
 % order. If 3 DOFs are required as at a junction, this still needs to be
 % implemented.
 
 % Structure of a struct entry (there are numtri entries):
-% item 1: nnz (how many nonempty rows in the second item: 0,1 or 2) 
+% item 1: nnz (how many nonempty rows in the second item: 0,1 or 2)
 % item 2: [D  E  F  G  H  I; D  E  F  G  H  I] which allows for associating two dofs with each edge of a triangle
 for ii = numtri:-1:1 % change the order, so that the array is preallocated once
-    tri_dofs_struct(ii).nnz  = 0;                                 % init the struct 
-    tri_dofs_struct(ii).dofs = [1 1 1 -1 -1 -1; 1 1 1 -1 -1 -1];  % init the struct 
+    tri_dofs_struct(ii).nnz  = 0;                                 % init the struct
+    tri_dofs_struct(ii).dofs = [1 1 1 -1 -1 -1; 1 1 1 -1 -1 -1];  % init the struct
 end
 
 % Now populate <tri_dofs_struct> by cycling through all global edges:
 for ii = 1:numedg
     edge_tris = mesh_data.connectivity_edges{ii}; % use curly brackets to get the actual contents of the cell (<connectivity_edges> is a cell array)
     num_conn  = size(edge_tris,2) - first_order; % number of triangles sharing this edge
-
-    % Edit 2020/04/06
-%     edge_tris = [mesh_data.connectivity_edges{ii}, mesh_data.connectivity_edges{ii}(1)];
-%     num_conn  = size(edge_tris,2); % All triangles now have an extra DOF
     
-%     if num_conn > 1 % then one or more dofs will have to be assigned to this edge
+    % Edit 2020/04/06
+    %     edge_tris = [mesh_data.connectivity_edges{ii}, mesh_data.connectivity_edges{ii}(1)];
+    %     num_conn  = size(edge_tris,2); % All triangles now have an extra DOF
+    
+    %     if num_conn > 1 % then one or more dofs will have to be assigned to this edge
     if num_conn > (1+first_order) % then one or more dofs will have to be assigned to this edge
         edge_nodes = mesh_data.edges(ii,:);
         for jj = 1:num_conn-1 % one less dof assigned to a junction, than the number of currents meeting there (KCL)
-
+            
             num_dofs                     = num_dofs + 1;
             dofs_to_edges(num_dofs,1)    = ii;
             t1                           = edge_tris(jj);
-%             t1_1                         = edge_tris(jj+1);
             t2                           = edge_tris(jj+1+first_order);
-%             t2_1                         = edge_tris(jj+3);
             basis_supports(num_dofs,1:2) = [t1 t2];
-%             basis_supports(num_dofs,1:2) = [t1 t2];
-
+            
             % Add dof data for t1 (current flows out):
             e1 = LocalEdgeNum(edge_nodes,mesh_data.tri_nodes(t1,:));
             d1 = LocalEdgeOrientation(edge_nodes,mesh_data.tri_nodes(t1,:));
-            if     tri_dofs_struct(t1).dofs(1,3+e1) == -1 % then add the dof to the first line of the 2x6 datablock 
+            if     tri_dofs_struct(t1).dofs(1,3+e1) == -1 % then add the dof to the first line of the 2x6 datablock
                 tri_dofs_struct(t1).nnz          = max(tri_dofs_struct(t1).nnz,1);
-                tri_dofs_struct(t1).dofs(1,3+e1) = num_dofs; 
-                 if (mod(t1,2) == 0) && first_order % Every second element in first order construction
+                tri_dofs_struct(t1).dofs(1,3+e1) = num_dofs;
+                
+                if (mod(t1,2) == 0) && first_order % Every second element in first order construction
                     tri_dofs_struct(t1).dofs(1,e1)   = 2; % not really necessary, as default is +1
+%                     if (mod(ii, 30) == 3) % make first edge that it flows in
+%                         tri_dofs_struct(t1).dofs(1,e1) = -2;
+%                     end
                 else
                     tri_dofs_struct(t1).dofs(1,e1)   = 1;
+%                     if (mod(ii, 30) == 3) % make first edge that it flows in
+%                         tri_dofs_struct(t1).dofs(1,e1) = -1;
+%                     end
                 end
-            elseif tri_dofs_struct(t1).dofs(2,3+e1) == -1 
+                
+            elseif tri_dofs_struct(t1).dofs(2,3+e1) == -1
                 tri_dofs_struct(t1).nnz          = max(tri_dofs_struct(t1).nnz,2);
-                tri_dofs_struct(t1).dofs(2,3+e1) = num_dofs; 
+                tri_dofs_struct(t1).dofs(2,3+e1) = num_dofs;
                 if (mod(t1,2) == 0) && first_order % Every second element in first order construction
                     tri_dofs_struct(t1).dofs(2,e1)   = 2; % not really necessary, as default is +1
+%                     if (mod(ii, 30) == 3) % make first edge that it flows out
+%                         tri_dofs_struct(t1).dofs(2,e1) =  -2;
+%                     end
                 else
                     tri_dofs_struct(t1).dofs(2,e1)   = 1;
+%                     if (mod(ii, 30) == 3)% make first edge that it flows out
+%                         tri_dofs_struct(t1).dofs(2,e1) =  -1;
+%                     end
                 end
+                
             else
-%                 tri_dofs_struct(t1).dofs(2,3+e1) = -1; % Revert back, since this edge is probably shared  
+                %                 tri_dofs_struct(t1).dofs(2,3+e1) = -1; % Revert back, since this edge is probably shared
                 error('Attempt at assigning a third dof to a triangle edge');
             end
             
@@ -140,27 +152,45 @@ for ii = 1:numedg
             d2 = LocalEdgeOrientation(edge_nodes,mesh_data.tri_nodes(t2,:));
             if     tri_dofs_struct(t2).dofs(1,3+e2) == -1 % then add the dof to the first line of the 2x6 datablock
                 tri_dofs_struct(t2).nnz          = max(tri_dofs_struct(t2).nnz,1);
-                tri_dofs_struct(t2).dofs(1,3+e2) = num_dofs; 
+                tri_dofs_struct(t2).dofs(1,3+e2) = num_dofs;
+                
                 if (mod(t2,2) == 0) && first_order % Every second element in first order construction
-                         if d1(1) ~= d2(1)
-                             tri_dofs_struct(t2).dofs(1,e2)  = 2;
-                         else
-                            tri_dofs_struct(t2).dofs(1,e2)  = -2;
-                         end
+                    if d1(1) ~= d2(1)
+                        tri_dofs_struct(t2).dofs(1,e2)  = 2;
+                    else
+                        tri_dofs_struct(t2).dofs(1,e2)  = -2;
+                    end
+%                     if (mod(ii, 30) == 3) % make first edge that it flows out
+%                         tri_dofs_struct(t2).dofs(1,e2) =  tri_dofs_struct(t2).dofs(1,e2)*-1;
+%                     end
                 else
-                    tri_dofs_struct(t2).dofs(1,e2)   = -1; 
+                    tri_dofs_struct(t2).dofs(1,e2)   = -1;
+                    % New edit for MBF:
+%                     if (mod(ii, 30) == 3) % make first edge that it flows out
+%                         tri_dofs_struct(t2).dofs(1,e2) = 1;
+%                     end
                 end
-            elseif tri_dofs_struct(t2).dofs(2,3+e2) == -1 
+                %                 if num_dofs == 1
+                %                     test = 1;
+                %                 end
+                
+            elseif tri_dofs_struct(t2).dofs(2,3+e2) == -1
                 tri_dofs_struct(t2).nnz          = max(tri_dofs_struct(t2).nnz,2);
-                tri_dofs_struct(t2).dofs(2,3+e2) = num_dofs; 
+                tri_dofs_struct(t2).dofs(2,3+e2) = num_dofs;
                 if (mod(t2,2) == 0) && first_order
                     if d1(1) ~= d2(1)
-                         tri_dofs_struct(t2).dofs(2,e2)   = 2;
+                        tri_dofs_struct(t2).dofs(2,e2)   = 2;
                     else
-                         tri_dofs_struct(t2).dofs(2,e2)  = -2; 
+                        tri_dofs_struct(t2).dofs(2,e2)  = -2;
                     end
+%                     if (mod(ii, 30) == 3) % make first edge that it flows out
+%                         tri_dofs_struct(t2).dofs(2,e2) =  tri_dofs_struct(t2).dofs(2,e2)*-1;
+%                     end
                 else
                     tri_dofs_struct(t2).dofs(2,e2)   = -1;
+%                     if (mod(ii, 30) == 3)  % make first edge that it flows out
+%                         tri_dofs_struct(t2).dofs(2,e2) = 1;
+%                     end
                 end
             else
                 error('Attempt at assigning a third dof to a triangle edge');
@@ -227,15 +257,15 @@ function [local_edge_num] = LocalEdgeNum(edge_nodes,tri_nodes)
 %doff_select        = [9 8 7];
 
 local_edge_nodes_def = [2 3
-                        1 3
-                        1 2];
-if edge_nodes == tri_nodes(local_edge_nodes_def(1,:)) 
+    1 3
+    1 2];
+if edge_nodes == tri_nodes(local_edge_nodes_def(1,:))
     local_edge_num = 1;
     return;
-elseif edge_nodes == tri_nodes(local_edge_nodes_def(2,:)) 
+elseif edge_nodes == tri_nodes(local_edge_nodes_def(2,:))
     local_edge_num = 2;
     return;
-else    
+else
     local_edge_num = 3;
 end
 
@@ -250,15 +280,15 @@ function [local_edge_dir] = LocalEdgeOrientation(edge_nodes,tri_nodes)
 %doff_select        = [9 8 7];
 
 local_edge_nodes_def = [1 2
-                        1 3
-                        2 3];
-if edge_nodes == tri_nodes(local_edge_nodes_def(1,:)) 
+    1 3
+    2 3];
+if edge_nodes == tri_nodes(local_edge_nodes_def(1,:))
     local_edge_dir = [1 2];
     return;
-elseif edge_nodes == tri_nodes(local_edge_nodes_def(2,:)) 
+elseif edge_nodes == tri_nodes(local_edge_nodes_def(2,:))
     local_edge_dir = [2 1];
     return;
-else    
+else
     local_edge_dir = [1 2];
 end
 

@@ -28,6 +28,10 @@ for node = 1:num_nodes
     c4 = element(node,3);
     triangle1(node,1:3) = [c1 c2 c3];
     triangle2(node,1:3) = [c2 c3 c4];
+    if mod(node,numVertices-1) == 0
+        triangle1(node,1:3) = [c2 c1 c3];
+        triangle2(node,1:3) = [c3 c2 c4];
+    end
 end
 
 
