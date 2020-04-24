@@ -119,10 +119,12 @@ theta_2      =  abs(90 - acosd(dot(edge_vecs_1(1:lim,:),edge_vecs_3,2)./(vecnorm
 
 % Take care of last elements in ring, where local edges are switched
 if endCap == 0
-    orientation_vec = (edge_nodes_1 == MBF_mat(edge_nodes_1(1,1): length(edge_nodes_1(:,1)),1))';
-%     orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))'; 
+%     orientation_vec = (edge_nodes_1 == MBF_mat(edge_nodes_1(1,1): length(edge_nodes_1(:,1)),1))';
+    orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))'; 
 %     orientation_vec = (edge_nodes_1 == MBF_mat(:,1))';
+min = 0;
 else
+    min = numVertices;
     orientation_vec = (edge_nodes_1 == MBF_mat(:,1))';
 end
 Rho = [1,1;1,-1];
@@ -130,25 +132,12 @@ Rho = repmat(Rho,1,1,numMBFNodes);
 Rho2 = Rho;
 temp = (orientation_vec(2,:) == 1); 
 Rho2(:,:,temp(:) == 1) = Rho2(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
-Rho3 = Rho2;
-Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];
+if endCap == 1
+    Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];
+else
+    Rho = Rho2;
+end
 for MBF_num = 1:3
-    
-%     B1 = ones(2,numMBFNodes);
-% %     B2 = (edge_nodes_2 == MBF_mat(:,1))'; 
-%     B2(1:2,1:lim) = [zeros(lim,1),ones(lim,1)]';
-%     B3(1:2,1:lim) = [ones(lim,1), zeros(lim,1)]';% TODO, do this generically. I can do this now because I know a priori how
-% this should look
-%     B3 = (edge_nodes_3 == circshift(MBF_mat(:,1),-1))'; % This works
-%     except for the indices at multiples of numVertices
-%     if endCap == 1
-%         Blim2 = numVertices+1:length(MBF_mat);
-%         Blim3 = 1:length(MBF_mat)-numVertices;
-%     else
-%         Blim2 = 1:length(MBF_mat);
-%         Blim3 = 1:length(MBF_mat);
-%     end
-
 
     B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),1+MBF_num),MBF_mat(edge_nodes_1(:,2),1+MBF_num)]';
     B2(1:2,:) = [zeros(lim,1),MBF_mat(edge_nodes_2(:,2),1+MBF_num)]';
@@ -159,11 +148,7 @@ for MBF_num = 1:3
     for i = 1:numMBFNodes
         X1(:,i) = Rho(:,:,i)\B1(:,i);
     end
-    if endCap==0
-        min = 0;
-    else
-        min = numVertices;
-    end
+
     for i = 1:numMBFNodes-min
         X2(:,i) = Rho2(:,:,i)\B2(:,i);
         X3(:,i) = Rho2(:,:,i)\B3(:,i);
@@ -193,30 +178,6 @@ for MBF_num = 1:3
                     U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,xdom); % Linear
                     node3 = node3 + 1;
                end
-               
-%         if endCap == 1
-%             if MBF_node==numNodes_new-1
-%                 U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-%                 U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-%             elseif MBF_node == numNodes_new
-%                 U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-%                 U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-%             elseif MBF_node <= numNodes_new-2
-%                 U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-%                 U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-%                 
-%                 U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-%                 U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-%             end
-%                 
-
-%         else % Proceed as normal
-%             U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-%             U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-%             
-%             U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-%             U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-%         end
 
     end
 end

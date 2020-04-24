@@ -4,7 +4,10 @@ function [U_Mat] = SelectDOFMBF_FO_New_v3(mesh_data, dof_data, numVertices ,numM
 % Init
 % -------------------------------------------------------------------------
 phi = 360/numVertices;
+if endCap == 1; numNodes = numNodes + 2;
+end
 numMBFNodes = (numNodes+2)*numVertices;
+
 DOF_mat = zeros(numVertices*2,numNodes+1);
 
 if endCap
@@ -20,13 +23,15 @@ end
 
 sin_mat = sind(phi*(0:(numMBFNodes-1)));
 cos_mat = cosd(phi*(0:(numMBFNodes-1)));
-contour_nodes = 1:max(max(triangle_blah(:,1:3)));
+contour_nodes = (1:numMBFNodes);
+
+% contour_nodes = 1:max(max(triangle_blah(:,1:3)));
 % contour_nodes = (triangle_blah(1:2:end,3)); % All the nodes associated with the analytical MBF
 MBF_mat = [contour_nodes',ones(numMBFNodes,1),sin_mat',cos_mat'];
 
 row = -3;
 col = 1;
-
+    %TODO: fill DOF_mat with endcap dofs
 % Fill each column of matrix with DOFs for each MBF
 for i = 1:2:length(triangle_blah)-endCapExclude% Every odd row
     row = row + 4;
@@ -42,7 +47,6 @@ for i = 1:2:length(triangle_blah)-endCapExclude% Every odd row
     if sign1*sign2 == 1
         Rho(:,:,i) = [-1,1;-1,-1];
     end
-
 
     if (row == (4*numVertices)-3)
         DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
