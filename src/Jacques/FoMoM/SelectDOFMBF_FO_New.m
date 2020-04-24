@@ -130,7 +130,8 @@ Rho = repmat(Rho,1,1,numMBFNodes);
 Rho2 = Rho;
 temp = (orientation_vec(2,:) == 1); 
 Rho2(:,:,temp(:) == 1) = Rho2(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
-
+Rho3 = Rho2;
+Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];
 for MBF_num = 1:3
     
 %     B1 = ones(2,numMBFNodes);
@@ -185,7 +186,6 @@ for MBF_num = 1:3
                    U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,xdom); % Linear
                    % Move to next X domain
                    node2 = node2 + 1;
-                   
                end
                if DOF_mat3(1,MBF_node) ~= 0
                     xdom = (numVertices*(node3-1))+1:(numVertices*node3);
