@@ -12,9 +12,9 @@ numMBFNodes = numVertices*(numNodes_new);
 DOF_mat1 = zeros(numVertices*2,numNodes_new);
 DOF_mat2 = zeros(numVertices*2,numNodes_new);
 DOF_mat3 = zeros(numVertices*2,numNodes_new);
-X1       = zeros(2,numMBFNodes);
-X2       = zeros(2,numMBFNodes);
-X3       = zeros(2,numMBFNodes);
+% X1       = zeros(2,numMBFNodes);
+% X2       = zeros(2,numMBFNodes);
+% X3       = zeros(2,numMBFNodes);
 U_Mat = zeros(numDofs, numNodes_new*numMBF);
 % U_Mat = zeros(numDOFS,numNodes*numMBF);
 
@@ -89,9 +89,10 @@ if endCap == 1
             DOF_mat1(row2:row2+1, col+1) = [triangle_blah(i,7); triangle_blah(i,13)];
             DOF_mat2(row2:row2+1, col+1) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];
     end
+    DOF_mat1 = [circshift(DOF_mat1(:,1:end-1), [0 1]), DOF_mat1(:,end)]; % Swap columns, to ascending
+    DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
+    DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
 end
-
-
 
 
 temp1        = nonzeros(DOF_mat1); % Create temporary column vector
@@ -116,40 +117,43 @@ theta_2      =  abs(90 - acosd(dot(edge_vecs_1(1:lim,:),edge_vecs_3,2)./(vecnorm
 % quiver3(mesh_data.node_coords(edge_nodes_2(:,1),1),mesh_data.node_coords(edge_nodes_2(:,1),2),mesh_data.node_coords(edge_nodes_2(:,1),3),edge_vecs_2(:,1),edge_vecs_2(:,2),edge_vecs_2(:,3))
 
 
-
+% Take care of last elements in ring, where local edges are switched
 if endCap == 0
-    B1 = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))'; % TODO, this should be all ones, since edge_nodes_1 contain all nodes in MBF_mat
+    orientation_vec = (edge_nodes_1 == MBF_mat(edge_nodes_1(1,1): length(edge_nodes_1(:,1)),1))';
+%     orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))'; 
+%     orientation_vec = (edge_nodes_1 == MBF_mat(:,1))';
 else
-    B1 = (edge_nodes_1 == MBF_mat(:,1))';
+    orientation_vec = (edge_nodes_1 == MBF_mat(:,1))';
 end
 Rho = [1,1;1,-1];
 Rho = repmat(Rho,1,1,numMBFNodes);
 Rho2 = Rho;
-temp = (B1(2,:) == 1); 
+temp = (orientation_vec(2,:) == 1); 
 Rho2(:,:,temp(:) == 1) = Rho2(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
 
 for MBF_num = 1:3
     
-    B1 = ones(2,numMBFNodes);
-%     B2 = (edge_nodes_2 == MBF_mat(:,1))'; 
-    B2(1:2,1:lim) = [zeros(lim,1),ones(lim,1)]';
-    B3(1:2,1:lim) = [ones(lim,1), zeros(lim,1)]';% TODO, do this generically. I can do this now because I know a priori how
+%     B1 = ones(2,numMBFNodes);
+% %     B2 = (edge_nodes_2 == MBF_mat(:,1))'; 
+%     B2(1:2,1:lim) = [zeros(lim,1),ones(lim,1)]';
+%     B3(1:2,1:lim) = [ones(lim,1), zeros(lim,1)]';% TODO, do this generically. I can do this now because I know a priori how
 % this should look
 %     B3 = (edge_nodes_3 == circshift(MBF_mat(:,1),-1))'; % This works
 %     except for the indices at multiples of numVertices
-    if endCap == 1
-        Blim2 = numVertices+1:length(MBF_mat);
-        Blim3 = 1:length(MBF_mat)-numVertices;
-    else
-        Blim2 = 1:length(MBF_mat);
-        Blim3 = 1:length(MBF_mat);
-    end
+%     if endCap == 1
+%         Blim2 = numVertices+1:length(MBF_mat);
+%         Blim3 = 1:length(MBF_mat)-numVertices;
+%     else
+%         Blim2 = 1:length(MBF_mat);
+%         Blim3 = 1:length(MBF_mat);
+%     end
+
 
     B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),1+MBF_num),MBF_mat(edge_nodes_1(:,2),1+MBF_num)]';
     B2(1:2,:) = [zeros(lim,1),MBF_mat(edge_nodes_2(:,2),1+MBF_num)]';
-    B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),1+MBF_num),zeros(lim,1)]'; % Can't logical index, due to same problem as before -> the values do not lign up
+    B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),1+MBF_num),zeros(lim,1)]'; 
      B2 = B2(:,:) .* [sind(theta_1)';sind(theta_1)'];
-     B3 = B3(:,:) .* [sind(theta_1)';sind(theta_1)'];
+     B3 = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
      
     for i = 1:numMBFNodes
         X1(:,i) = Rho(:,:,i)\B1(:,i);
@@ -165,36 +169,54 @@ for MBF_num = 1:3
     end
 
     col_iter = 1;
+    node2 = 1;
+    node3 = 1;
     for MBF_node = 1:numNodes_new
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
+
                U_Mat(DOF_mat1(1:2:end,MBF_node),col_index) = X1(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
                U_Mat(DOF_mat1(2:2:end,MBF_node),col_index) = X1(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
+               
+               % Skip the zero columns
+               if DOF_mat2(1,MBF_node) ~= 0
+                   xdom = (numVertices*(node2-1))+1:(numVertices*node2);
+                   U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,xdom); % RWG
+                   U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,xdom); % Linear
+                   % Move to next X domain
+                   node2 = node2 + 1;
+                   
+               end
+               if DOF_mat3(1,MBF_node) ~= 0
+                    xdom = (numVertices*(node3-1))+1:(numVertices*node3);
+                    U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,xdom); % RWG
+                    U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,xdom); % Linear
+                    node3 = node3 + 1;
+               end
+               
+%         if endCap == 1
+%             if MBF_node==numNodes_new-1
+%                 U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
+%                 U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
+%             elseif MBF_node == numNodes_new
+%                 U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
+%                 U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
+%             elseif MBF_node <= numNodes_new-2
+%                 U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
+%                 U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
+%                 
+%                 U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
+%                 U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
+%             end
+%                 
 
-        if endCap == 1
-            if MBF_node==numNodes_new-1
-                U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-                U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-            elseif MBF_node == numNodes_new
-                U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-                U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-            elseif MBF_node <= numNodes_new-2
-                U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-                U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-                
-                U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-                U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-            end
-                
-
-        else % Proceed as normal
-            
-            U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-            U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-            
-            U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
-            U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
-        end
+%         else % Proceed as normal
+%             U_Mat(DOF_mat2(1:2:end,MBF_node),col_index) = X2(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
+%             U_Mat(DOF_mat2(2:2:end,MBF_node),col_index) = X2(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
+%             
+%             U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
+%             U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
+%         end
 
     end
 end
