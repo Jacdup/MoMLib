@@ -1,4 +1,4 @@
-function [U_Mat] = SelectDOFMBF_FO_New(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap)
+function [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = SelectDOFMBF_FO_New(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap)
 
 % -------------------------------------------------------------------------
 % Init
@@ -29,13 +29,14 @@ len_tri_mat = (length(triangle_blah)-vert_num-1-endCapExclude);
 numMBFNodes_new = numVertices*(numNodes+2);
 sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
 cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
+ones_mat = (ones(numMBFNodes_new,1));
 % if endCap == 1
     contour_nodes = (1:numMBFNodes_new)';
 %     contour_nodes = (triangle_blah(1,1):(numVertices*(numNodes+1)))'; % All the nodes associated with the analytical MBF
 % else
 %     contour_nodes = (triangle_blah(2,2):(numVertices*(numNodes_new+1)))'; % All the nodes associated with the analytical MBF
 % end
-MBF_mat = [contour_nodes,ones(numMBFNodes_new, 1),sin_mat',cos_mat'];
+MBF_mat = [contour_nodes,ones_mat,sin_mat',cos_mat'];
 
 % DOF_Mat = ismember(triangle_blah(:,1:3),MBF_mat(:,1)); % Find which triangles contain the node
 % DOF_Mat = DOF_Mat .* triangle_blah(:,7:9);
@@ -135,7 +136,9 @@ Rho2(:,:,temp(:) == 1) = Rho2(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus sid
 if endCap == 1
     Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];
 else
-    Rho = Rho2;
+%      Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];
+%     Rho = Rho2;
+%     Rho(:,:,temp(:) == 1) = Rho(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
 end
 for MBF_num = 1:3
 
