@@ -30,7 +30,7 @@ ones_mat = (ones(numMBFNodes,1));
 MBF_mat = [contour_nodes',ones_mat,sin_mat',cos_mat'];
 if endCap == 1
     [maxVal, maxNode] = max(MBF_mat(:,3) + MBF_mat(:,4),[],1, 'linear'); % Sin(x) + cos(x)
-    maxVal = 0;
+%     maxVal = 0;
     MBF_mat(numMBFNodes+1,:) = [(numMBFNodes+1),0,maxVal,maxVal];
     MBF_mat(numMBFNodes+2,:) = [(numMBFNodes+2),0,maxVal,maxVal];
     maxNodes(1,1:2) = [maxNode,numMBFNodes-numVertices+maxNode]; % Nodes where maximum current flows over endcap
@@ -68,7 +68,7 @@ for i = 1:2:length(triangle_blah)-endCapExclude% Every odd row
 end
 next = 0;
 if endCap == 1
-    
+    Rho(:,:,i+2) = [1,1;1,-1];
     for i = length(triangle_blah)-endCapExclude+1:2:length(triangle_blah)-numVertices% Every odd row, only first endcap
         row = row + 4;
         
@@ -83,89 +83,81 @@ if endCap == 1
             Rho(:,:,i) = [-1,1;-1,-1];
         end
         
-        %         if sign3 < 0
-        %             Rho(:,:,i) = [1,-1;1,1];
-        %         end
-        %         if sign4 < 0
-        %             Rho(:,:,i+1) = [1,-1;1,1];
-        %         end
-        
-        %         if next == 1
-        %             Rho(:,:,i) = [1,-1;1,1];
-        %             Rho(:,:,i+1) = [1,-1;1,1];
-        %             if sign3 < 0
-        %                 Rho(:,:,i) = [1,1;1,-1];
-        %             end
-        %             if sign4 < 0
-        %                 Rho(:,:,i+1) = [1,1;1,-1];
-        %             end
-        %         end
-        
+%         if sign3 < 0
+%             Rho(:,:,i) = [1,-1;1,1];
+%         end
+%         if sign4 < 0
+%             Rho(:,:,i+1) = [1,-1;1,1];
+%         end
+
+%         if next == 1
+%             Rho(:,:,i) = [1,-1;1,1];
+%             Rho(:,:,i+1) = [1,-1;1,1];
+%             if sign3 < 0
+%                 Rho(:,:,i) = [1,1;1,-1];
+%             end
+%             if sign4 < 0
+%                 Rho(:,:,i+1) = [1,1;1,-1];
+%             end
+%         end
+
         DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
         
         if (row == (2*numVertices)-3)
             DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
             next = 1;
-            %             if sign3 < 0
-            %                 Rho(:,:,i+1) = [1,-1;1,1];
-            %             end
-            %             if sign4 < 0
-            %                 Rho(:,:,i) = [1,-1;1,1];
-            %             end
-            %             Rho(:,:,i+1) = [1,-1;1,1];
-            %             if sign3*sign4 < 0
-            %                 Rho(:,:,i) = [1,-1;1,1];
-            %                 Rho(:,:,i+1) = [1,-1;1,1];
-            %             end
-            %             if next == 1
-            %                 if sign3 < 0
-            %                     Rho(:,:,i) = [1,-1;1,1];
-            %                 end
-            %                 if sign4 < 0
-            %                     Rho(:,:,i+1) = [1,-1;1,1];
-            %                 end
-            %             end
-            
+%             if sign3 < 0
+%                 Rho(:,:,i+1) = [1,-1;1,1];
+%             end
+%             if sign4 < 0
+%                 Rho(:,:,i) = [1,-1;1,1];
+%             end
+%             Rho(:,:,i+1) = [1,-1;1,1];
+%             if sign3*sign4 < 0
+%                 Rho(:,:,i) = [1,-1;1,1];
+%                 Rho(:,:,i+1) = [1,-1;1,1];
+%             end
+%             if next == 1
+%                 if sign3 < 0
+%                     Rho(:,:,i) = [1,-1;1,1];
+%                 end
+%                 if sign4 < 0
+%                     Rho(:,:,i+1) = [1,-1;1,1];
+%                 end
+%             end
+
             row = -3;
             col = col+1;
         end
     end
-    Rho(:,:,i+2) = [1,-1;1,1];
-    for i = length(triangle_blah)-numVertices+2:2:length(triangle_blah)% Second endcap
+    
+    for i = length(triangle_blah)-numVertices+1:2:length(triangle_blah)% Second endcap
         row = row + 4;
-        sign1 = triangle_blah(i,5); % Should always be -1
+     sign1 = triangle_blah(i,5); % Should always be -1
         sign2 = triangle_blah(i,4); % Should always be 1
         sign3 = triangle_blah(i,10); % Should always be -1
         sign4 = triangle_blah(i,11); % Should always be -1
-        DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
-        Rho(:,:,i) = [1,-1;1,1];
-        Rho(:,:,i+1) = [1,-1;1,1];
+         DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
+         Rho(:,:,i) = [1,1;1,-1];
+        Rho(:,:,i+1) = [1,1;1,-1];
         if sign3 < 0
-            Rho(:,:,i) = [1,1;1,-1];
+                Rho(:,:,i+1) = [1,-1;1,1];
         end
         if sign4 < 0
-            Rho(:,:,i+1) = [1,1;1,-1];
+                Rho(:,:,i) = [1,-1;1,1];
         end
         if (row == (2*numVertices)-3)
             DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
             next = 1;
             if sign1*sign2 == 1
-                Rho(:,:,i+1) = [-1,-1;-1,1];
-                if sign3 < 0
-                    Rho(:,:,i+1) = [-1,1;-1,-1];
-                end
-                if sign4 < 0
-                    Rho(:,:,i) = [-1,1;-1,-1];
-                end
-            else
-                if sign3 < 0
-                    Rho(:,:,i+1) = [1,1;1,-1];
-                end
-                if sign4 < 0
-                    Rho(:,:,i) = [1,1;1,-1];
-                end
+            Rho(:,:,i) = [-1,1;-1,-1];
+         end
+            if sign3 < 0
+                Rho(:,:,i+1) = [1,-1;1,1];
             end
-
+            if sign4 < 0
+                Rho(:,:,i) = [1,-1;1,1];
+            end
             row = -3;
             col = col+1;
         end
@@ -227,12 +219,12 @@ B_cos(:,2:2:end) = B_cos(:,2:2:end) .*[sind(theta)';sind(theta)'];
 if endCap == 1
 %    B_const(:,first_endcap) = B_const(:,first_endcap) .* sind(theta1)';
 %     B_const(:,second_endcap) = B_const(:,second_endcap) .* sind(theta2)';
-   B_const(:,first_endcap) = 0;
-    B_const(:,second_endcap) = 0;
-       B_sin(:,first_endcap) = B_sin(:,first_endcap) .* sind(theta1)';
-    B_sin(:,second_endcap) = B_sin(:,second_endcap) .* sind(theta2)';
-       B_cos(:,first_endcap) = B_cos(:,first_endcap) .* sind(theta1)';
-    B_cos(:,second_endcap) = B_cos(:,second_endcap) .* sind(theta2)';
+% %    B_const(:,first_endcap) = 0;
+% %     B_const(:,second_endcap) = 0;
+%        B_sin(:,first_endcap) = B_sin(:,first_endcap) .* sind(theta1)';
+%     B_sin(:,second_endcap) = B_sin(:,second_endcap) .* sind(theta2)';
+%        B_cos(:,first_endcap) = B_cos(:,first_endcap) .* sind(theta1)';
+%     B_cos(:,second_endcap) = B_cos(:,second_endcap) .* sind(theta2)';
 end
 
 
