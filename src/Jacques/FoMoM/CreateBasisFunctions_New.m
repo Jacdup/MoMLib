@@ -117,14 +117,8 @@ for ii = 1:numedg
                 
                 if (mod(t1,2) == 0) && first_order % Every second element in first order construction
                     tri_dofs_struct(t1).dofs(1,e1)   = 2; % not really necessary, as default is +1
-%                     if (mod(ii, 30) == 3) % make first edge that it flows in
-%                         tri_dofs_struct(t1).dofs(1,e1) = -2;
-%                     end
                 else
                     tri_dofs_struct(t1).dofs(1,e1)   = 1;
-%                     if (mod(ii, 30) == 3) % make first edge that it flows in
-%                         tri_dofs_struct(t1).dofs(1,e1) = -1;
-%                     end
                 end
                 
             elseif tri_dofs_struct(t1).dofs(2,3+e1) == -1
@@ -132,14 +126,8 @@ for ii = 1:numedg
                 tri_dofs_struct(t1).dofs(2,3+e1) = num_dofs;
                 if (mod(t1,2) == 0) && first_order % Every second element in first order construction
                     tri_dofs_struct(t1).dofs(2,e1)   = 2; % not really necessary, as default is +1
-%                     if (mod(ii, 30) == 3) % make first edge that it flows out
-%                         tri_dofs_struct(t1).dofs(2,e1) =  -2;
-%                     end
                 else
                     tri_dofs_struct(t1).dofs(2,e1)   = 1;
-%                     if (mod(ii, 30) == 3)% make first edge that it flows out
-%                         tri_dofs_struct(t1).dofs(2,e1) =  -1;
-%                     end
                 end
                 
             else
@@ -160,19 +148,9 @@ for ii = 1:numedg
                     else
                         tri_dofs_struct(t2).dofs(1,e2)  = -2;
                     end
-%                     if (mod(ii, 30) == 3) % make first edge that it flows out
-%                         tri_dofs_struct(t2).dofs(1,e2) =  tri_dofs_struct(t2).dofs(1,e2)*-1;
-%                     end
                 else
                     tri_dofs_struct(t2).dofs(1,e2)   = -1;
-                    % New edit for MBF:
-%                     if (mod(ii, 30) == 3) % make first edge that it flows out
-%                         tri_dofs_struct(t2).dofs(1,e2) = 1;
-%                     end
                 end
-                %                 if num_dofs == 1
-                %                     test = 1;
-                %                 end
                 
             elseif tri_dofs_struct(t2).dofs(2,3+e2) == -1
                 tri_dofs_struct(t2).nnz          = max(tri_dofs_struct(t2).nnz,2);
@@ -183,14 +161,8 @@ for ii = 1:numedg
                     else
                         tri_dofs_struct(t2).dofs(2,e2)  = -2;
                     end
-%                     if (mod(ii, 30) == 3) % make first edge that it flows out
-%                         tri_dofs_struct(t2).dofs(2,e2) =  tri_dofs_struct(t2).dofs(2,e2)*-1;
-%                     end
                 else
                     tri_dofs_struct(t2).dofs(2,e2)   = -1;
-%                     if (mod(ii, 30) == 3)  % make first edge that it flows out
-%                         tri_dofs_struct(t2).dofs(2,e2) = 1;
-%                     end
                 end
             else
                 error('Attempt at assigning a third dof to a triangle edge');

@@ -26,7 +26,7 @@ len_tri_mat = (length(triangle_blah)-vert_num-1-endCapExclude);
 % MBF matrix is the analytical MBF
 % MBF_mat has the value of the MBF at each contour node point
 % num_nodes x [nodes,constant,sin,cos]
-numMBFNodes_new = numVertices*(numNodes+2);
+numMBFNodes_new = numVertices*(numNodes+4);
 sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
 cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
 ones_mat = (ones(numMBFNodes_new,1));
@@ -37,6 +37,7 @@ ones_mat = (ones(numMBFNodes_new,1));
 %     contour_nodes = (triangle_blah(2,2):(numVertices*(numNodes_new+1)))'; % All the nodes associated with the analytical MBF
 % end
 MBF_mat = [contour_nodes,ones_mat,sin_mat',cos_mat'];
+% MBF_mat = MBF_mat(1:end-36,:); % Temporary for coupling
 
 % DOF_Mat = ismember(triangle_blah(:,1:3),MBF_mat(:,1)); % Find which triangles contain the node
 % DOF_Mat = DOF_Mat .* triangle_blah(:,7:9);
@@ -65,6 +66,10 @@ for i = 1:2:len_tri_mat
     end
     
 end
+% Temporary for coupling
+DOF_mat1(:,32) = [];
+DOF_mat2(:,32) = [];
+DOF_mat3(:,32) = [];
 % -------------------------------------------------------------------------
 % -----------------------------Endcap stuff--------------------------------
 % -------------------------------------------------------------------------
@@ -121,7 +126,8 @@ theta_2      =  abs(90 - acosd(dot(edge_vecs_1(1:lim,:),edge_vecs_3,2)./(vecnorm
 % Take care of last elements in ring, where local edges are switched
 if endCap == 0
 %     orientation_vec = (edge_nodes_1 == MBF_mat(edge_nodes_1(1,1): length(edge_nodes_1(:,1)),1))';
-    orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))'; 
+%     orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))'; 
+     orientation_vec = (edge_nodes_1 == MBF_mat((numVertices*2)+1:end-(numVertices*2),1))'; % For coupling
 %     orientation_vec = (edge_nodes_1 == MBF_mat(:,1))';
 min = 0;
 else
