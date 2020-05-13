@@ -188,7 +188,7 @@ end
 % ------------------------------------------------------------------------
 % Mesh connection to external structure
 if connection_flag
-    
+    points
     
     
 end

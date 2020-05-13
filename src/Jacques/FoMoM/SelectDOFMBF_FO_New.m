@@ -26,7 +26,8 @@ len_tri_mat = (length(triangle_blah)-vert_num-1-endCapExclude);
 % MBF matrix is the analytical MBF
 % MBF_mat has the value of the MBF at each contour node point
 % num_nodes x [nodes,constant,sin,cos]
-numMBFNodes_new = numVertices*(numNodes+4);
+% numMBFNodes_new = numVertices*(numNodes+4); % For coupling
+numMBFNodes_new = numVertices*(numNodes+2);
 sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
 cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
 ones_mat = (ones(numMBFNodes_new,1));
@@ -67,9 +68,9 @@ for i = 1:2:len_tri_mat
     
 end
 % Temporary for coupling
-DOF_mat1(:,32) = [];
-DOF_mat2(:,32) = [];
-DOF_mat3(:,32) = [];
+% DOF_mat1(:,32) = [];
+% DOF_mat2(:,32) = [];
+% DOF_mat3(:,32) = [];
 % -------------------------------------------------------------------------
 % -----------------------------Endcap stuff--------------------------------
 % -------------------------------------------------------------------------
@@ -126,8 +127,8 @@ theta_2      =  abs(90 - acosd(dot(edge_vecs_1(1:lim,:),edge_vecs_3,2)./(vecnorm
 % Take care of last elements in ring, where local edges are switched
 if endCap == 0
 %     orientation_vec = (edge_nodes_1 == MBF_mat(edge_nodes_1(1,1): length(edge_nodes_1(:,1)),1))';
-%     orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))'; 
-     orientation_vec = (edge_nodes_1 == MBF_mat((numVertices*2)+1:end-(numVertices*2),1))'; % For coupling
+    orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))'; 
+%      orientation_vec = (edge_nodes_1 == MBF_mat((numVertices*2)+1:end-(numVertices*2),1))'; % For coupling
 %     orientation_vec = (edge_nodes_1 == MBF_mat(:,1))';
 min = 0;
 else
@@ -139,6 +140,7 @@ Rho = repmat(Rho,1,1,numMBFNodes);
 Rho2 = Rho;
 temp = (orientation_vec(2,:) == 1); 
 Rho2(:,:,temp(:) == 1) = Rho2(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
+
 if endCap == 1
     Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];
 else

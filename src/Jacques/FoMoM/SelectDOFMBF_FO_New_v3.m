@@ -1,13 +1,14 @@
 function [U_Mat, DOF_mat, theta1, theta2] = SelectDOFMBF_FO_New_v3(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap, U_Mat)
 % Currently, endcap functionality only works with even number of vertices
 
-numNodes = numNodes + 2;% For coupling
+% numNodes = numNodes+2;% For coupling
+% extra = -1;
+extra = 0;
 % -------------------------------------------------------------------------
 % Init
 % -------------------------------------------------------------------------
 phi = 360/numVertices;
-% numMBFNodes = (numNodes+2)*numVertices;
-numMBFNodes = (numNodes+2)*numVertices; % For coupling
+numMBFNodes = (numNodes+2)*numVertices;
 DOF_mat = zeros(numVertices*2,numNodes+1);
 % theta1 = 
 
@@ -60,18 +61,30 @@ for i = 1:2:length(triangle_blah)-endCapExclude% Every odd row
     DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
     sign1 = triangle_blah(i,5); % Should always be -1
     sign2 = triangle_blah(i,4); % Should always be 1
-%     sign3 = 0.5*triangle_blah(i,11);
-%     sign4 = 0.5*triangle_blah(i,10);
+    sign3 = triangle_blah(i,10); 
+    sign4 = triangle_blah(i,11); 
 
     Rho(:,:,i) = [1,1;1,-1];
     Rho(:,:,i+1) = [1,1;1,-1];
     if sign1*sign2 == 1
         Rho(:,:,i) = [-1,1;-1,-1];
+%         Rho(:,:,i+1) = [1,-1;1,1];
     end
-
+%     if sign3 < 0
+%         Rho(:,:,i) = [1,-1;1,1];
+% %         Rho(:,:,i+1) = [1,-1;1,1];
+%     end
+%     if sign4 < 0
+% %         Rho(:,:,i) = [1,-1;1,1];
+%         Rho(:,:,i+1) = [1,-1;1,1];
+%     end
+ 
     if (row == (4*numVertices)-3)
         DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
-         Rho(:,:,i+1) = [1,-1;1,1];
+%         Rho(:,:,i-1) = [1,-1;1,1];
+%         Rho(:,:,i) = [1,-1;1,1];
+        Rho(:,:,i+1) = [1,-1;1,1];
+
         row = -3;
         col = col + 1;
     end
@@ -160,7 +173,7 @@ edge_vecs  = mesh_data.node_coords(edge_nodes(:,1),:)-mesh_data.node_coords(edge
 
 % Angles between straight and diagonal edges
 theta      =  abs(90 - acosd(dot(edge_vecs(1:2:end,:),edge_vecs(2:2:end,:),2)./(vecnorm(edge_vecs(1:2:end,:),2,2).*vecnorm(edge_vecs(2:2:end,:),2,2))));
-extra = 0;
+
 if endCap == 1
     extra = 1;
     first_endcap = length(edge_nodes)-(2*numVertices)+1:length(edge_nodes)-numVertices;
@@ -205,20 +218,20 @@ end
 B_const(1:2,:) = [MBF_mat(edge_nodes(:,1),2),MBF_mat(edge_nodes(:,2),2)]';
 B_sin(1:2,:)   = [MBF_mat(edge_nodes(:,1),3),MBF_mat(edge_nodes(:,2),3)]';
 B_cos(1:2,:)   = [MBF_mat(edge_nodes(:,1),4),MBF_mat(edge_nodes(:,2),4)]';
-% Multiply all diagonal edges  
+% Multiply all diagonal edges
 B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
 B_sin(:,2:2:end-endCapExclude) = B_sin(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
 B_cos(:,2:2:end-endCapExclude) = B_cos(:,2:2:end-endCapExclude) .*[sind(theta)';sind(theta)'];
-
 if endCap == 1
+
     %    B_const(:,first_endcap) = B_const(:,first_endcap) .* sind(theta1)';
     %     B_const(:,second_endcap) = B_const(:,second_endcap) .* sind(theta2)';
     B_const(:,first_endcap) = 0;
     B_const(:,second_endcap) = 0;
-%     B_sin(:,first_endcap)    = (B_sin(:,first_endcap)  .* (sind(theta1))')  ;
-%     B_sin(:,second_endcap)   = (B_sin(:,second_endcap) .* (sind(theta2))') ;
-%     B_cos(:,first_endcap)    = (B_cos(:,first_endcap)  .* (sind(theta1))') ;
-%     B_cos(:,second_endcap)   = (B_cos(:,second_endcap) .* (sind(theta2))');
+    %     B_sin(:,first_endcap)    = (B_sin(:,first_endcap)  .* (sind(theta1))')  ;
+    %     B_sin(:,second_endcap)   = (B_sin(:,second_endcap) .* (sind(theta2))') ;
+    %     B_cos(:,first_endcap)    = (B_cos(:,first_endcap)  .* (sind(theta1))') ;
+    %     B_cos(:,second_endcap)   = (B_cos(:,second_endcap) .* (sind(theta2))');
 end
 
 
