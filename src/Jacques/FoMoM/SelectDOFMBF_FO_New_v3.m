@@ -1,4 +1,4 @@
-function [U_Mat, DOF_mat, theta1, theta2] = SelectDOFMBF_FO_New_v3(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap, U_Mat)
+function [U_Mat, DOF_mat, theta1, theta2] = SelectDOFMBF_FO_New_v3(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap, connection, U_Mat)
 % Currently, endcap functionality only works with even number of vertices
 
 % numNodes = numNodes+2;% For coupling
@@ -12,11 +12,14 @@ numMBFNodes = (numNodes+2)*numVertices;
 DOF_mat = zeros(numVertices*2,numNodes+1);
 % theta1 = 
 
-if endCap
+if endCap || connection
     endCapExclude = (2*numVertices);
 else
     endCapExclude = 0;
 end
+% if connection
+%    numNodes = numNodes -2; 
+% end
 
 EPS = 0.0001;
 % -------------------------------------------------------------------------
@@ -219,6 +222,11 @@ B_const(1:2,:) = [MBF_mat(edge_nodes(:,1),2),MBF_mat(edge_nodes(:,2),2)]';
 B_sin(1:2,:)   = [MBF_mat(edge_nodes(:,1),3),MBF_mat(edge_nodes(:,2),3)]';
 B_cos(1:2,:)   = [MBF_mat(edge_nodes(:,1),4),MBF_mat(edge_nodes(:,2),4)]';
 % Multiply all diagonal edges
+
+if connection
+   theta(end-numVertices+1:end,:) = []; % TODO: dot endcaps with normal component of max 
+end
+
 B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
 B_sin(:,2:2:end-endCapExclude) = B_sin(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
 B_cos(:,2:2:end-endCapExclude) = B_cos(:,2:2:end-endCapExclude) .*[sind(theta)';sind(theta)'];

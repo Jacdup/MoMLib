@@ -118,7 +118,7 @@ for node = 1:num_nodes
 
         % Project points to plane
         for v = 1:num_vertices
-            point_index = v + num_vertices*(node-1);
+            point_index      = v + num_vertices*(node-1);
             point_index_prev = v + num_vertices*(node-2);
             
             vec1 = points(point_index_prev,:) - Contour(node,:);
@@ -133,6 +133,26 @@ for node = 1:num_nodes
         
     end
 end
+
+% ------------------------------------------------------------------------
+% -------------------------New 13/05/2020---------------------------------
+% ------------------------------------------------------------------------
+% Mesh connection to external structure
+% Add points for connection to external plate/structure
+if connection_flag
+   point_index      = point_index - num_vertices;               % Start at beginning of last node
+   point_index_next = mod(point_index + 1, num_vertices) + 1;    % Next point/vertex
+    for p = 1:num_vertices
+        connection_index = point_index + p + num_vertices; % Create new set of points
+        % Create points at first node
+        points(connection_index,1:3) = 2 * cross((points(point_index+p,:) + points(point_index_next+p,:))/2,norm_vec); % Scaled point in midpoint of prev and next point
+    end
+    % Repeat elements for last node
+    points(end+1:end + num_vertices,:) = [repelem(Contour(end,1),num_vertices)',points(end - (num_vertices) +1:end,2:3)]; 
+    
+end
+
+
 
 
 % Now take the points and form the quadrilateral elements
@@ -175,23 +195,39 @@ if endcap_flag
         element(p+v, 4) = element(p,4) + 1; % Degenerate coordinate
 
         % The elements at the end
-        element(p+v+num_vertices, 1) = element(p-v+1,4);
-        element(p+v+num_vertices, 2) = element(p-v+1,3);
-        element(p+v+num_vertices, 3) = element(p,4) + 2; % Add extra
-        element(p+v+num_vertices, 4) = element(p,4) + 2; % Degenerate coordinate
+        element(p+v+num_vertices, 1) = element(p-v+1,3);
+        element(p+v+num_vertices, 2) = element(p-v+1,4);
+        element(p+v+num_vertices, 3) = element(p,4) + num_vertices + 1; % Add extra
+        element(p+v+num_vertices, 4) = element(p,4) + num_vertices + 1; % Degenerate coordinate
+    end
+    for v = num_vertices:1
+        
     end
 end
 
-
-% ------------------------------------------------------------------------
-% -------------------------New 13/05/2020---------------------------------
-% ------------------------------------------------------------------------
-% Mesh connection to external structure
 if connection_flag
-    points
     
-    
+    for v = 1:num_vertices % There will be num_vertices extra points at first and last node
+        % The elements at the start
+        % 'p' is the last element (#elements)
+        element(p+v, 1) = element(v,1);
+        element(p+v, 2) = element(v,2);
+        element(p+v, 3) = element(p,4) + v; % Add extra
+        element(p+v, 4) = element(p,4) + v; % Degenerate coordinate
+        
+        % The elements at the end
+        element(p+v+num_vertices, 1) = element(p-v+1,4);
+        element(p+v+num_vertices, 2) = element(p-v+1,3);
+        element(p+v+num_vertices, 3) = element(p,4) + v + num_vertices; % Add extra
+        element(p+v+num_vertices, 4) = element(p,4) + v + num_vertices; % Degenerate coordinate
+        
+    end
+    p = length(element);
+    element(p-(2*num_vertices)+1:p-num_vertices,3:4) = circshift(element(p-(2*num_vertices)+1:p-num_vertices,3:4),5);
+    element(p-(num_vertices)+1:p,3:4) = circshift(element(p-(num_vertices)+1:p,3:4),-5);
 end
+
+
 
 quadElements = {};
 for node = 1:length(element)
