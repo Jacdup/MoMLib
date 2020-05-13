@@ -179,32 +179,13 @@ fourth = element(:,4);
 element(:,3) = fourth;
 element(:,4) = third;
 
-% ------------------------------------------------------------------------
-% -------------------------New 19/02/2020---------------------------------
-% ------------------------------------------------------------------------
-% Mesh degenerate quadrilaterals on the endcaps
-if endcap_flag
-    points(point_index + 1, 1:3) = Contour(1,:);
-    points(point_index + 2, 1:3) = Contour(end,:);
-    for v = 1:num_vertices % There will be num_vertices degenerate quads on the endcaps
-        % The elements at the start
-        % 'p' is the last element (#elements)
-        element(p+v, 1) = element(v,1);
-        element(p+v, 2) = element(v,2);
-        element(p+v, 3) = element(p,4) + 1; % Add extra
-        element(p+v, 4) = element(p,4) + 1; % Degenerate coordinate
+offset = 0;
 
-        % The elements at the end
-        element(p+v+num_vertices, 1) = element(p-v+1,3);
-        element(p+v+num_vertices, 2) = element(p-v+1,4);
-        element(p+v+num_vertices, 3) = element(p,4) + num_vertices + 1; % Add extra
-        element(p+v+num_vertices, 4) = element(p,4) + num_vertices + 1; % Degenerate coordinate
-        
-    end
-end
-
+% ------------------------------------------------------------------------
+% -------------------------New 13/05/2020---------------------------------
+% ------------------------------------------------------------------------
 if connection_flag
-    
+    offset = num_vertices*2;
     for v = 1:num_vertices % There will be num_vertices extra points at first and last node
         % The elements at the start
         % 'p' is the last element (#elements)
@@ -218,12 +199,42 @@ if connection_flag
         element(p+v+num_vertices, 2) = element(p-num_vertices+v,3);
         element(p+v+num_vertices, 3) = element(p,4) + v + num_vertices; % Add extra
         element(p+v+num_vertices, 4) = element(p,4) + v + num_vertices; % Degenerate coordinate
-        
     end
     p = length(element);
     element(p-(2*num_vertices)+1:p-num_vertices,3:4) = circshift(element(p-(2*num_vertices)+1:p-num_vertices,3:4),5);
     element(p-(num_vertices)+1:p,3:4) = circshift(element(p-(num_vertices)+1:p,3:4),5);
 end
+
+
+% ------------------------------------------------------------------------
+% -------------------------New 19/02/2020---------------------------------
+% ------------------------------------------------------------------------
+% Mesh degenerate quadrilaterals on the endcaps
+if endcap_flag
+    p = length(element);
+    point_index = length(points);
+    points(point_index + 1, 1:3) = Contour(1,:);
+    points(point_index + 2, 1:3) = Contour(end,:);
+    for v = 1:num_vertices % There will be num_vertices degenerate quads on the endcaps
+        % The elements at the start
+        % 'p' is the last element (#elements)
+        element(p+v, 1) = element(v,1);
+        element(p+v, 2) = element(v,2);
+        element(p+v, 3) = length(points)-1;
+        element(p+v, 4) = length(points)-1;
+%         element(p+v, 3) = element(p-offset,4) + 1; % Add extra
+%         element(p+v, 4) = element(p-offset,4) + 1; % Degenerate coordinate
+
+        % The elements at the end
+        element(p+v+num_vertices, 1) = element(p-offset-v+1,3);
+        element(p+v+num_vertices, 2) = element(p-offset-v+1,4);
+        element(p+v+num_vertices, 3) = length(points);
+        element(p+v+num_vertices, 4) = length(points);
+%         element(p+v+num_vertices, 3) = element(p-offset,4) + num_vertices + 1; % Add extra
+%         element(p+v+num_vertices, 4) = element(p-offset,4) + num_vertices + 1; % Degenerate coordinate
+    end
+end
+
 
 
 

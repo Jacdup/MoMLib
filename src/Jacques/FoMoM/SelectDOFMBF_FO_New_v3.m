@@ -224,7 +224,8 @@ B_cos(1:2,:)   = [MBF_mat(edge_nodes(:,1),4),MBF_mat(edge_nodes(:,2),4)]';
 % Multiply all diagonal edges
 
 if connection
-   theta(end-numVertices+1:end,:) = []; % TODO: dot endcaps with normal component of max 
+%    theta(end-numVertices+1:end,:) = []; % TODO: dot endcaps with normal component of max 
+   endCapExclude = 0;
 end
 
 B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];

@@ -2,6 +2,12 @@ function [new_triangles,triangles] = QuadtoTri(element, numVertices, endcap, con
 
 num_nodes = length(element);
 num_diff = 0;
+if connection_flag && endcap 
+   num_diff = (4*numVertices); 
+end
+if connection_flag + endcap == 1
+    num_diff = 2*numVertices;
+end
 
 % if connection_flag
 %     num_diff = (2*numVertices);
@@ -17,7 +23,7 @@ num_diff = 0;
 % end
 
 if endcap == 1 || connection_flag == 1
-    num_diff = (2*numVertices);
+%     num_diff = (2*numVertices);
     num_nodes = num_nodes - num_diff; % Since the last elements are already triangles
     triangle3 = zeros(num_diff,3);
     
