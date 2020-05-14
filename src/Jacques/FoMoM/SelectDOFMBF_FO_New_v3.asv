@@ -269,18 +269,14 @@ for MBF_num = 1:3
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
         if (numMBF>1) && (ceil(col_index/numMBF)) > numNodes+extra
-            if connection
-                col_index = col_index + 3;
-            else
-                col_index = col_index - 3;
-            end
+            col_index = col_index - 3;
         else
-                    col_index = col_index + numMBF;
+            %         col_index = col_index + numMBF;
         end
         
         % x_ind1 = (2*numVertices*(MBF_node-1))+1
         % x_ind2 = (2*numVertices*MBF_node)
-        if endCap && (MBF_node > numNodes + 1) % Last two
+        if MBF_node > numNodes + 1 % Last two
             col_index = col_index + 3;
             U_Mat(DOF_mat(1:2:end/2,MBF_node),col_index) = X(1,(2*numVertices*(MBF_node-1))+1:(2*numVertices*MBF_node)-numVertices); % RWG
             U_Mat(DOF_mat(2:2:end/2,MBF_node),col_index) = X(2,(2*numVertices*(MBF_node-1))+1:(2*numVertices*MBF_node)-numVertices); % Linear

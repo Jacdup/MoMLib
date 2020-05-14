@@ -1,4 +1,4 @@
-function [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = SelectDOFMBF_FO_New(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap)
+function [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = SelectDOFMBF_FO_New(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap, connection)
 
 % -------------------------------------------------------------------------
 % Init
@@ -169,8 +169,13 @@ for MBF_num = 1:3
     node2 = 1;
     node3 = 1;
     for MBF_node = 1:numNodes_new
+        if (connection) && MBF_node == numNodes_new
+            col_iter = col_iter + 3;
+        end
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
+        
+
 
                U_Mat(DOF_mat1(1:2:end,MBF_node),col_index) = X1(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
                U_Mat(DOF_mat1(2:2:end,MBF_node),col_index) = X1(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
