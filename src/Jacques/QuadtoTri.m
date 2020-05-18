@@ -6,7 +6,7 @@ if connection_flag && endcap
    num_diff = (6*numVertices); 
 end
 if connection_flag == 1 && endcap == 0
-   num_diff = 4 * numVertices; 
+   num_diff = 2 * numVertices; 
 end
 if connection_flag == 0 && endcap == 1
     num_diff = 2*numVertices;

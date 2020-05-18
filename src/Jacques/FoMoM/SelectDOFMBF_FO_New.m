@@ -5,17 +5,14 @@ function [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = SelectDOFMBF_FO_New(mesh_data, 
 % -------------------------------------------------------------------------
 phi = 360/numVertices;
 vert_num = (2*numVertices)-1;
-if endCap && (connection == 0)
+if endCap || connection
     numNodes_new = numNodes + 2;
     endCapExclude = (2*numVertices); % exclude last (2*numVertices) from i/row assignment
     connectionExclude = 0;
-elseif connection && endCap == 0
-    numNodes_new = numNodes +2;
-    endCapExclude = (2*numVertices);
-    connectionExclude = 2*numVertices; % No axial MBF defined on the outermost connection triangles
 else
     numNodes_new = numNodes; 
     endCapExclude = 0;
+    connectionExclude = 0;
 end
 
 
@@ -168,7 +165,7 @@ temp = (orientation_vec(2,:) == 1);
 % temp(595:612) = [];
 Rho2(:,:,temp(:) == 1) = Rho2(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
 
-if endCap == 1
+if endCap || connection
     Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];
 else
 %      Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];

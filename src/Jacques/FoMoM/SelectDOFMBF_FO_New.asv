@@ -8,14 +8,15 @@ vert_num = (2*numVertices)-1;
 if endCap && (connection == 0)
     numNodes_new = numNodes + 2;
     endCapExclude = (2*numVertices); % exclude last (2*numVertices) from i/row assignment
-    connectionExclude 
+    connectionExclude = 0;
 elseif connection && endCap == 0
     numNodes_new = numNodes +2;
     endCapExclude = (2*numVertices);
-    connectionExclude = 2*numVertices; % No axial MBF defined on the outermost connection triangles
+    connectionExclude = 0; % No axial MBF defined on the outermost connection triangles
 else
     numNodes_new = numNodes; 
     endCapExclude = 0;
+    connectionExclude = 0;
 end
 
 

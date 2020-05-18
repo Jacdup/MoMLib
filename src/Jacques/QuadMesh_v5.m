@@ -205,24 +205,24 @@ if connection_flag
     element(p-(num_vertices)+1:p,3:4) = circshift(element(p-(num_vertices)+1:p,3:4),5);
     
     
-    % Now to form secondary elements between each 'flag' element
-    for v = 1:num_vertices
-        next_ind = p- (2*num_vertices) + mod(v-1,num_vertices)+1;
-        prev_ind = p- (2*num_vertices) + mod(v-2,num_vertices)+1;
-       % Elements at the start node
-       element(p+v,1) = element(v,1);
-       element(p+v,2) = element(next_ind,3);
-       element(p+v,3) = element(prev_ind,3);
-       element(p+v,4) = element(prev_ind,3); % Degenerate. Don't really care about this.
+%     % Now to form secondary elements between each 'flag' element
+%     for v = 1:num_vertices
+%         next_ind = p- (2*num_vertices) + mod(v-1,num_vertices)+1;
+%         prev_ind = p- (2*num_vertices) + mod(v-2,num_vertices)+1;
+%        % Elements at the start node
+%        element(p+v,1) = element(v,1);
+%        element(p+v,2) = element(next_ind,3);
+%        element(p+v,3) = element(prev_ind,3);
+%        element(p+v,4) = element(prev_ind,3); % Degenerate. Don't really care about this.
+%        
+%        % Elements at the last node
+%        element(p+v+num_vertices,1) = element(p-num_vertices+v,1);
+%        element(p+v+num_vertices,2) = element(next_ind + num_vertices,3);
+%        element(p+v+num_vertices,3) = element(prev_ind + num_vertices,3);
+%        element(p+v+num_vertices,4) = element(prev_ind + num_vertices,3); % Degenerate. Don't really care about this.
        
-       % Elements at the last node
-       element(p+v+num_vertices,1) = element(p-num_vertices+v,1);
-       element(p+v+num_vertices,2) = element(next_ind + num_vertices,3);
-       element(p+v+num_vertices,3) = element(prev_ind + num_vertices,3);
-       element(p+v+num_vertices,4) = element(prev_ind + num_vertices,3); % Degenerate. Don't really care about this.
        
-       
-    end
+%     end
 %    
 %     TR = triangulation(tri_nodes,points);
 %     N = nearestNeighbor(TR, points);

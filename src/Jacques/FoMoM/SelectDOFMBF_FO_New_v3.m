@@ -14,16 +14,15 @@ DOF_mat = zeros(numVertices*2,numNodes+1);
 % if connection 
 %     endCapExclude = 4*numVertices;
 % else
-if endCap || connection
+if endCap && (connection==0)
     endCapExclude = (2*numVertices);
     connectionInclude = 0;
+elseif connection
+    endCapExclude = 0;
+    connectionExclude = (2*numVertices);
 else
     endCapExclude = 0;
     connectionInclude = 0;
-end
-if connection
-   numMBFNodes = numMBFNodes +(2*numVertices); 
-   connectionInclude = 2*numVertices;
 end
 
 EPS = 0.0001;
@@ -65,7 +64,7 @@ Rho = [1,1;1,-1];
 Rho = repmat(Rho, 1,1,length(triangle_blah));
 
 % Fill each column of matrix with DOFs for each MBF
-for i = 1:2:length(triangle_blah)-endCapExclude-connectionInclude% Every odd row
+for i = 1:2:length(triangle_blah)-endCapExclude-connectionExclude% Every odd row
     row = row + 4;
     
     DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
@@ -100,10 +99,10 @@ for i = 1:2:length(triangle_blah)-endCapExclude-connectionInclude% Every odd row
     end
 end
 next = 0;
-if endCap || connection
+if endCap
     
     if connection
-       skip = 1;  % Then there are double as many edges on the last MBF node
+       skip = 2;  % Then there are double as many edges on the last MBF node
     else
         skip = 2;
     end
@@ -121,19 +120,19 @@ if endCap || connection
             Rho(:,:,i) = [-1,1;-1,-1];
         end
         
-        if connection
-           DOF_mat(row:row+3,col) = [triangle_blah(i,9);triangle_blah(i,15);triangle_blah(i,8);triangle_blah(i,14)];
-        else
+%         if connection
+%            DOF_mat(row:row+3,col) = [triangle_blah(i,9);triangle_blah(i,15);triangle_blah(i,8);triangle_blah(i,14)];
+%         else
            DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];  
-        end
+%         end
         
         
-        if (row == (2*numVertices)-3+connectionInclude)
-            if connection
-                DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,9);triangle_blah(i,15)];
-            else
+        if (row == (2*numVertices)-3)
+%             if connection
+%                 DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,9);triangle_blah(i,15)];
+%             else
                 DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
-            end
+%             end
             
             next = 1;
             
@@ -150,11 +149,11 @@ if endCap || connection
         sign2 = triangle_blah(i,4); % Should always be 1
         sign3 = triangle_blah(i,10); % Should always be -1
         sign4 = triangle_blah(i,11); % Should always be -1
-        if connection
-            DOF_mat(row:row+3,col) = [triangle_blah(i,9);triangle_blah(i,15);triangle_blah(i,8);triangle_blah(i,14)];
-        else
+%         if connection
+%             DOF_mat(row:row+3,col) = [triangle_blah(i,9);triangle_blah(i,15);triangle_blah(i,8);triangle_blah(i,14)];
+%         else
            DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];  
-        end
+%         end
 %         Rho(:,:,i) = [1,-1;1,1];
 %         Rho(:,:,i+1) = [1,-1;1,1];
         if sign3 < 0
@@ -163,29 +162,29 @@ if endCap || connection
         if sign4 < 0
             Rho(:,:,i+1) = [1,1;1,-1];
         end
-        if (row == (2*numVertices)-3+connectionInclude)
-            if connection
-                DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,9);triangle_blah(i,15)];
-            else
-                DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
-            end
-            next = 1;
-%             if sign1*sign2 == 1
-%                 Rho(:,:,i+1) = [-1,-1;-1,1];
-%                 if sign3 < 0
-%                     Rho(:,:,i+1) = [-1,1;-1,-1];
-%                 end
-%                 if sign4 < 0
-%                     Rho(:,:,i) = [-1,1;-1,-1];
-%                 end
+        if (row == (2*numVertices)-3)
+%             if connection
+%                 DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,9);triangle_blah(i,15)];
 %             else
-%                 if sign3 < 0
-%                     Rho(:,:,i+1) = [1,1;1,-1];
-%                 end
-%                 if sign4 < 0
-%                     Rho(:,:,i) = [1,1;1,-1];
-%                 end
+                DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
 %             end
+            next = 1;
+            if sign1*sign2 == 1
+                Rho(:,:,i+1) = [-1,-1;-1,1];
+                if sign3 < 0
+                    Rho(:,:,i+1) = [-1,1;-1,-1];
+                end
+                if sign4 < 0
+                    Rho(:,:,i) = [-1,1;-1,-1];
+                end
+            else
+                if sign3 < 0
+                    Rho(:,:,i+1) = [1,1;1,-1];
+                end
+                if sign4 < 0
+                    Rho(:,:,i) = [1,1;1,-1];
+                end
+            end
 
             row = -3;
             col = col+1;
@@ -246,12 +245,12 @@ if endCap
     
     % Angle between every endcap edge and first edge in edge_vecs
 end
-if connection
-    extra = 2;
-%     connectionInclude = 0;
-%     endCapExclude = 0;
-    theta(end+1-connectionInclude:end,:) = []; % TODO: dot endcaps with normal component of max 
-end
+% if connection
+%     extra = 1;
+% %     connectionInclude = 0;
+% %     endCapExclude = 0;
+% %     theta(end+1-connectionInclude:end,:) = []; % TODO: dot endcaps with normal component of max 
+% end
 % theta(numMBFNodes+1: numMBFNodes+1+endCapExclude,:) = 0;
 % theta      = [theta,theta];
 
@@ -266,9 +265,9 @@ B_cos(1:2,:)   = [MBF_mat(edge_nodes(:,1),4),MBF_mat(edge_nodes(:,2),4)]';
 %    endCapExclude = 0;
 % end
 
-B_const(:,2:2:end-endCapExclude-connectionInclude) = B_const(:,2:2:end-endCapExclude-connectionInclude) .* [sind(theta)';sind(theta)'];
-B_sin(:,2:2:end-endCapExclude-connectionInclude) = B_sin(:,2:2:end-endCapExclude-connectionInclude) .* [sind(theta)';sind(theta)'];
-B_cos(:,2:2:end-endCapExclude-connectionInclude) = B_cos(:,2:2:end-endCapExclude-connectionInclude) .*[sind(theta)';sind(theta)'];
+B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
+B_sin(:,2:2:end-endCapExclude) = B_sin(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
+B_cos(:,2:2:end-endCapExclude) = B_cos(:,2:2:end-endCapExclude) .*[sind(theta)';sind(theta)'];
 if endCap == 1
 
     %    B_const(:,first_endcap) = B_const(:,first_endcap) .* sind(theta1)';
