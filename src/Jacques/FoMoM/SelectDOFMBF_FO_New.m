@@ -8,6 +8,7 @@ vert_num = (2*numVertices)-1;
 if endCap && (connection == 0)
     numNodes_new = numNodes + 2;
     endCapExclude = (2*numVertices); % exclude last (2*numVertices) from i/row assignment
+    connectionExclude = 0;
 elseif connection && endCap == 0
     numNodes_new = numNodes +2;
     endCapExclude = (2*numVertices);
