@@ -3,10 +3,14 @@ function [new_triangles,triangles] = QuadtoTri(element, numVertices, endcap, con
 num_nodes = length(element);
 num_diff = 0;
 if connection_flag && endcap 
-   num_diff = (4*numVertices); 
+   num_diff = (6*numVertices); 
 end
-if connection_flag + endcap == 1
+if connection_flag == 1 && endcap == 0
+   num_diff = 4 * numVertices; 
+end
+if connection_flag == 0 && endcap == 1
     num_diff = 2*numVertices;
+%     num_diff = 4*numVertices; % temporary
 end
 
 % if connection_flag

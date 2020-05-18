@@ -11,7 +11,9 @@ phi = 360/numVertices;
 numMBFNodes = (numNodes+2)*numVertices;
 DOF_mat = zeros(numVertices*2,numNodes+1);
 % theta1 = 
-
+% if connection 
+%     endCapExclude = 4*numVertices;
+% else
 if endCap || connection
     endCapExclude = (2*numVertices);
 else
@@ -275,7 +277,7 @@ for MBF_num = 1:3
                 col_index = col_index - 3;
             end
         else
-                    col_index = col_index + numMBF;
+%                     col_index = col_index + numMBF;
         end
         
         % x_ind1 = (2*numVertices*(MBF_node-1))+1
