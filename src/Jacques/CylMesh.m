@@ -1,4 +1,4 @@
- function [points,quadElements, element] = QuadMesh_v5(Contour,num_vertices,rho, cyl_def)
+ function [points,quadElements, element] = CylMesh(Contour,num_vertices,rho, cyl_def)
 % -------------------------------------------------------------------------
 %     Create tube with planar quadrilateral meshing
 %     V5.0 This function meshes a straight or curved section of wire
@@ -262,45 +262,53 @@ if cyl_def.firstNode == "endCap" || cyl_def.lastNode == "endCap"
     point_index = length(points);
     
     if cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap"
-        
-        points(point_index + 1, 1:3) = [0,0,0];
-        points(point_index + 2, 1:3) = [0,0,0];
-    elseif cyl_def.lastNode == "endCap" && cyl_def.firstNode == "endCap"
-        
-    else 
-        
+        first_index = point_index +1;
+        second_index = point_index +2;
+        second_offset = num_vertices;
+        points(first_index, 1:3) = [0,0,0];
+        points(second_index, 1:3) = [0,0,0];
+    elseif cyl_def.lastNode == "endCap" && cyl_def.firstNode ~= "endCap"
+       second_offset = 0;
+        first_index = 0;
+        second_index = point_index +1;
+        points(second_index, 1:3) = [0,0,0];
+    elseif cyl_def.lastNode ~= "endCap" && cyl_def.firstNode == "endCap"
+        second_offset = 0;
+        first_index = point_index +1;
+        second_index = 0;
+        points(first_index, 1:3) = [0,0,0];
     end
     
     for v = 1:num_vertices % There will be num_vertices degenerate quads on the endcaps
         
         if cyl_def.firstNode == "endCap"
             % Average out the points at the end nodes
-             points(point_index + 1, 1:3) = points(point_index + 1, 1:3) + points(v,1:3); % First node
+             points(first_index, 1:3) = points(first_index, 1:3) + points(v,1:3); % First node
             % The elements at the start
             % 'p' is the last element (#elements)
             element(p+v, 1) = element(v,1);
             element(p+v, 2) = element(v,2);
-            element(p+v, 3) = length(points)-1; % Second to last point in points matrix
-            element(p+v, 4) = length(points)-1;
+            element(p+v, 3) = first_index; % Second to last point in points matrix
+            element(p+v, 4) = first_index;
         end
 
         % The elements at the end
         if cyl_def.lastNode == "endCap"
              % Average out the points at the end nodes
-            points(point_index + 2, 1:3) = points(point_index + 2, 1:3) + points(point_index-v+1,1:3); % Last node
+            points(second_index, 1:3) = points(second_index, 1:3) + points(point_index-v+1,1:3); % Last node
             
-            element(p+v+num_vertices, 1) = element(p-offset-v+1,3);
-            element(p+v+num_vertices, 2) = element(p-offset-v+1,4);
-            element(p+v+num_vertices, 3) = length(points); % Last point in points matrix
-            element(p+v+num_vertices, 4) = length(points);
+            element(p+v+second_offset, 1) = element(p-offset-v+1,3);
+            element(p+v+second_offset, 2) = element(p-offset-v+1,4);
+            element(p+v+second_offset, 3) = second_index; % Last point in points matrix
+            element(p+v+second_offset, 4) = second_index;
         end
     end
     
     if cyl_def.firstNode == "endCap"
-         points(point_index +1,1:3) = points(point_index+1,1:3)/num_vertices;
+         points(first_index,1:3) = points(first_index,1:3)/num_vertices;
     end
     if cyl_def.lastNode == "endCap"
-         points(point_index +2,1:3) = points(point_index+2,1:3)/num_vertices;
+         points(second_index,1:3) = points(second_index,1:3)/num_vertices;
     end
    
 end
