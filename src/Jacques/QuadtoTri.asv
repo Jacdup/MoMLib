@@ -12,9 +12,7 @@ end
 if cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap"
     num_diff = 2*numVertices;
 %     num_diff = 4*numVertices; % temporary
-elseif (cyl_def.firstNode == "endCap" && cyl_def.lastNode ~= "endCap") || (cyl_def.firstNode ~= "endCap" && cyl_def.lastNode == "endCap")
-   num_diff = numVertices; 
-end
+elseif cyl_def.firstNode == "endCap" && cyl_def.lastNode ~= "en
 
 % if connection_flag
 %     num_diff = (2*numVertices);
@@ -29,7 +27,7 @@ end
 %     end
 % end
 
-if cyl_def.lastNode == "endCap" || cyl_def.firstNode == "endCap"
+if endcap || connection_flag 
 %     num_diff = (2*numVertices);
     num_nodes = num_nodes - num_diff; % Since the last elements are already triangles
     triangle3 = zeros(num_diff,3);
@@ -64,7 +62,7 @@ end
 triangles = zeros(length(triangle1)*2 + num_diff,3);
 triangles(1:2:end-1-num_diff,1:3) = triangle1;
 triangles(2:2:end-num_diff,1:3)   = triangle2;
-if cyl_def.lastNode == "endCap" || cyl_def.firstNode == "endCap"
+if (endcap == 1) || (connection_flag == 1)
     triangles(end-num_diff+1:end, 1:3) = triangle3;
 end
 new_triangles = triangles;

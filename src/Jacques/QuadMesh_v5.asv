@@ -1,4 +1,4 @@
- function [points,quadElements, element] = QuadMesh_v5(Contour,num_vertices,rho, endcap_flag, connection_flag)
+ function [points,quadElements, element] = QuadMesh_v5(Contour,num_vertices,rho, cyl_def)
 % -------------------------------------------------------------------------
 %     Create tube with planar quadrilateral meshing
 %     V5.0 This function meshes a straight or curved section of wire
@@ -159,19 +159,20 @@ p1 = point_index;
 % ------------------------------------------------------------------------
 % Mesh connection to external structure
 % Add points for connection to external plate/structure
-if connection_flag
-   point_index      = point_index - num_vertices;               % Start at beginning of last node
-%    point_index_next = mod(point_index+1, num_vertices) + p1 - num_vertices;    % Next point/vertex
-   point_index_next = mod(point_index, num_vertices) + 1;    % Next point/vertex
-    for p = 1:num_vertices
-        connection_index = point_index + p + num_vertices; % Create new set of points
-        % Create points at first node
-        points(connection_index,1:3) = 2 * cross((points(point_index+p,:) + points(point_index_next+p,:))/2,norm_vec); % Scaled point in midpoint of prev and next point
-    end
-    % Repeat elements for last node
-    points(end+1:end + num_vertices,:) = [repelem(Contour(end,1),num_vertices)',points(end - (num_vertices) +1:end,2:3)]; 
-    
-end
+
+% if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn" 
+%    point_index      = point_index - num_vertices;               % Start at beginning of last node
+% %    point_index_next = mod(point_index+1, num_vertices) + p1 - num_vertices;    % Next point/vertex
+%    point_index_next = mod(point_index, num_vertices) + 1;    % Next point/vertex
+%     for p = 1:num_vertices
+%         connection_index = point_index + p + num_vertices; % Create new set of points
+%         % Create points at first node
+%         points(connection_index,1:3) = 2 * cross((points(point_index+p,:) + points(point_index_next+p,:))/2,norm_vec); % Scaled point in midpoint of prev and next point
+%     end
+%     % Repeat elements for last node
+%     points(end+1:end + num_vertices,:) = [repelem(Contour(end,1),num_vertices)',points(end - (num_vertices) +1:end,2:3)]; 
+%     
+% end
 
 
 
@@ -205,50 +206,50 @@ offset = 0;
 % ------------------------------------------------------------------------
 % -------------------------New 13/05/2020---------------------------------
 % ------------------------------------------------------------------------
-if connection_flag
-    offset = num_vertices*4;
-    for v = 1:num_vertices % There will be num_vertices extra points at first and last node
-        % The elements at the start
-        % 'p' is the last element (#elements)
-        element(p+v, 1) = element(v,1);
-        element(p+v, 2) = element(v,2);
-        element(p+v, 3) = element(p,4) + v; % Add extra
-        element(p+v, 4) = element(p,4) + v; % Degenerate coordinate
-        
-        % The elements at the end
-        element(p+v+num_vertices, 1) = element(p-num_vertices+v,4);
-        element(p+v+num_vertices, 2) = element(p-num_vertices+v,3);
-        element(p+v+num_vertices, 3) = element(p,4) + v + num_vertices; % Add extra
-        element(p+v+num_vertices, 4) = element(p,4) + v + num_vertices; % Degenerate coordinate
-    end
-    p = length(element);
-    element(p-(2*num_vertices)+1:p-num_vertices,3:4) = circshift(element(p-(2*num_vertices)+1:p-num_vertices,3:4),round(num_vertices/4));
-    element(p-(num_vertices)+1:p,3:4) = circshift(element(p-(num_vertices)+1:p,3:4),round(num_vertices/4));
-    
-    
-%     % Now to form secondary elements between each 'flag' element
-%     for v = 1:num_vertices
-%         next_ind = p- (2*num_vertices) + mod(v-1,num_vertices)+1;
-%         prev_ind = p- (2*num_vertices) + mod(v-2,num_vertices)+1;
-%        % Elements at the start node
-%        element(p+v,1) = element(v,1);
-%        element(p+v,2) = element(next_ind,3);
-%        element(p+v,3) = element(prev_ind,3);
-%        element(p+v,4) = element(prev_ind,3); % Degenerate. Don't really care about this.
-%        
-%        % Elements at the last node
-%        element(p+v+num_vertices,1) = element(p-num_vertices+v,1);
-%        element(p+v+num_vertices,2) = element(next_ind + num_vertices,3);
-%        element(p+v+num_vertices,3) = element(prev_ind + num_vertices,3);
-%        element(p+v+num_vertices,4) = element(prev_ind + num_vertices,3); % Degenerate. Don't really care about this.
-       
-       
+% if connection_flag
+%     offset = num_vertices*4;
+%     for v = 1:num_vertices % There will be num_vertices extra points at first and last node
+%         % The elements at the start
+%         % 'p' is the last element (#elements)
+%         element(p+v, 1) = element(v,1);
+%         element(p+v, 2) = element(v,2);
+%         element(p+v, 3) = element(p,4) + v; % Add extra
+%         element(p+v, 4) = element(p,4) + v; % Degenerate coordinate
+%         
+%         % The elements at the end
+%         element(p+v+num_vertices, 1) = element(p-num_vertices+v,4);
+%         element(p+v+num_vertices, 2) = element(p-num_vertices+v,3);
+%         element(p+v+num_vertices, 3) = element(p,4) + v + num_vertices; % Add extra
+%         element(p+v+num_vertices, 4) = element(p,4) + v + num_vertices; % Degenerate coordinate
 %     end
-%    
-%     TR = triangulation(tri_nodes,points);
-%     N = nearestNeighbor(TR, points);
-%     testd = delaunayTriangulation(points);
-end
+%     p = length(element);
+%     element(p-(2*num_vertices)+1:p-num_vertices,3:4) = circshift(element(p-(2*num_vertices)+1:p-num_vertices,3:4),round(num_vertices/4));
+%     element(p-(num_vertices)+1:p,3:4) = circshift(element(p-(num_vertices)+1:p,3:4),round(num_vertices/4));
+%     
+%     
+% %     % Now to form secondary elements between each 'flag' element
+% %     for v = 1:num_vertices
+% %         next_ind = p- (2*num_vertices) + mod(v-1,num_vertices)+1;
+% %         prev_ind = p- (2*num_vertices) + mod(v-2,num_vertices)+1;
+% %        % Elements at the start node
+% %        element(p+v,1) = element(v,1);
+% %        element(p+v,2) = element(next_ind,3);
+% %        element(p+v,3) = element(prev_ind,3);
+% %        element(p+v,4) = element(prev_ind,3); % Degenerate. Don't really care about this.
+% %        
+% %        % Elements at the last node
+% %        element(p+v+num_vertices,1) = element(p-num_vertices+v,1);
+% %        element(p+v+num_vertices,2) = element(next_ind + num_vertices,3);
+% %        element(p+v+num_vertices,3) = element(prev_ind + num_vertices,3);
+% %        element(p+v+num_vertices,4) = element(prev_ind + num_vertices,3); % Degenerate. Don't really care about this.
+%        
+%        
+% %     end
+% %    
+% %     TR = triangulation(tri_nodes,points);
+% %     N = nearestNeighbor(TR, points);
+% %     testd = delaunayTriangulation(points);
+% end
 %  [tri_nodes,triangles] = QuadtoTri(element, num_vertices, 0,1);
 
 %  PlotMesh(points,tri_nodes, tri_nodes, 1);
@@ -256,35 +257,52 @@ end
 % -------------------------New 19/02/2020---------------------------------
 % ------------------------------------------------------------------------
 % Mesh degenerate quadrilaterals on the endcaps
-if endcap_flag
+if cyl_def.firstNode == "endCap" || cyl_def.lastNode == "endCap"
     p = length(element);
     point_index = length(points);
     
-    points(point_index + 1, 1:3) = [0,0,0];
-    points(point_index + 2, 1:3) = [0,0,0];
+    if cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap"
+        
+        points(point_index + 1, 1:3) = [0,0,0];
+        points(point_index + 2, 1:3) = [0,0,0];
+    elseif cyl_def.lastNode == "endCap" && cyl_def.firstNode == "endCap"
+        
+    else 
+        
+    end
     
     for v = 1:num_vertices % There will be num_vertices degenerate quads on the endcaps
         
-        % Average out the points at the end nodes
-        points(point_index + 1, 1:3) = points(point_index + 1, 1:3) + points(v,1:3); % First node
-        points(point_index + 2, 1:3) = points(point_index + 2, 1:3) + points(point_index-v+1,1:3); % Last node
-        
-        
-        % The elements at the start
-        % 'p' is the last element (#elements)
-        element(p+v, 1) = element(v,1);
-        element(p+v, 2) = element(v,2);
-        element(p+v, 3) = length(points)-1; % Second to last point in points matrix
-        element(p+v, 4) = length(points)-1;
+        if cyl_def.firstNode == "endCap"
+            % Average out the points at the end nodes
+             points(point_index + 1, 1:3) = points(point_index + 1, 1:3) + points(v,1:3); % First node
+            % The elements at the start
+            % 'p' is the last element (#elements)
+            element(p+v, 1) = element(v,1);
+            element(p+v, 2) = element(v,2);
+            element(p+v, 3) = length(points)-1; % Second to last point in points matrix
+            element(p+v, 4) = length(points)-1;
+        end
 
         % The elements at the end
-        element(p+v+num_vertices, 1) = element(p-offset-v+1,3);
-        element(p+v+num_vertices, 2) = element(p-offset-v+1,4);
-        element(p+v+num_vertices, 3) = length(points); % Last point in points matrix
-        element(p+v+num_vertices, 4) = length(points);
+        if cyl_def.lastNode == "endCap"
+             % Average out the points at the end nodes
+            points(point_index + 2, 1:3) = points(point_index + 2, 1:3) + points(point_index-v+1,1:3); % Last node
+            
+            element(p+v+num_vertices, 1) = element(p-offset-v+1,3);
+            element(p+v+num_vertices, 2) = element(p-offset-v+1,4);
+            element(p+v+num_vertices, 3) = length(points); % Last point in points matrix
+            element(p+v+num_vertices, 4) = length(points);
+        end
     end
-    points(point_index +1,1:3) = points(point_index+1,1:3)/num_vertices;
-    points(point_index +2,1:3) = points(point_index+2,1:3)/num_vertices;
+    
+    if cyl_def.firstNode == "endCap"
+         points(point_index +1,1:3) = points(point_index+1,1:3)/num_vertices;
+    end
+    if cyl_def.lastNode == "endCap"
+         points(point_index +2,1:3) = points(point_index+2,1:3)/num_vertices;
+    end
+   
 end
 
 
