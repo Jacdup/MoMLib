@@ -141,7 +141,7 @@ theta_2      =  abs(90 - acosd(dot(edge_vecs_1(1:lim,:),edge_vecs_3,2)./(vecnorm
 % quiver3(mesh_data.node_coords(edge_nodes_2(:,1),1),mesh_data.node_coords(edge_nodes_2(:,1),2),mesh_data.node_coords(edge_nodes_2(:,1),3),edge_vecs_2(:,1),edge_vecs_2(:,2),edge_vecs_2(:,3))
 
 
-% Take care of last elements in ring, where local edges are switched
+% Take care of last elements in ring, where local edges are switched:
 if endCap == 0 && connection == 0
     orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))';
     %      orientation_vec = (edge_nodes_1 == MBF_mat((numVertices*2)+1:end-(numVertices*2),1))'; % For coupling

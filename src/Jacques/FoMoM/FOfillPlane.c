@@ -239,6 +239,7 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
     double w = 2*M_PI*freq;
     double eps = 8.85418781761e-12;
     
+  
     int i, j, ii, jj, iter;
     int oip;
     
@@ -265,7 +266,11 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
             int pbasisindex[6] = {pTri[6],pTri[7],pTri[8],pTri[12], pTri[13], pTri[14]};
 //         }
         
-        
+            if ((abs(pTri[10]) != 1) && (abs(pTri[10]) != 2) ){ // Checks if there are extra columns. If not, solve standard RWG.
+                    order = 0;
+            }else{
+                order = 1;
+            }
 //         int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
 
         if (ObserverOnTriangle(pbasisindex, obs_map, order))

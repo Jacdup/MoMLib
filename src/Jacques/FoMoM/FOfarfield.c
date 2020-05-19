@@ -369,6 +369,11 @@ void farfield(double freq, int P, int T, double *points, double  *triangles, int
                             (int)(triangles[T*13 + i]),(int)(triangles[T*14 + i])};
 //                   int pbasisindex[6] = {pTri[6],pTri[7],pTri[8],pTri[12], pTri[13], pTri[14]};
 //         }
+            if ((abs(pTri[10]) != 1) && (abs(pTri[10]) != 2) ){ // Checks if there are extra columns. If not, solve standard RWG.
+                order = 0;
+            }else{
+                order = 1;
+            }
 			double pArea = TriangleArea(pPoints);
 			//mexPrintf("area %d = %f\n", i,pArea);
 			

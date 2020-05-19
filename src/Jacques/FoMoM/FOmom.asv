@@ -584,8 +584,6 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
 	int count_12_12 = 0;
 	int count_16_16 = 0;
     int count = 0;
-    int pOrder = 0;
-    int qOrder = 0;
     
     //clock stuff
 	clock_t StartInner, EndInner;
@@ -615,11 +613,7 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                             (int)(triangles[T*13 + i]),(int)(triangles[T*14 + i])};
             int pbasisindex[6] = {pTri[6],pTri[7],pTri[8],pTri[12], pTri[13], pTri[14]};
 //         }
-            if ((abs(pTri[10]) != 1) && (abs(pTri[10]) != 2) ){ // Checks if there are extra columns. If not, solve standard RWG.
-                pOrder = 0;
-            }else{
-                pOrder = 1;
-            }
+        
         
         if (ObserverOnTriangle(pbasisindex, obs_map, order))
         {
@@ -647,11 +641,6 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                     (int)(triangles[T*13 + j]),(int)(triangles[T*14 + j])};
                     int qbasisindex[6] = {qTri[6],qTri[7],qTri[8],qTri[12],qTri[13],qTri[14]};
 //                 }
-                if ((abs(qTri[10]) != 1) && (abs(qTri[10]) != 2) ){ // Checks if there are extra columns. If not, solve standard RWG.
-                    qOrder = 0;
-                }else{
-                     qOrder = 1;
-                }
                 //below checks if any single edge in the triangle has a basis function defined over it
                 
                 //WIll only come in here if there is source and observer, this is the only time actual memory will be allocated for the solutions
@@ -962,8 +951,10 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                         //----------------------------------------------------------------------------------------------------------------------------------
                         //----------------------------------------------------------------------------------------------------------------------------------	
                     int pEdgeIndex;
-
-                    for (ii=0; ii<(3+(3*pOrder)); ii++) //Edges of observation triangle
+                    if ((abs(pTri[10]) != 1) && (abs(pTri[10]) != 2) ){ // Checks if there are extra columns. If not, solve standard RWG.
+                        order = 0;
+                    }
+                    for (ii=0; ii<(3+(3*order)); ii++) //Edges of observation triangle
                     {	// This checks if the edge is a DOF and returns the edges index in the edge list
                         // pEdgeIndex will determine the row of this interaction on the Zmat
                         if (ii<3){
@@ -991,7 +982,7 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                 ParametricMap(pPoints, OuterIntPoints[oip], outerRuv);
                                 
                                 int qEdgeIndex;
-                                for (jj=0; jj<(3+(3*qOrder)); jj++) //Edges of testing triangle
+                                for (jj=0; jj<(3+(3*order)); jj++) //Edges of testing triangle
                                 { 
                                     if (jj<3){
                                         qEdgeIndex = qTri[6+(jj+2)%3];

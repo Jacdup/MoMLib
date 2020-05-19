@@ -133,7 +133,7 @@ for node = 1:num_nodes
         
     end
 end
-
+p1 = point_index;
 % ------------------------------------------------------------------------
 % -------------------------New 13/05/2020---------------------------------
 % ------------------------------------------------------------------------
@@ -141,7 +141,8 @@ end
 % Add points for connection to external plate/structure
 if connection_flag
    point_index      = point_index - num_vertices;               % Start at beginning of last node
-   point_index_next = mod(point_index + 1, num_vertices) + 1;    % Next point/vertex
+%    point_index_next = mod(point_index+1, num_vertices) + p1 - num_vertices;    % Next point/vertex
+   point_index_next = mod(point_index, num_vertices) + 1;    % Next point/vertex
     for p = 1:num_vertices
         connection_index = point_index + p + num_vertices; % Create new set of points
         % Create points at first node
@@ -201,8 +202,8 @@ if connection_flag
         element(p+v+num_vertices, 4) = element(p,4) + v + num_vertices; % Degenerate coordinate
     end
     p = length(element);
-    element(p-(2*num_vertices)+1:p-num_vertices,3:4) = circshift(element(p-(2*num_vertices)+1:p-num_vertices,3:4),5);
-    element(p-(num_vertices)+1:p,3:4) = circshift(element(p-(num_vertices)+1:p,3:4),5);
+    element(p-(2*num_vertices)+1:p-num_vertices,3:4) = circshift(element(p-(2*num_vertices)+1:p-num_vertices,3:4),round(num_vertices/4));
+    element(p-(num_vertices)+1:p,3:4) = circshift(element(p-(num_vertices)+1:p,3:4),round(num_vertices/4));
     
     
 %     % Now to form secondary elements between each 'flag' element
