@@ -1,22 +1,18 @@
-function [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = SelectDOFMBF_FO_New(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap, connection)
+function [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = MBF_Axial(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap, connection)
 
 % -------------------------------------------------------------------------
 % Init
 % -------------------------------------------------------------------------
 phi = 360/numVertices;
 vert_num = (2*numVertices)-1;
-if endCap && (connection == 0)
+if endCap || connection
+     % In the connection case, the setup is exactly the same as the endcap,
+    % since it is a special case of the endcap
     numNodes_new = numNodes + 2;
     endCapExclude = (2*numVertices); % exclude last (2*numVertices) from i/row assignment
-    connectionExclude = 0;
-elseif connection && endCap == 0
-    numNodes_new = numNodes +2;
-    endCapExclude = (2*numVertices);
-    connectionExclude = 0; % No axial MBF defined on the outermost connection triangles
 else
     numNodes_new = numNodes; 
     endCapExclude = 0;
-    connectionExclude = 0;
 end
 
 
@@ -25,13 +21,12 @@ numMBFNodes = numVertices*(numNodes_new);
 DOF_mat1 = zeros(numVertices*2,numNodes_new);
 DOF_mat2 = zeros(numVertices*2,numNodes_new);
 DOF_mat3 = zeros(numVertices*2,numNodes_new);
-% X1       = zeros(2,numMBFNodes);
-% X2       = zeros(2,numMBFNodes);
-% X3       = zeros(2,numMBFNodes);
+X1       = zeros(2,numMBFNodes);
+X2       = zeros(2,numMBFNodes);
+X3       = zeros(2,numMBFNodes);
 U_Mat = zeros(numDofs, numNodes_new*numMBF);
-% U_Mat = zeros(numDOFS,numNodes*numMBF);
 
-len_tri_mat = (length(triangle_blah)-vert_num-1-endCapExclude - connectionExclude);
+len_tri_mat = (length(triangle_blah)-vert_num-1-endCapExclude);
 
 % -------------------------------------------------------------------------
 % Set up MBF matrix
@@ -40,19 +35,12 @@ len_tri_mat = (length(triangle_blah)-vert_num-1-endCapExclude - connectionExclud
 % MBF_mat has the value of the MBF at each contour node point
 % num_nodes x [nodes,constant,sin,cos]
 % numMBFNodes_new = numVertices*(numNodes+4); % For coupling
-numMBFNodes_new = numVertices*(numNodes+2);
-% if connection
-%     numMBFNodes_new = numVertices*(numNodes+3);
-% end
+numMBFNodes_new = numVertices*(numNodes+2); % This is only for filling the MBF_mat
 sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
 cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
 ones_mat = (ones(numMBFNodes_new,1));
-% if endCap == 1
-    contour_nodes = (1:numMBFNodes_new)';
-%     contour_nodes = (triangle_blah(1,1):(numVertices*(numNodes+1)))'; % All the nodes associated with the analytical MBF
-% else
-%     contour_nodes = (triangle_blah(2,2):(numVertices*(numNodes_new+1)))'; % All the nodes associated with the analytical MBF
-% end
+contour_nodes = (1:numMBFNodes_new)';
+
 MBF_mat = [contour_nodes,ones_mat,sin_mat',cos_mat'];
 % MBF_mat = MBF_mat(1:end-36,:); % Temporary for coupling
 
@@ -103,21 +91,15 @@ if endCap || connection
         DOF_mat3(row1:row1+1, col) = [triangle_blah(i,7+last); triangle_blah(i,13+last)];
         DOF_mat1(row1:row1+1, col) = [triangle_blah(i,9); triangle_blah(i,15)];
     end
-    for i = (length(triangle_blah)-vert_num-endCapExclude+1-connectionExclude):2:length(triangle_blah)-vert_num-1-connectionExclude % Second endcap, or connection triangles
+    for i = (length(triangle_blah)-vert_num-endCapExclude+1):2:length(triangle_blah)-vert_num-1 % Second endcap, or connection triangles
         row2 = row2 + 2;
         last = 0;
         if i == length(triangle_blah)-vert_num-1
             last = 1;
         end
-%         if connection
-%             DOF_mat1(row2:row2+1, col+1) = [triangle_blah(i,9); triangle_blah(i,15)];
-%             DOF_mat2(row2:row2+1, col+1) = [triangle_blah(i,7+last); triangle_blah(i,13+last)];
-%         else
-            DOF_mat1(row2:row2+1, col+1) = [triangle_blah(i,7); triangle_blah(i,13)];
-            DOF_mat2(row2:row2+1, col+1) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];
-%         end
 
-       
+            DOF_mat1(row2:row2+1, col+1) = [triangle_blah(i,7); triangle_blah(i,13)];
+            DOF_mat2(row2:row2+1, col+1) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];   
     end
     DOF_mat1 = [circshift(DOF_mat1(:,1:end-1), [0 1]), DOF_mat1(:,end)]; % Swap columns, so that DOFs are ascending from column 1
     DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
@@ -128,9 +110,11 @@ end
 temp1        = nonzeros(DOF_mat1); % Create temporary column vector
 temp2        = nonzeros(DOF_mat2);
 temp3        = nonzeros(DOF_mat3);
+% Create vector containing nodes of each edge:
 edge_nodes_1 = mesh_data.edges(dof_data.dofs_to_edges(temp1(1:2:end,1)),:); % Edges on contour
 edge_nodes_2 = mesh_data.edges(dof_data.dofs_to_edges(temp2(1:2:end,1)),:); % First diagonal
 edge_nodes_3 = mesh_data.edges(dof_data.dofs_to_edges(temp3(1:2:end,1)),:); % Second diagonal
+clear temp1 temp2 temp3
 
 edge_vecs_1  = mesh_data.node_coords(edge_nodes_1(:,1),:)-mesh_data.node_coords(edge_nodes_1(:,2),:); % Vector of edges
 edge_vecs_2  = mesh_data.node_coords(edge_nodes_2(:,1),:)-mesh_data.node_coords(edge_nodes_2(:,2),:);
@@ -169,7 +153,7 @@ temp = (orientation_vec(2,:) == 1);
 % temp(595:612) = [];
 Rho2(:,:,temp(:) == 1) = Rho2(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
 
-if endCap == 1
+if endCap || connection
     Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];
 else
 %      Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];
