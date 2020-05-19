@@ -26,7 +26,7 @@ end
 %     end
 % end
 
-if endcap == 1 || connection_flag == 1
+if endcap || connection_flag 
 %     num_diff = (2*numVertices);
     num_nodes = num_nodes - num_diff; % Since the last elements are already triangles
     triangle3 = zeros(num_diff,3);

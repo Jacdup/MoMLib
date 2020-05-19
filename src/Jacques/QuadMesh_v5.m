@@ -245,18 +245,14 @@ if endcap_flag
         % 'p' is the last element (#elements)
         element(p+v, 1) = element(v,1);
         element(p+v, 2) = element(v,2);
-        element(p+v, 3) = length(points)-1;
+        element(p+v, 3) = length(points)-1; % Second to last point in points matrix
         element(p+v, 4) = length(points)-1;
-%         element(p+v, 3) = element(p-offset,4) + 1; % Add extra
-%         element(p+v, 4) = element(p-offset,4) + 1; % Degenerate coordinate
 
         % The elements at the end
         element(p+v+num_vertices, 1) = element(p-offset-v+1,3);
         element(p+v+num_vertices, 2) = element(p-offset-v+1,4);
-        element(p+v+num_vertices, 3) = length(points);
+        element(p+v+num_vertices, 3) = length(points); % Last point in points matrix
         element(p+v+num_vertices, 4) = length(points);
-%         element(p+v+num_vertices, 3) = element(p-offset,4) + num_vertices + 1; % Add extra
-%         element(p+v+num_vertices, 4) = element(p-offset,4) + num_vertices + 1; % Degenerate coordinate
     end
 end
 

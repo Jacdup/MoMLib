@@ -8,7 +8,7 @@ function [Rho] = CalculateBasisFunction(mesh_data, reduced_tri_dofs,edge_nodes)
 % Tri num is global number of triangle
 
 
-Rho = zeros(2,2, length(reduced_tri_dofs));
+Rho = zeros(2, length(reduced_tri_dofs));
 
 local_edge_nodes_def = [2 3
     1 3
@@ -16,11 +16,11 @@ local_edge_nodes_def = [2 3
 % qpoint1              = [ 0.333333333333333  0.333333333333333  0.333333333333333  0.225000000000000 ];
 % qpoint2              = [ 0.059715871789770  0.470142064105115  0.470142064105115  0.132394152788506 ];
 % qpoint3              = [ 0.797426985353087  0.101286507323456  0.101286507323456  0.125939180544827 ];
-for thisTri = 1:length(edge_nodes)
+for thisTri = 1:length(reduced_tri_dofs)
     
     for vertex = 1:2
         %     tri_point = mesh_data.node_coords(reduced_tri_dofs(tri_num,local_edge_nodes_def(edge,vertex)), :);
-        tri_point = mesh_data.node_coords(reduced_tri_dofs(edge_nodes(thisTri,vertex)),:); % Global coordinate of edge node
+        tri_point = mesh_data.node_coords(edge_nodes(tri_num,vertex)); % Global coordinate of edge node
         mesh_TR = triangulation(mesh_data.tri_nodes,mesh_data.node_coords);
         Zeta = cartesianToBarycentric(mesh_TR,thisTri,tri_point); % Get local coord of vertex point
         
@@ -40,7 +40,6 @@ for thisTri = 1:length(edge_nodes)
             TLen      = norm(mesh_data.node_coords(edge_nodes(thisTri,1))- mesh_data.node_coords(edge_nodes(thisTri,2)));
             %         edgevectemp = mesh_data.node_coords(edge_verts(edge),:) - mesh_data.node_coords(edge_verts(edge),:);
             %         TLen     = sqrt(edgevectemp*edgevectemp');
-            edge = LocalEdgeNum(edge_nodes(thisTri,vertex),reduced_tri_dofs(thisTri,1:3));
             
             t_index = mod(edge+1,3)+1;
             l_index = mod(edge,3)+1;
@@ -61,11 +60,5 @@ for thisTri = 1:length(edge_nodes)
     end
     %     this_tri  = tri_dofs_idx(ii,1); % triangle where this cycle's current contributions must be added
     
-
-
 end
-
-
-
-
-
+end

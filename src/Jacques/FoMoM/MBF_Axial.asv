@@ -16,6 +16,8 @@ else
     numNodes_new = numNodes; 
     endCapExclude = 0;
 end
+Rho = [1,1;1,-1]; % This is the matrix of RWG and linear components at the two edge nodes
+Rho = repmat(Rho,1,1,numMBFNodes);
 
 numDofs = size(dof_data.basis_supports,1);
 numMBFNodes = numVertices*(numNodes_new);
@@ -28,10 +30,6 @@ X3       = zeros(2,numMBFNodes);
 U_Mat = zeros(numDofs, numNodes_new*numMBF);
 
 len_tri_mat = (length(triangle_blah)-vert_num-1-endCapExclude);
-
-Rho = [1,1;1,-1]; % This is the matrix of RWG and linear components at the two edge nodes
-Rho = repmat(Rho,1,1,numMBFNodes);
-Rho2 = Rho;
 
 % -------------------------------------------------------------------------
 % Set up MBF matrix
@@ -72,7 +70,7 @@ for i = 1:2:len_tri_mat
     DOF_mat1(row:row+1,col) = [triangle_blah(i+1,7);triangle_blah(i+1,13)];
     DOF_mat2(row:row+1,col) = [triangle_blah(i+last,7+last);triangle_blah(i+last,13+last)];
     DOF_mat3(row:row+1,col) = [triangle_blah(i+vert_num+1,7+last);triangle_blah(i+vert_num+1,13+last)];
-%     [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));
+    
     if last == 1
         row = -1;
         col = col + 1;
@@ -95,7 +93,7 @@ if endCap || connection % TODO: dynamically create either endcap or connection f
         if (i == vert_num)
             last = 1;
         end
-%         [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));
+        
         DOF_mat3(row1:row1+1, col) = [triangle_blah(i,7+last); triangle_blah(i,13+last)];
         DOF_mat1(row1:row1+1, col) = [triangle_blah(i,9); triangle_blah(i,15)];
     end
@@ -105,7 +103,7 @@ if endCap || connection % TODO: dynamically create either endcap or connection f
         if i == length(triangle_blah)-vert_num-1
             last = 1;
         end
-%         [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));
+        [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));
 
         DOF_mat1(row2:row2+1, col+1) = [triangle_blah(i,7); triangle_blah(i,13)];
         DOF_mat2(row2:row2+1, col+1) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];
@@ -151,7 +149,7 @@ else
     orientation_vec = (edge_nodes_1 == MBF_mat(:,1))';
 end
 
-Rho2 = Rho;
+
 temp = (orientation_vec(2,:) == 1); 
 Rho2(:,:,temp(:) == 1) = Rho2(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
 
