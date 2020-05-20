@@ -10,32 +10,31 @@ sign3 =  thisTriangle(1,10);
 sign4 =  thisTriangle(1,11); 
 
 
-if sign1*sign2 == 1
-%     Rho2 = [-1,-1;-1,1];
-    if sign3 < 0
-        Rho2 = [-1,1;-1,-1];
+    if sign1*sign2 == 1
+    %     Rho2 = [-1,-1;-1,1];
+        if sign3 < 0
+            Rho2 = [-1,1;-1,-1];
+        else
+           Rho2 = [-1,-1;-1,1]; 
+        end
+        if sign4 < 0
+            Rho1 = [-1,1;-1,-1];
+        else
+          Rho1 = [-1,-1;-1,1];  
+        end
     else
-       Rho2 = [-1,-1;-1,1]; 
+        if sign3 < 0
+            Rho2 = [1,1;1,-1];
+        else
+            Rho2 = [1,-1;1,1];
+        end
+        if sign4 < 0
+            Rho1 = [1,1;1,-1];
+        else
+           Rho1 = [1,-1;1,1]; 
+        end
+    % else
+    %     Rho1 = [1,1;1,-1];
+    %     Rho2 = Rho1;
     end
-    if sign4 < 0
-        Rho1 = [-1,1;-1,-1];
-    else
-      Rho1 = [-1,-1;-1,1];  
-    end
-else
-    if sign3 < 0
-        Rho2 = [1,1;1,-1];
-    else
-        Rho2 = [1,-1;1,1];
-    end
-    if sign4 < 0
-        Rho1 = [1,1;1,-1];
-    else
-       Rho1 = [1,-1;1,1]; 
-    end
-% else
-%     Rho1 = [1,1;1,-1];
-%     Rho2 = Rho1;
-end
-
 end
