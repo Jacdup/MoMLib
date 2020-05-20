@@ -54,20 +54,13 @@ contour_nodes = (1:numMBFNodes_new)';
 MBF_mat = [contour_nodes,ones_mat,sin_mat',cos_mat'];
 % MBF_mat = MBF_mat(1:end-36,:); % Temporary for coupling
 
-% DOF_Mat = ismember(triangle_blah(:,1:3),MBF_mat(:,1)); % Find which triangles contain the node
-% DOF_Mat = DOF_Mat .* triangle_blah(:,7:9);
-% DOF_Mat = find(triangle_blah(:,1:3) == MBF_mat(:,1));
-
 row = -1;
 iter = 1;
 col = 1;
 % Select DOFs associated with the MBF
 for i = 1:2:len_tri_mat
-    
-%     Rho = CalculateBasisFunction(mesh_data, triangle_blah, 1, i);
-    
+
     row = row + 2;
-    
     if i == ((vert_num+1)*iter)-1
             last = 1;
             iter = iter + 1;
@@ -78,8 +71,6 @@ for i = 1:2:len_tri_mat
     DOF_mat1(row:row+1,col) = [triangle_blah(i+1,7);triangle_blah(i+1,13)];
     DOF_mat2(row:row+1,col) = [triangle_blah(i+last,7+last);triangle_blah(i+last,13+last)];
     DOF_mat3(row:row+1,col) = [triangle_blah(i+vert_num+1,7+last);triangle_blah(i+vert_num+1,13+last)];
-%     [Rho(:,:,i), ~] = getSigns(triangle_blah(i+1,:),1);
-%     [Rho(:,:,i+1), ~] = getSigns(triangle_blah(i+vert_num+1,:),1);
     if last == 1
         row = -1;
         col = col + 1;
@@ -107,20 +98,18 @@ if oneEndcap || twoEndcaps %|| connection
             if (i == vert_num)
                 last = 1;
             end
-%             [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));
+
             DOF_mat3(row1:row1+1, col) = [triangle_blah(i,7+last); triangle_blah(i,13+last)];
             DOF_mat1(row1:row1+1, col) = [triangle_blah(i,9); triangle_blah(i,15)];
         end
     end
     if cyl_def.lastNode == "endCap"
         for i = (length(triangle_blah)-vert_num-endCapExclude+1):2:length(triangle_blah)-endCapExclude % Second endcap, or connection triangles
-%            for i = length(triangle_blah)- endCapExclude:length(triangle_blah)
             row2 = row2 + 2;
             last = 0;
             if i == length(triangle_blah)-vert_num-1
                 last = 1;
             end
-%             [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));
 
             DOF_mat1(row2:row2+1, col+1) = [triangle_blah(i,7); triangle_blah(i,13)];
             DOF_mat2(row2:row2+1, col+1) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];
@@ -129,7 +118,7 @@ if oneEndcap || twoEndcaps %|| connection
             DOF_mat1(:,~any(DOF_mat1,1)) = []; % Remove zero columns
             DOF_mat2(:,~any(DOF_mat2,1)) = [];
         end
-%         DOF_mat3(:,~any(DOF_mat3,1)) = [];
+
     end
     DOF_mat1 = [circshift(DOF_mat1(:,1:end-1), [0 1]), DOF_mat1(:,end)]; % Swap columns, so that DOFs are ascending from column 1
     DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
@@ -147,71 +136,28 @@ edge_nodes_2 = mesh_data.edges(dof_data.dofs_to_edges(temp2(1:2:end,1)),:); % Fi
 edge_nodes_3 = mesh_data.edges(dof_data.dofs_to_edges(temp3(1:2:end,1)),:); % Second diagonal
 clear temp1 temp2 temp3
 
-% [Rho] = CalculateBasisFunction(mesh_data, triangle_blah,edge_nodes_1);
-
 edge_vecs_1  = mesh_data.node_coords(edge_nodes_1(:,1),:)-mesh_data.node_coords(edge_nodes_1(:,2),:); % Vector of edges
 edge_vecs_2  = mesh_data.node_coords(edge_nodes_2(:,1),:)-mesh_data.node_coords(edge_nodes_2(:,2),:);
 edge_vecs_3  = mesh_data.node_coords(edge_nodes_3(:,1),:)-mesh_data.node_coords(edge_nodes_3(:,2),:);
 
-% if twoEndCaps == 0 %&& connection == 0
-%     lim = length(edge_vecs_1); % Then edge_vecs_1 is the same size as edge_vecs_2
-% elseif oneEndCaps = 0
-%     
-% else
-%     lim = (length(edge_vecs_1) - (numVertices));% Then edge_vecs_1 is smaller than edge_vecs_2
-% end
  lim1 = length(edge_vecs_1); 
  lim2 = length(edge_vecs_2);
  lim3 = length(edge_vecs_3);
- if twoEndcaps
-%      lim1 = length(edge_vecs_1) - numVertices;
- elseif oneEndcap
-%      lim1 = length(edge_vecs_1) - numVertices;
-     if cyl_def.firstNode == "endCap"
-%          lim2 =  length(edge_vecs_2) - numVertices;
-     else
-%          lim3 =  length(edge_vecs_3) - numVertices;
-     end
- end
+%  if twoEndcaps
+% %      lim1 = length(edge_vecs_1) - numVertices;
+%  elseif oneEndcap
+% %      lim1 = length(edge_vecs_1) - numVertices;
+%      if cyl_def.firstNode == "endCap"
+% %          lim2 =  length(edge_vecs_2) - numVertices;
+%      else
+% %          lim3 =  length(edge_vecs_3) - numVertices;
+%      end
+%  end
 
 theta_1      =  abs(90 - acosd(dot(edge_vecs_1(1:lim2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(1:lim2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
 theta_2      =  abs(90 - acosd(dot(edge_vecs_1(1:lim3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(1:lim3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
 % quiver3(mesh_data.node_coords(edge_nodes_2(:,1),1),mesh_data.node_coords(edge_nodes_2(:,1),2),mesh_data.node_coords(edge_nodes_2(:,1),3),edge_vecs_2(:,1),edge_vecs_2(:,2),edge_vecs_2(:,3))
 
-
-% Take care of last elements in ring, where local edges are switched:
-% if endCap == 0 && connection == 0
-%     orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))';
-%     %      orientation_vec = (edge_nodes_1 == MBF_mat((numVertices*2)+1:end-(numVertices*2),1))'; % For coupling
-%     min = 0;
-% else
-%     min = numVertices;
-%     orientation_vec = (edge_nodes_1 == MBF_mat(:,1))';
-% end
-
-% if twoEndcaps
-%     min = numVertices;
-%     orientation_vec = (edge_nodes_1 == MBF_mat(:,1))';
-% elseif oneEndcap
-%     min = numVertices;
-%     if cyl_def.firstNode == "endCap"
-%         orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end,1,1))';
-%     else
-%        orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1,1))'; 
-%     end
-% else
-%     orientation_vec = (edge_nodes_1 == MBF_mat(numVertices+1:end-numVertices,1))';
-%     min = 0;
-% end
-
-
-% Rho2 = Rho;
-% temp = (orientation_vec(2,:) == 1); 
-% Rho2(:,:,temp(:) == 1) = Rho2(:,:,temp(:) == 1).*[1,-1;1,-1]; % Change minus side when temp == 1
-
-% if oneEndcap || twoEndcap || connection % TODO
-% %     Rho(:,:,1:numVertices) =  Rho(:,:,1:numVertices).*[-1,-1;-1,-1];
-% end
 
 for MBF_num = 1:3
     
