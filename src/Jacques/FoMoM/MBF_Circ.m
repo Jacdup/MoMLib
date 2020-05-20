@@ -227,13 +227,15 @@ for MBF_num = 1:3
                 U_Mat(DOF_mat(2:2:end/2,MBF_node),col_index) = X(2,(2*numVertices*(MBF_node-1))+1:(2*numVertices*MBF_node)-numVertices); % Linear
                 col_index = col_index + 3;
             end
-            if cyl_def.lastNode == "endCap" && cyl_def.firstNode ~= "endCap"
+            if (cyl_def.lastNode == "endCap" && cyl_def.firstNode ~= "endCap")
                 U_Mat(DOF_mat(1:2:end/2,MBF_node),col_index) = X(1,(2*numVertices*(MBF_node-1))+1:(2*numVertices*MBF_node)-numVertices); % RWG
                 U_Mat(DOF_mat(2:2:end/2,MBF_node),col_index) = X(2,(2*numVertices*(MBF_node-1))+1:(2*numVertices*MBF_node)-numVertices); % Linear
-            else
+            end
+            if twoEndcaps
                 U_Mat(DOF_mat(1:2:end/2,MBF_node+1),col_index) = X(1,(2*numVertices*(MBF_node-1))+1+numVertices:(2*numVertices*MBF_node)); % RWG
                 U_Mat(DOF_mat(2:2:end/2,MBF_node+1),col_index) = X(2,(2*numVertices*(MBF_node-1))+1+numVertices:(2*numVertices*MBF_node)); % Linear
             end
+%                 end
         else
             U_Mat(DOF_mat(1:2:end,MBF_node),col_index) = X(1,(2*numVertices*(MBF_node-1))+1:(2*numVertices*MBF_node)); % RWG
             U_Mat(DOF_mat(2:2:end,MBF_node),col_index) = X(2,(2*numVertices*(MBF_node-1))+1:(2*numVertices*MBF_node)); % Linear
