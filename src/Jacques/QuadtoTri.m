@@ -3,16 +3,18 @@ function [new_triangles,triangles] = QuadtoTri(element, numVertices, cyl_def)
 num_nodes = length(element);
 num_diff = 0;
 connection_flag = 0;
-if connection_flag
-   num_diff = (6*numVertices); 
-end
-if connection_flag == 1 && endcap == 0
-   num_diff = 2 * numVertices; 
-end
-if cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap"
+% if connection_flag
+%    num_diff = (6*numVertices); 
+% end
+% if connection_flag == 1 && endcap == 0
+%    num_diff = 2 * numVertices; 
+% end
+if (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap") || (cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn")
     num_diff = 2*numVertices;
 %     num_diff = 4*numVertices; % temporary
-elseif (cyl_def.firstNode == "endCap" && cyl_def.lastNode ~= "endCap") || (cyl_def.firstNode ~= "endCap" && cyl_def.lastNode == "endCap")
+elseif (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "conn") || (cyl_def.firstNode == "conn" && cyl_def.lastNode == "endCap")
+   num_diff = 2*numVertices; 
+else
    num_diff = numVertices; 
 end
 

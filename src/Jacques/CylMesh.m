@@ -57,12 +57,14 @@ for node = 1:num_nodes
     if node == 1
         
         norm_vec = Contour(node+1,:) - Contour(node,:); % Points away from next node
+%         norm_vec(1:2) = norm_vec(1:2) +Contour(node,1:2);
         i = 2;
         basis_vec = [-norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1) 1 0];
         while isnan(norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)) || isinf(norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1))
             i = i + 1;
-            basis_vec = [ 0 1 -norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)];
-%             basis_vec = [-norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1) 1 0];
+%             basis_vec = [ 0 1 -norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)];
+            basis_vec = [-norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1) 1 0];
+%             basis_vec = [1 0 -norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)];
         end
 %         if Contour(node,1) == 0
 %            basis_vec = [ 0 -norm_vec(2)/norm_vec(1) 1];
@@ -71,7 +73,7 @@ for node = 1:num_nodes
 %         else
 %             basis_vec = [-norm_vec(2)/norm_vec(1) 1 0]; % One possible basis vector orthogonal to norm_vec
 %         end
-        
+%         basis_vec = basis_vec + Contour(node,:);
         basis_vec = rho* basis_vec/norm(basis_vec);
         norm_vec = norm_vec/norm(norm_vec); % Create unit vector
         
@@ -85,7 +87,11 @@ for node = 1:num_nodes
             Q3 = quatmultiply(Q2,Q1);
             Q3 = quatmultiply(Q3,quatconj(Q2));
             points(v,1:3) = Q3(2:4);
-%             points(v,1) = Contour(node,1);
+            points(v,:) = points(v,:) + Contour(node,:); % Offset by starting node
+%             if norm_vec(3) ~= 0
+%                points(v,3) = Contour(node,3);
+%             end
+
             
         end % Vertices
         
@@ -105,7 +111,7 @@ for node = 1:num_nodes
         while isnan(norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)) || isinf(norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1))
             i = i + 1;
             basis_vec = [-norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1) 1 0];
-        end
+        end      
         
         if node == num_nodes
             basis_vec_rotated = norm_vec;
@@ -118,6 +124,7 @@ for node = 1:num_nodes
                 bisector = basis_vec;
             else
                 bisector = norm_vec/norm(norm_vec) + norm_vec_next/norm(norm_vec_next);
+%                 bisector = norm_vec + norm_vec_next;
             end
 
             bisector = bisector/norm(bisector);
@@ -138,6 +145,7 @@ for node = 1:num_nodes
 
         % Project points to plane
         for v = 1:num_vertices
+             
             point_index      = v + num_vertices*(node-1);
             point_index_prev = v + num_vertices*(node-2);
             
@@ -150,6 +158,7 @@ for node = 1:num_nodes
             % Translate point to plane, in direction of norm_vec
             points(point_index,1:3) =  points(point_index_prev,:) - (dist*norm_vec);
         end
+
         
     end
 end
