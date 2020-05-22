@@ -3,20 +3,36 @@ function [new_triangles,triangles] = QuadtoTri(element, numVertices, cyl_def)
 num_nodes = length(element);
 num_diff = 0;
 connection_flag = 0;
+both = (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap") || (cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn");
+oneEach = (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "conn") || (cyl_def.firstNode == "conn" && cyl_def.lastNode == "endCap");
 % if connection_flag
 %    num_diff = (6*numVertices); 
 % end
 % if connection_flag == 1 && endcap == 0
 %    num_diff = 2 * numVertices; 
 % end
-if (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap") || (cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn")
+if both
     num_diff = 2*numVertices;
 %     num_diff = 4*numVertices; % temporary
-elseif (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "conn") || (cyl_def.firstNode == "conn" && cyl_def.lastNode == "endCap")
-   num_diff = 2*numVertices; 
+elseif oneEach
+   num_diff = 3*numVertices; 
 else
    num_diff = numVertices; 
 end
+
+% if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn"
+%         num_nodes = num_nodes - num_diff; % Since the last elements are already triangles
+%     triangle3 = zeros(num_diff,3);
+%     
+%     for node = num_nodes+1:length(element)
+%         c1 = element(node,1);
+%         c2 = element(node,2);
+%         c3 = element(node,4);
+%         %         c4 = element(node,3);
+%         triangle3(node-num_nodes,1:3) = [c1 c2 c3];
+%         
+%     end
+% end
 
 % if connection_flag
 %     num_diff = (2*numVertices);
@@ -31,7 +47,7 @@ end
 %     end
 % end
 
-if cyl_def.lastNode == "endCap" || cyl_def.firstNode == "endCap"
+if oneEach || both
 %     num_diff = (2*numVertices);
     num_nodes = num_nodes - num_diff; % Since the last elements are already triangles
     triangle3 = zeros(num_diff,3);
