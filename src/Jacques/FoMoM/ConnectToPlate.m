@@ -1,4 +1,4 @@
-function [node_coords, elements] = ConnectToPlate(polygonPoints, node_coords_cyl, elements_cyl,numVertices, cyl_def)
+function [node_coords, elements] = ConnectToPlate(polygonPoints,plate_polygon_nodes, node_coords_cyl, elements_cyl,numVertices, cyl_def)
 
 iter = 0;
 elem_iter = -1;
@@ -58,8 +58,8 @@ if cyl_def.firstNode == "conn"
 %                 elements(elem_iter,:) = [elem_iter +last_element_val, elem_iter +1 + last_element_val, 
 %                 node_coords(coord_iter:coord_iter+1,:) = [polygonPoints(mod(i-j+align_offset,num_poly)+1,:); polygonPoints(mod(i-j-1+align_offset,num_poly)+1,:)];
 %                 node_coords(coord_iter+3:coord_iter+5,:) = [polygonPoints(i,:); polygonPoints(i+j,:); firstNodeCoords(mod(i+j-1,numVertices)+1,:)];
-                elements(elem_iter,:) = [coord_iter+last_element_val , mod(coord_iter,num_poly)+1+last_element_val, mod(num_cyl - coord_iter + align_offset,num_cyl)+1, mod(num_cyl - coord_iter+align_offset,num_cyl)+1];
-                elements(elem_iter+1,:) = [mod(num_cyl - coord_iter +align_offset,num_cyl)+1, mod(num_cyl - coord_iter + 1+align_offset, num_cyl)+1, coord_iter+last_element_val, coord_iter+last_element_val];
+                elements(elem_iter,:) = [last_element_val + plate_polygon_nodes(coord_iter) ,last_element_val + plate_polygon_nodes(mod(coord_iter,length(plate_polygon_nodes))+1), mod(num_cyl - coord_iter + align_offset,num_cyl)+1, mod(num_cyl - coord_iter+align_offset,num_cyl)+1];
+                elements(elem_iter+1,:) = [mod(num_cyl - coord_iter +align_offset,num_cyl)+1, mod(num_cyl - coord_iter + 1+ align_offset, num_cyl)+1, plate_polygon_nodes(coord_iter)+last_element_val, plate_polygon_nodes(coord_iter)+last_element_val];
             end
         end
     end

@@ -5,6 +5,7 @@ num_diff = 0;
 connection_flag = 0;
 both = (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap") || (cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn");
 oneEach = (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "conn") || (cyl_def.firstNode == "conn" && cyl_def.lastNode == "endCap");
+one = cyl_def.firstNode == "endCap" || cyl_def.lastNode == "endCap";
 % if connection_flag
 %    num_diff = (6*numVertices); 
 % end
@@ -16,8 +17,10 @@ if both
 %     num_diff = 4*numVertices; % temporary
 elseif oneEach
    num_diff = 3*numVertices; 
+elseif one
+    num_diff = numVertices;
 else
-   num_diff = numVertices; 
+   num_diff = 0; 
 end
 
 % if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn"
@@ -47,7 +50,7 @@ end
 %     end
 % end
 
-if oneEach || both
+if oneEach || both || one
 %     num_diff = (2*numVertices);
     num_nodes = num_nodes - num_diff; % Since the last elements are already triangles
     triangle3 = zeros(num_diff,3);

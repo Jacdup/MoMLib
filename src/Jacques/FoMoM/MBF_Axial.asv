@@ -137,7 +137,7 @@ if oneEndcap || twoEndcaps %|| connection
             DOF_mat1(row2:row2+1, col+1) = [triangle_blah(i,7); triangle_blah(i,13)];
             DOF_mat2(row2:row2+1, col+1) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];
         end
-        if cyl_def.firstNode ~= "endCap" && cyl_def.firstNode ~= "conn" % If the first node is hollow
+        if cyl_def.firstNode ~= "endCap"
             DOF_mat1(:,~any(DOF_mat1,1)) = []; % Remove zero columns
             DOF_mat2(:,~any(DOF_mat2,1)) = [];
         end
@@ -148,12 +148,7 @@ if oneEndcap || twoEndcaps %|| connection
     DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
 end
 
-if cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap"
-    Rho(:,:,1:numVertices) = Rho(:,:,1:numVertices) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
-elseif cyl_def.firstNode == "endCap"
-    Rho(:,:,end-numVertices+1:end) = Rho(:,:,end-numVertices+1:end) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
-end
-
+Rho(:,:,1:num_vertices)
 
 temp1        = nonzeros(DOF_mat1); % Create temporary column vector
 temp2        = nonzeros(DOF_mat2);
@@ -171,8 +166,6 @@ edge_vecs_3  = mesh_data.node_coords(edge_nodes_3(:,1),:)-mesh_data.node_coords(
  lim1 = length(edge_vecs_1); 
  lim2 = length(edge_vecs_2);
  lim3 = length(edge_vecs_3);
- 
-
 %  if twoEndcaps
 % %      lim1 = length(edge_vecs_1) - numVertices;
 %  elseif oneEndcap

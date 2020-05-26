@@ -19,11 +19,11 @@ if TextOn
 %     for col = 1:3:length(U_Mat(1,:))
         for ii = 1:num_dofs
             
-            if U_Mat(ii,end-2) ~= 0
+            if U_Mat(ii,1) ~= 0
                 thisedge = dof_data.dofs_to_edges(ii,1);
                 jj = jj + 1;
                 %              plot3(edge_midpoints(thisedge,1),edge_midpoints(thisedge,2),edge_midpoints(thisedge,3),'rs');
-                text(edge_midpoints(thisedge,1),edge_midpoints(thisedge,2),edge_midpoints(thisedge,3),[' ',num2str(U_Mat(ii,end-2))],'HorizontalAlignment','left','Color','r');
+                text(edge_midpoints(thisedge,1),edge_midpoints(thisedge,2),edge_midpoints(thisedge,3),[' ',num2str(U_Mat(ii,1))],'HorizontalAlignment','left','Color','r');
                 
             end
             

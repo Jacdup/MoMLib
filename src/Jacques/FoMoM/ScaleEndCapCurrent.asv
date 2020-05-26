@@ -7,15 +7,15 @@ if (cyl_def.firstNode == "endCap")
     currents_endcap1         = I_vec(first_endcap_axial);
     current_maxVal_endcap1   = max(currents_endcap1);
     I_vec(first_endcap_circ(2:2:end)) = dot(I_vec(first_endcap_circ(2:2:end)),repelem((current_maxVal_endcap1), length(first_endcap_circ)/2)); % So that all values are smaller than maxVal
-end
+% end
 
-if cyl_def.lastNode == "endCap"
+% if cyl_def.lastNode == "endCap"
     second_endcap_axial      = DOF_mat1(:,end);
     second_endcap_circ       = nonzeros(DOF_mat(:,end));
     currents_endcap2         = I_vec(second_endcap_axial);
     current_maxVal_endcap2   = max(currents_endcap2);
     I_vec(second_endcap_circ(2:2:end)) = dot(I_vec(second_endcap_circ(2:2:end)),repelem((current_maxVal_endcap2), length(second_endcap_circ)/2));
-end
+% end
 
 % I_vec(first_endcap_circ) = I_vec(first_endcap_circ)*real(current_maxVal_endcap1); % So that all values are smaller than maxVal
 % I_vec(second_endcap_circ) = I_vec(second_endcap_circ)*real(current_maxVal_endcap2);
