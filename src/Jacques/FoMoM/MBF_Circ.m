@@ -5,6 +5,7 @@ function [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ(mesh_data, dof_data, numVer
 extra = 0;
 oneEndcap = (cyl_def.firstNode == "endCap" && cyl_def.lastNode ~= "endCap") || (cyl_def.firstNode ~= "endCap" && cyl_def.lastNode == "endCap"); % Only one is an endcap
 twoEndcaps = cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap";
+
 theta1 = [];
 theta2 = [];
 % -------------------------------------------------------------------------
@@ -20,6 +21,16 @@ DOF_mat = zeros(numVertices*2,numNodes+1);
 if oneEndcap % TODO: connection functionality
     endCapExclude = (numVertices);
     connectionExclude = 0;
+    
+     if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn"
+%         connCapExclude = vert_num;
+        connectionExclude = numVertices;
+%         endCapExclude = numVertices*2;
+%         numNodes_new = numNodes + 4;
+     end
+
+    
+    
 elseif twoEndcaps
     endCapExclude = (2*numVertices);
     connectionExclude = 0;
@@ -68,7 +79,7 @@ Rho = [1,1;1,-1];
 Rho = repmat(Rho, 1,1,length(triangle_blah));
 
 % Fill each column of matrix with DOFs for each MBF
-for i = 1:2:length(triangle_blah)-endCapExclude-connectionExclude% Every odd row
+for i = 1:2:length(triangle_blah)-endCapExclude-connectionExclude-cyl_def.num_plate_nodes% Every odd row
     row = row + 4;
     DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
     sign1 = triangle_blah(i,5); % Should always be -1
@@ -86,7 +97,7 @@ end
 
 if oneEndcap || twoEndcaps
     if cyl_def.firstNode == "endCap"
-        for i = length(triangle_blah)-endCapExclude+1:2:length(triangle_blah)-(numVertices*(cyl_def.lastNode == "endCap"))% Every odd row, only first endcap
+        for i = length(triangle_blah)-endCapExclude+1-cyl_def.num_plate_nodes:2:length(triangle_blah)-(numVertices*(cyl_def.lastNode == "endCap")-cyl_def.num_plate_nodes)% Every odd row, only first endcap
             row = row + 4;
             sign1 = triangle_blah(i,5); % Should always be -1
             sign2 = triangle_blah(i,4); % Should always be 1
@@ -103,7 +114,7 @@ if oneEndcap || twoEndcaps
     end
 %     Rho(:,:,i+2) = [1,-1;1,1];
     if cyl_def.lastNode == "endCap"
-        for i = length(triangle_blah)-numVertices+2:2:length(triangle_blah)% Second endcap
+        for i = length(triangle_blah)-numVertices+2-cyl_def.num_plate_nodes:2:length(triangle_blah)-cyl_def.num_plate_nodes% Second endcap
             row = row + 4; 
             DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];    
             [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));   
@@ -156,11 +167,15 @@ if oneEndcap || twoEndcaps
     end
     theta(end-round((endCapExclude/2))+1:end,:) = []; % TODO
 end
-
+lim = 1:length(edge_nodes);
+if cyl_def.firstNode == "conn"
+   lim = 1:length(edge_nodes)- numVertices;
+   theta(end-round((endCapExclude/2))+1:end,:) = []; % TODO
+end
 % Retrieve the 1/sin/cos value at the corresponding node
-B_const(1:2,:) = [MBF_mat(edge_nodes(:,1),2),MBF_mat(edge_nodes(:,2),2)]';
-B_sin(1:2,:)   = [MBF_mat(edge_nodes(:,1),3),MBF_mat(edge_nodes(:,2),3)]';
-B_cos(1:2,:)   = [MBF_mat(edge_nodes(:,1),4),MBF_mat(edge_nodes(:,2),4)]';
+B_const(1:2,:) = [MBF_mat(edge_nodes(lim,1),2),MBF_mat(edge_nodes(lim,2),2)]';
+B_sin(1:2,:)   = [MBF_mat(edge_nodes(lim,1),3),MBF_mat(edge_nodes(lim,2),3)]';
+B_cos(1:2,:)   = [MBF_mat(edge_nodes(lim,1),4),MBF_mat(edge_nodes(lim,2),4)]';
 
 % Multiply all diagonal edges
 B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
@@ -196,7 +211,7 @@ for MBF_num = 1:3
     end
 
     
-    for i = 1:length(edge_nodes) % For every edge
+    for i = lim % For every edge
         X(:,i) = Rho(:,:,i)\B(:,i);
     end
 %     X(2,1:2:end) = 0; % Every second side has a constant value so its linear component should be zero

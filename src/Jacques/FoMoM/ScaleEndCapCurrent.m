@@ -1,6 +1,7 @@
 function [I_vec] = ScaleEndCapCurrent(DOF_mat1, DOF_mat,theta1, theta2, I_vec, cyl_def)
 
-
+DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
+DOF_mat1(:,~any(DOF_mat1,1)) = []; % Remove zero columns
 if (cyl_def.firstNode == "endCap")
     first_endcap_axial       = DOF_mat1(:,1);
     first_endcap_circ        = nonzeros(DOF_mat(:,end-1));
