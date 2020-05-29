@@ -10,6 +10,7 @@ twoEndcaps = cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap";
 % -------------------------------------------------------------------------
 phi = 360/numVertices;
 vert_num = (2*numVertices)-1;
+extra_dof_col = 0;
 if twoEndcaps
     % if endCap || connection
     % In the connection case, the setup is exactly the same as the endcap,
@@ -58,13 +59,22 @@ Rho2 = Rho;
 % MBF_mat has the value of the MBF at each contour node point
 % num_nodes x [nodes,constant,sin,cos]
 % numMBFNodes_new = numVertices*(numNodes+4); % For coupling
-numMBFNodes_new = numVertices*(numNodes_new+2) + 1; % This is only for filling the MBF_mat
+% numMBFNodes_new = numVertices*(numNodes_new+2) ; % This is only for filling the MBF_mat
+numMBFNodes_new = ((numNodes+2)*numVertices) + length(cyl_def.plate_polygon_nodes);
 sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
 cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
 ones_mat = (ones(numMBFNodes_new,1));
 contour_nodes = (1:numMBFNodes_new)';
 
-MBF_mat = [contour_nodes,ones_mat,sin_mat',cos_mat'];
+if cyl_def.firstNode == "conn"
+   contour_nodes(end-numVertices+1:end) = ((numNodes+2)*numVertices) + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
+end
+% Contour_nodes can now be used to set the values through linear indexing:
+MBF_mat = zeros(numMBFNodes*2, 3); % Don't really care how big this matrix is, as long as the rows correspond to the nodes.
+MBF_mat(contour_nodes, :) = [ones_mat,sin_mat',cos_mat'];
+
+
+% MBF_mat = [contour_nodes,ones_mat,sin_mat',cos_mat'];
 % MBF_mat = MBF_mat(1:end-36,:); % Temporary for coupling
 
 row = -1;
@@ -122,6 +132,7 @@ if oneEndcap || twoEndcaps %|| connection
     if cyl_def.firstNode == "conn"
         row = -1;
          DOF_mat3(:, col) = DOF_mat2(:,1); 
+         extra_dof_col = 1;
         for i = len_tri_mat + vert_num +numVertices +3:2:length(triangle_blah) - cyl_def.num_plate_nodes + 1
             row = row + 2;
             % First MBF on the cylinder
@@ -132,8 +143,8 @@ if oneEndcap || twoEndcaps %|| connection
             %            DOF_mat3(row
             
             % Second MBF (Cyl -> Plate)
-%             DOF_mat1(row:row+1, col) = [triangle_blah(i-1,7); triangle_blah(i-1,13)];
-%             DOF_mat2(row:row+1, col) = [triangle_blah(i,8); triangle_blah(i,14)];
+            DOF_mat1(row:row+1, col+extra_dof_col) = [triangle_blah(i-1,7); triangle_blah(i-1,13)];
+            DOF_mat2(row:row+1, col+extra_dof_col) = [triangle_blah(i,8); triangle_blah(i,14)];
             
         end
         %         col = col + 1;
@@ -150,8 +161,8 @@ if oneEndcap || twoEndcaps %|| connection
                 last = 1;
             end
             
-            DOF_mat1(row2:row2+1, col+1) = [triangle_blah(i,7); triangle_blah(i,13)];
-            DOF_mat2(row2:row2+1, col+1) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];
+            DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i,7); triangle_blah(i,13)];
+            DOF_mat2(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];
         end
         if cyl_def.firstNode ~= "endCap" && cyl_def.firstNode ~= "conn" % If the first node is hollow
             DOF_mat1(:,~any(DOF_mat1,1)) = []; % Remove zero columns
@@ -206,6 +217,7 @@ lim1_for_3 = ismember(col1,col2);
 lim1_for_3 = lim1_for_3(1:2:end);
 
 % lim1_for_3 = 1:lim3;
+% lim1_for_2 = 1:lim2;
 
 
 theta_1      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
@@ -215,18 +227,18 @@ theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,
 % hold on
 % quiver3(mesh_data.node_coords(edge_nodes_1(lim1_for_3,1),1),mesh_data.node_coords(edge_nodes_1(lim1_for_3,1),2),mesh_data.node_coords(edge_nodes_1(lim1_for_3,1),3),edge_vecs_1(lim1_for_3,1),edge_vecs_1(lim1_for_3,2),edge_vecs_1(lim1_for_3,3))
 % axis equal
-ind = find(theta_1 == 0); % Temporary fix, since there is no way of telling why these vectors are perpendicular suddenly
-theta_1(ind) = theta_1((ind + 1));
+ind = find(theta_1 < 8); % Temporary fix, since there is no way of telling why these vectors are perpendicular suddenly
+theta_1(ind) = theta_1((ind  - numVertices));
 ind = find(theta_2 < 8); % Temporary fix, since there is no way of telling why these vectors are perpendicular suddenly
-theta_2(ind) = theta_2((ind + 1));
+theta_2(ind) = theta_2((ind - numVertices));
 
 % test = abs(90 - acosd(dot(edge_vecs_1(121,:),edge_vecs_3(121,:),2)./(vecnorm(edge_vecs_1(121,:),2,2).*vecnorm(edge_vecs_3(121,:),2,2))));
 
 for MBF_num = 1:3
     
-    B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),1+MBF_num),MBF_mat(edge_nodes_1(:,2),1+MBF_num)]';
-    B2(1:2,:) = [zeros(lim2,1),MBF_mat(edge_nodes_2(:,2),1+MBF_num)]';
-    B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),1+MBF_num),zeros(lim3,1)]';
+    B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
+    B2(1:2,:) = [zeros(lim2,1),MBF_mat(edge_nodes_2(:,2),MBF_num)]';
+    B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),zeros(lim3,1)]';
     B2 = B2(:,:) .* [sind(theta_1)';sind(theta_1)'];
     B3 = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
     
@@ -262,6 +274,10 @@ for MBF_num = 1:3
             xdom1 = xdom1 + numVertices; % Next set of values
             U_Mat(DOF_mat1(1:2:end,MBF_node),col_index) = X1(1,xdom_prev1:xdom1); % RWG
             U_Mat(DOF_mat1(2:2:end,MBF_node),col_index) = X1(2,xdom_prev1:xdom1); % Linear
+%             test1 = (numVertices*(MBF_node-1))+1
+%             test2 = (numVertices*MBF_node)
+%             U_Mat(DOF_mat1(1:2:end,MBF_node),col_index) = X1(1,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % RWG
+%             U_Mat(DOF_mat1(2:2:end,MBF_node),col_index) = X1(2,(numVertices*(MBF_node-1))+1:(numVertices*MBF_node)); % Linear
         end
         % Skip the zero columns
         if DOF_mat2(1,MBF_node) ~= 0

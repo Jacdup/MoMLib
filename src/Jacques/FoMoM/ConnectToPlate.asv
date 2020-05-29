@@ -62,14 +62,14 @@ if cyl_def.firstNode == "conn"
                 %                 elements(elem_iter+1,:) = [mod(num_cyl - coord_iter +align_offset,num_cyl)+1, mod(num_cyl - coord_iter + 1+ align_offset, num_cyl)+1, plate_polygon_nodes(coord_iter)+last_element_val, plate_polygon_nodes(coord_iter)+last_element_val];
                 T1_cnr1 = last_element_val + plate_polygon_nodes(coord_iter);
                 T1_cnr2 = last_element_val + plate_polygon_nodes(mod(coord_iter,length(plate_polygon_nodes))+1);
-%                 T1_cnr3 = mod(coord_iter + align_offset,num_cyl)+1;
+                T1_cnr3 = mod(coord_iter + align_offset,num_cyl)+1;
                 
                 T2_cnr1 = mod(coord_iter +align_offset,num_cyl)+1;
                 T2_cnr2 = mod(coord_iter - 1+ align_offset, num_cyl)+1;
-%                 T2_cnr3 = plate_polygon_nodes(coord_iter)+last_element_val;
+                T2_cnr3 = plate_polygon_nodes(coord_iter)+last_element_val;
                 
-                elements(elem_iter  ,:) = [T1_cnr1, T1_cnr2, T2_cnr2, T2_cnr2]; % Triangle 1 (Meshing degenerate quads actually)
-                elements(elem_iter+1,:) = [T2_cnr1, T2_cnr2, T1_cnr2, T1_cnr2]; % Triangle 2
+                elements(elem_iter  ,:) = [T1_cnr1, T1_cnr2, T1_cnr3, T1_cnr3]; % Triangle 1
+                elements(elem_iter+1,:) = [T2_cnr1, T2_cnr2, T2_cnr3, T2_cnr3]; % Triangle 2
             end
         end
     end
