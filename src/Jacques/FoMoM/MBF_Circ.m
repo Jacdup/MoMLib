@@ -31,6 +31,7 @@ if oneEndcap % TODO: connection functionality
      if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn"
 %         connCapExclude = vert_num;
         connectionExclude = numVertices; % This means the routine goes an extra 2*numVertices into triangle_blah
+        connectionExclude = -numVertices;
 %         endCapExclude = numVertices*2;
 %         numNodes_new = numNodes + 4;
      end
@@ -38,6 +39,7 @@ if oneEndcap % TODO: connection functionality
     
     
 elseif twoEndcaps
+    extra = 1;
     endCapExclude = (2*numVertices);
     connectionExclude = 0;
 else
@@ -67,7 +69,9 @@ contour_nodes = (1:numMBFNodes);
 ones_mat = (ones(numMBFNodes,1));
 
 if cyl_def.firstNode == "conn"
-   contour_nodes(end-numVertices+1:end) = ((numNodes+2)*numVertices) + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
+%    contour_nodes(end-numVertices+1:end) = ((numNodes+2)*numVertices) + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
+ contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ;
+
 end
 % Contour_nodes can now be used to set the values through linear indexing:
 MBF_mat = zeros(numMBFNodes*2, 3); % Don't really care how big this matrix is, as long as the rows correspond to the nodes.
@@ -93,67 +97,109 @@ Rho = [1,1;1,-1];
 Rho = repmat(Rho, 1,1,length(triangle_blah));
 
 % Fill each column of matrix with DOFs for each MBF
-for i = 1:2:length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes% Every odd row
+for i = 1:2:length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-connectionExclude% Every odd row
     row = row + 4;
-    DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
+    
+    if i <= numVertices*2 && cyl_def.firstNode == "conn"
+        DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,9);triangle_blah(i,15)];
+    else
+        DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
+    end
+    
     sign1 = triangle_blah(i,5); % Should always be -1
     sign2 = triangle_blah(i,4); % Should always be 1
     if sign1*sign2 == 1
         Rho(:,:,i) = [-1,1;-1,-1];
     end
+%      Rho_index = sub2ind(size(DOF_mat(1:2:end,:)), linear_row, col)-1;
+%     [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,8,7,i,i);
     if (row == (4*numVertices)-3)
-        DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
+        if i <= numVertices*2 && cyl_def.firstNode == "conn"
+            DOF_mat(row:row+3,col) = [triangle_blah(i,9);triangle_blah(i,15);triangle_blah(i,8);triangle_blah(i,14)];
+        else
+            DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
+        end
+        
         Rho(:,:,i+1) = [1,-1;1,1];
+%         [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,7,8,i,i);
         row = -3;
         col = col + 1;
     end
 end
-
+DOF_mat(:,1) = sort(DOF_mat(:,1));
+% col = col + 1;
+%  DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
 if cyl_def.firstNode == "conn"
-    extra = 1;
+    col = col + 1;
+%     extra = 1;
+extra = 0;
     row = -3;
    for i = length(triangle_blah) - cyl_def.num_plate_nodes - (2*numVertices) + 3 : 2 : length(triangle_blah) - cyl_def.num_plate_nodes + 1 % TODO. Select extra DOFs of connection here. Previous algo did not do this correctly. 
        row = row + 4;
+%                    sign1 = triangle_blah(i,5); % Should always be -1
+%             sign2 = triangle_blah(i,4); % Should always be 1
+%             if sign1*sign2 == 1
+%                 Rho(:,:,i) = [-1,1;-1,-1];
+%             end
        DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
+%        Rho(:,:,i) = Rho(:,:,i) .* [-1,-1;-1,-1];
    end
    col = col +1;
    row = -3;
 end
 
-
+linear_row = 0;
+% Rho_index = i;
 if oneEndcap || twoEndcaps
     if cyl_def.firstNode == "endCap"
         for i = length(triangle_blah)-endCapExclude+1-cyl_def.num_plate_nodes:2:length(triangle_blah)-(numVertices*(cyl_def.lastNode == "endCap")-cyl_def.num_plate_nodes)% Every odd row, only first endcap
             row = row + 4;
+            linear_row = linear_row + 2;
             sign1 = triangle_blah(i,5); % Should always be -1
             sign2 = triangle_blah(i,4); % Should always be 1
             if sign1*sign2 == 1
                 Rho(:,:,i) = [-1,1;-1,-1];
             end
             DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
+%             Rho_index = sub2ind(size(DOF_mat(1:2:end,:)), linear_row, col)-1;
+%              Rho_index = Rho_index + 2;
+%             [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,8,7,i,i);
+            
             if (row == (2*numVertices)-3)
                 DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
+%                 [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,7,8,i,i);
                 row = -3;
                 col = col+1;
+                linear_row = 0;
             end
         end
     end
+    linear_row = 0;
+     DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
 %     Rho(:,:,i+2) = [1,-1;1,1];
-    if cyl_def.lastNode == "endCap"
+    if cyl_def.lastNode == "endCap" && cyl_def.firstNode ~= "conn"
         for i = length(triangle_blah)-numVertices+2-cyl_def.num_plate_nodes:2:length(triangle_blah)-cyl_def.num_plate_nodes% Second endcap
             row = row + 4; 
             DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];    
+%             if sign1*sign2 == 1
+%                 Rho(:,:,i) = [-1,1;-1,-1];
+%             end
             [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));   
+%             Rho_index = sub2ind(size(DOF_mat(1:2:end,:)), linear_row, col)-1;
+%             Rho_index = Rho_index + 2;
+%             [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,8,7,i,i);
+            
             if (row == (2*numVertices)-3)
                 DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
+%                 [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,7,8,i,i);
                 [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));          
                 row = -3;
                 col = col+1;
+                 linear_row = 0;
             end
         end
     end
 end
-
 
 temp = nonzeros(DOF_mat);
 edge_nodes = mesh_data.edges(dof_data.dofs_to_edges(temp(1:2:end,1)),:); % Edges on contour
@@ -211,23 +257,16 @@ B_sin(:,2:2:end-endCapExclude) = B_sin(:,2:2:end-endCapExclude) .* [sind(theta)'
 B_cos(:,2:2:end-endCapExclude) = B_cos(:,2:2:end-endCapExclude) .*[sind(theta)';sind(theta)'];
 if oneEndcap || twoEndcaps
 
-    %    B_const(:,first_endcap) = B_const(:,first_endcap) .* sind(theta1)';
-    %     B_const(:,second_endcap) = B_const(:,second_endcap) .* sind(theta2)';
     if cyl_def.firstNode == "endCap"
         B_const(:,first_endcap) = 0;
     end
     if cyl_def.lastNode == "endCap"
         B_const(:,second_endcap) = 0;
     end
-    
-    %     B_sin(:,first_endcap)    = (B_sin(:,first_endcap)  .* (sind(theta1))')  ;
-    %     B_sin(:,second_endcap)   = (B_sin(:,second_endcap) .* (sind(theta2))') ;
-    %     B_cos(:,first_endcap)    = (B_cos(:,first_endcap)  .* (sind(theta1))') ;
-    %     B_cos(:,second_endcap)   = (B_cos(:,second_endcap) .* (sind(theta2))');
+
 end
-
-temp = nonzeros(DOF_mat);
-
+ DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
+        
 for MBF_num = 1:3
     X = zeros(2,length(edge_nodes));
     switch MBF_num
@@ -250,22 +289,15 @@ for MBF_num = 1:3
         col_iter = 1;
     end
     x_ind_1 = 0;
-    for MBF_node = 1:numNodes+1+extra+1 % numNodes is still without extra 2, TODO: add one if this MBF is added to endcap
+    for MBF_node = 1:numNodes+1+extra % numNodes is still without extra 2, TODO: add one if this MBF is added to endcap
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
-        %         if (numMBF>1) && (ceil(col_index/numMBF)) > numNodes+extra
-        %             if (cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn")
-        %                 col_index = col_index + 3;
-        %             else
-        % %                 col_index = col_index - 3;
-        %             end
-        %         else
-        % %                     col_index = col_index + numMBF;
-        %         end
+        
+        
         fillDofs_1 = nonzeros(DOF_mat(1:2:end, MBF_node));
         fillDofs_2 = nonzeros(DOF_mat(2:2:end, MBF_node));
         
-        x_ind_1 = linspace(x_ind_1(end)+1,x_ind_1(end) + length(fillDofs_1),length(fillDofs_1));
+        x_ind_1 = linspace(x_ind_1(end)+1, x_ind_1(end) + length(fillDofs_1),length(fillDofs_1));
         
         U_Mat(fillDofs_1,col_index) = X(1,x_ind_1); % RWG
         U_Mat(fillDofs_2,col_index) = X(2,x_ind_1); % Linear

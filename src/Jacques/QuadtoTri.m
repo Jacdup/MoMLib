@@ -16,7 +16,8 @@ if both
     num_diff = 2*numVertices;
 %     num_diff = 4*numVertices; % temporary
 elseif oneEach
-   num_diff = 3*numVertices; 
+%     num_diff = 3*numVertices; % Previous algo 
+   num_diff = numVertices; 
 elseif one
     num_diff = numVertices;
 else
