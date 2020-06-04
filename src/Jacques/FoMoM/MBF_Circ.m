@@ -126,13 +126,16 @@ for i = 1:2:length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-connecti
         col = col + 1;
     end
 end
-DOF_mat(:,1) = sort(DOF_mat(:,1));
+if cyl_def.firstNode == "conn"
+    DOF_mat(:,1) = sort(DOF_mat(:,1));
+end
+
 % col = col + 1;
 %  DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
-if cyl_def.firstNode == "conn"
+if cyl_def.firstNode == "connblabla"
     col = col + 1;
-%     extra = 1;
-extra = 0;
+    extra = 1;
+% extra = 0;
     row = -3;
    for i = length(triangle_blah) - cyl_def.num_plate_nodes - (2*numVertices) + 3 : 2 : length(triangle_blah) - cyl_def.num_plate_nodes + 1 % TODO. Select extra DOFs of connection here. Previous algo did not do this correctly. 
        row = row + 4;
@@ -200,6 +203,8 @@ if oneEndcap || twoEndcaps
         end
     end
 end
+% 
+% DOF_mat = sort(DOF_mat);
 
 temp = nonzeros(DOF_mat);
 edge_nodes = mesh_data.edges(dof_data.dofs_to_edges(temp(1:2:end,1)),:); % Edges on contour
@@ -293,7 +298,12 @@ for MBF_num = 1:3
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
         
-        
+        if MBF_node == 17 || MBF_node == 18
+            test = 1;
+        end
+%         if col_index == 101
+%             test = 1;
+%         end
         fillDofs_1 = nonzeros(DOF_mat(1:2:end, MBF_node));
         fillDofs_2 = nonzeros(DOF_mat(2:2:end, MBF_node));
         

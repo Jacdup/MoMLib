@@ -217,8 +217,10 @@ if oneEndcap || twoEndcaps %|| connection
             
 %             DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i,7); triangle_blah(i,13)];
             if cyl_def.firstNode == "conn" 
-                DOF_mat2(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+last,7); triangle_blah(i+last,13)];
-                DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+1,7+last); triangle_blah(i+1,13+last)];
+%                 DOF_mat2(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+last,7); triangle_blah(i+last,13)];
+%                 DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+1,7+last); triangle_blah(i+1,13+last)];
+               DOF_mat2(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+last,7+last); triangle_blah(i+last,13+last)];
+                DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+1,7); triangle_blah(i+1,13)];
             else
                 DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i,7); triangle_blah(i,13)];
                 DOF_mat2(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];
@@ -244,17 +246,21 @@ if oneEndcap || twoEndcaps %|| connection
 %     DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
 end
 
-if cyl_def.firstNode == "endCap" %&& cyl_def.lastNode == "endCap"
+if cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap"
     DOF_mat1 = [circshift(DOF_mat1(:,1:end-1), [0 1]), DOF_mat1(:,end)]; % Swap columns, so that DOFs are ascending from column 1
     DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
     DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
     Rho(:,:,1:numVertices) = Rho(:,:,1:numVertices) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
+%      Rho2(:,:,1:numVertices) = Rho2(:,:,1:numVertices) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
 elseif cyl_def.firstNode == "endCap"
     Rho(:,:,end-numVertices+1:end) = Rho(:,:,end-numVertices+1:end) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
 end
 
 % [Rho(:,:,end-numVertices+1:end), Rho(:,:,end-numVertices+1:end)] = getSigns(triangle_blah(end-numVertices+1:end,:));
 % Rho(:,:,end-numVertices+1:end) = Rho(:,:,end-numVertices+1:end) .* [-1,1;-1,1];
+% DOF_mat1 = sort(DOF_mat1);
+% DOF_mat2 = sort(DOF_mat2);
+% DOF_mat3 = sort(DOF_mat3);
 
 temp1        = nonzeros(DOF_mat1); % Create temporary column vector
 temp2        = nonzeros(DOF_mat2);
@@ -347,9 +353,9 @@ for MBF_num = 1:3
 %             test = 1;
 %         end
         
-        if (cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn") && MBF_node == numNodes_new
-            col_iter = col_iter + 3;
-        end
+%         if (cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn") && MBF_node == numNodes_new
+%             col_iter = col_iter + 3;
+%         end
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
         
