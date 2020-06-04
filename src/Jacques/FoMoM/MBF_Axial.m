@@ -146,18 +146,24 @@ if oneEndcap || twoEndcaps %|| connection
             if cyl_def.firstNode == "conn"
                 DOF_mat1(row1:row1+1, col) = [triangle_blah(i,7); triangle_blah(i,13)];
                 DOF_mat3(row1:row1+1, col) = [triangle_blah(i+1,8-last); triangle_blah(i+1,14-last)];
+                Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col);
+                if triangle_blah(i+1,11-last) < 0
+                    Rho(:,:,Rho_index) = [1,-1;1,1];% Rho2(:,:,Rho_index) .* [1,-1;1,-1];
+                    Rho2(:,:,Rho_index) = [1,-1;1,1];% Rho2(:,:,Rho_index) .* [1,-1;1,-1];
+                end
             else
                 DOF_mat1(row1:row1+1, col) = [triangle_blah(i,9); triangle_blah(i,15)];
                 DOF_mat3(row1:row1+1, col) = [triangle_blah(i,7+last); triangle_blah(i,13+last)];
             end
             
+
             
             
-            Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col);
 %             [Rho(:,:,Rho_index), Rho2(:,:,Rho_index)] = getSigns_new(triangle_blah,7+last,9,i,i);
             %             Rho(:,:,i) = [-1,1;-1,-1];
             %             Rho(:,:,i+1) = [-1,1;-1,-1];
         end
+%         DOF_mat1(:,col) = sort(DOF_mat1(:,col));
     end
     
     if cyl_def.firstNode == "conn1"

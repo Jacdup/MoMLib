@@ -15,12 +15,16 @@ triangles_vertices_currents = zeros(num_tri,3,3);
 local_edge_nodes_def        = [2 3
     1 3
     1 2];
-
 if order == 1
     mesh_TR = triangulation(mesh_data.tri_nodes(1:2:end,:),mesh_data.node_coords);
 else
     mesh_TR = triangulation(mesh_data.tri_nodes(:,:),mesh_data.node_coords);
 end
+% Somehow this function does not work as it should when not all the node
+% coordinates are referenced by the triangulation
+
+% w = warning('query','last');
+% warning('off', w.identifier);
 % if order == 1
 %     tri_dofs_idx = tri_dofs_idx(1:2:end,1);
 % end
@@ -37,7 +41,11 @@ for ii = 1:size(tri_dofs,1)
     n3        = tri_dofs(ii,3); % global nodes of current tri
     cross_val = cross(node_coords(n2,:) - node_coords(n1,:), node_coords(n3,:) - node_coords(n1,:));
     TArea     = 0.5*sqrt(cross_val*cross_val');
-
+% if order == 1
+%     mesh_TR = triangulation(mesh_data.tri_nodes(1:2:end,:),mesh_data.node_coords);
+% else
+%     mesh_TR = triangulation(mesh_data.tri_nodes(:,:),mesh_data.node_coords);
+% end
     %     mesh_TR.connectivityList = mesh_TR.connectivityList
     
     t(1,:) = node_coords(n3,:) - node_coords(n2,:);
@@ -91,4 +99,4 @@ for ii = 1:size(tri_dofs,1)
         end
     end
 end
-% test = 1;
+test = 1;
