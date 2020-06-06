@@ -55,6 +55,7 @@ for ii = 1:size(tri_dofs,1)
     
     for jj = 1:(3+(3*order)) % cycle over the three edges of this triangle
         edge = mod(jj+1,3)+1;
+%         edge = LocalEdgeNum(edge_nodes(ii,vertex),reduced_tri_dofs(ii,1:3));
         %         edge = jj;
         %         edge = jj;
         if jj > 3

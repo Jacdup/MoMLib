@@ -84,15 +84,9 @@ MBF_mat(contour_nodes, :) = [ones_mat,sin_mat',cos_mat'];
 if oneEndcap || twoEndcaps
     temp = MBF_mat(:,2) + MBF_mat(:,3);
     [~, maxNode] = max(temp,[],1, 'linear'); % Sin(x) + cos(x)
-    if ~twoEndcaps
-         MBF_mat((((numNodes+1)*numVertices)+1),:) = [0,0,0];
-%          MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,0,0];
-    else
-        MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,0,0];
-        MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,0,0];
-    end
     
-
+    MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,0,0];
+    MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,0,0];
 %     maxNodes(1,1:2) = [maxNode,numMBFNodes-numVertices+maxNode]; % Nodes where maximum current flows over endcap
 end
 
@@ -134,9 +128,7 @@ for i = 1:2:length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-connecti
 end
 if cyl_def.firstNode == "conn"
     DOF_mat(:,1) = sort(DOF_mat(:,1));
-    
-%     Rho(:,:,i-numVertices+2:i) = Rho(:,:,i-numVertices+2:i).*[1,-1;1,-1];
-%     Rho(:,:,i-numVertices+1) = Rho(:,:,i-numVertices+1).*[-1,1;-1,1];
+    Rho(:,:,i) = [1,-1;1,1];
 end
 
 % col = col + 1;
