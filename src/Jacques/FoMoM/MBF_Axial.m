@@ -41,6 +41,7 @@ elseif oneEndcap
 else
     numNodes_new = numNodes;
     endCapExclude = 0;
+    connCapExclude = 0;
 end
 % temp = 1;
 numDofs = size(dof_data.basis_supports,1);
@@ -170,7 +171,7 @@ if oneEndcap || twoEndcaps %|| connection
                 DOF_mat3(row1:row1+1, col) = [triangle_blah(i+1,8-last); triangle_blah(i+1,14-last)];
                 Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col);
 %                 [Rho(:,:,Rho_index), Rho3(:,:,Rho_index)] = getSigns_new(triangle_blah,7,8-last, i,i+1);
-%                 Rho(:,:,Rho_index) = [-1,1;-1,-1];
+%                 Rho(:,:,Rho_index) = [1,-1;1,1];
 %                  Rho3(:,:,Rho_index) = [1,1;1,-1];% Rho2(:,:,Rho_index) .* [1,-1;1,-1];
                 if triangle_blah(i+1,11-last) < 0
 %                     Rho3(:,:,Rho_index) = [1,-1;1,1];% Rho2(:,:,Rho_index) .* [1,-1;1,-1];

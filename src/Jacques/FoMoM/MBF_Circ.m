@@ -1,4 +1,4 @@
-function [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, endCap, connection,cyl_def, U_Mat)
+function [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah,cyl_def, U_Mat)
 % Currently, endcap functionality only works with even number of vertices
 
 % numNodes = numNodes+2;% For coupling

@@ -75,9 +75,7 @@ for node = 1:num_nodes
     c3 = element(node,4);
     c4 = element(node,3);
     triangle1(node,1:3) = [c1 c2 c3];
-    if c3 ~= c4
-        triangle2(node,1:3) = [c2 c3 c4];
-    end
+    triangle2(node,1:3) = [c2 c3 c4];
 %     if mod(node,numVertices-1) == 0
 %         triangle1(node,1:3) = [c2 c1 c3];
 %         triangle2(node,1:3) = [c3 c2 c4];
@@ -93,7 +91,7 @@ triangles(2:2:end-num_diff,1:3)   = triangle2;
 % end
 new_triangles = triangles;
 
-new_triangles( ~any(new_triangles,2), : ) = [];  %rows
+U_Mat(:,~any(U_Mat,1)) = []; % Remove zero columns
 % We have to convert to format used by Robey:
 % new_triangles = {};
 % for node = 1:num_nodes*2

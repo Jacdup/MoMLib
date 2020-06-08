@@ -41,12 +41,6 @@ for ii = 1:size(tri_dofs,1)
     n3        = tri_dofs(ii,3); % global nodes of current tri
     cross_val = cross(node_coords(n2,:) - node_coords(n1,:), node_coords(n3,:) - node_coords(n1,:));
     TArea     = 0.5*sqrt(cross_val*cross_val');
-% if order == 1
-%     mesh_TR = triangulation(mesh_data.tri_nodes(1:2:end,:),mesh_data.node_coords);
-% else
-%     mesh_TR = triangulation(mesh_data.tri_nodes(:,:),mesh_data.node_coords);
-% end
-    %     mesh_TR.connectivityList = mesh_TR.connectivityList
     
     t(1,:) = node_coords(n3,:) - node_coords(n2,:);
     t(2,:) = node_coords(n1,:) - node_coords(n3,:);
@@ -86,10 +80,7 @@ for ii = 1:size(tri_dofs,1)
             for kk = 1:2 % contributions at the edge vertices, not the origin vertex
                 % (note that basis direction must be incorporated via
                 % appropriate tri_dofs data)
-%                 if this_tri>641
-%                     test = 1;
-%                 end
-%                 
+                 
                 Zeta = cartesianToBarycentric(mesh_TR,this_tri,node_coords(edge_verts(kk),:)); % Get local coord of vertex point
                 
                 rho_edgevert(1,1,1:3) = (t(t_index,:)*Zeta(l_index)) + (first_order*(t(l_index,:)*Zeta(t_index)));
