@@ -6,7 +6,7 @@ function [] = PlotTriangleMeshDofs(mesh_data,dof_data,TextOn)
 % 2019-12-16: Created. MMB. 
 
 % Plot the nodes and triangles:
-PlotTriangleMeshRaw(mesh_data.node_coords,mesh_data.tri_nodes,TextOn);
+PlotTriangleMeshRaw(mesh_data.node_coords,mesh_data.tri_nodes,false);
 
 % Get edge midpoints:
 numedges       = size(mesh_data.edges,1);

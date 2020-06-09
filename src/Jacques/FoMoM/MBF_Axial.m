@@ -5,6 +5,7 @@ function [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = MBF_Axial(mesh_data, dof_data, 
 
 oneEndcap = (cyl_def.firstNode == "endCap" && cyl_def.lastNode ~= "endCap") || (cyl_def.firstNode ~= "endCap" && cyl_def.lastNode == "endCap"); % Only one is an endcap
 twoEndcaps = cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap";
+connection = cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn";
 % oneEndcap = 0;
 % twoEndcaps = 0;
 % -------------------------------------------------------------------------
@@ -23,8 +24,6 @@ if twoEndcaps
 elseif oneEndcap
     numNodes_new = numNodes + 1;
 
-    %     temp = 1;
-    
     if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn"
 %         connCapExclude = vert_num;
         connCapExclude = -vert_num -1;
@@ -38,6 +37,10 @@ elseif oneEndcap
         connCapExclude = 0;
     end
     
+elseif connection
+     connCapExclude = -(vert_num*2)-2;
+     endCapExclude = (2*numVertices);
+     numNodes_new = numNodes + 3;
 else
     numNodes_new = numNodes;
     endCapExclude = 0;
@@ -68,16 +71,21 @@ Rho3 = Rho;
 % num_nodes x [nodes,constant,sin,cos]
 % numMBFNodes_new = numVertices*(numNodes+4); % For coupling
 % numMBFNodes_new = numVertices*(numNodes_new+2) ; % This is only for filling the MBF_mat
-numMBFNodes_new = ((numNodes+2)*numVertices) + length(cyl_def.plate_polygon_nodes);
+numMBFNodes_new = ((numNodes+2)*numVertices) + length(cyl_def.plate_polygon_nodes) + length(cyl_def.plate_polygon_nodes_end);
 sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
 cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
 ones_mat = (ones(numMBFNodes_new,1));
 contour_nodes = (1:numMBFNodes_new)';
 
-if cyl_def.firstNode == "conn"
+if cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn"
+    contour_nodes(end-(numVertices*2)+1:end-numVertices) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ;
+    contour_nodes(end-(numVertices)+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes_end ;
+elseif cyl_def.firstNode == "conn"
 %    contour_nodes(end-numVertices+1:end) = ((numNodes+2)*numVertices) + 1 + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
     contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ;
-
+elseif cyl_def.lastNode == "conn"
+%     contour_nodes = [contour_nodes;((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes_end];
+    contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes_end ;
 end
 % Contour_nodes can now be used to set the values through linear indexing:
 MBF_mat = zeros(numMBFNodes*2, 3); % Don't really care how big this matrix is, as long as the rows correspond to the nodes.
@@ -115,20 +123,15 @@ for i = 1:2:len_tri_mat
     if i <= numVertices*2 && cyl_def.firstNode == "conn"
         DOF_mat1(row:row+1,col) = [triangle_blah(i+1,9);triangle_blah(i+1,15)];
         DOF_mat2(row:row+1,col) = [triangle_blah(i+1-last,8);triangle_blah(i+1-last,14)];
-%         DOF_mat3(row:row+1,col) = [triangle_blah(i+vert_num+1,7+last);triangle_blah(i+vert_num+1,13+last)];
-            Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col);
-%             [Rho(:,:,rho_ind), Rho2(:,:,rho_ind)] = getSigns_new(triangle_blah,9,8, i+1,i+1-last);
-%            Rho2(:,:,Rho_index) = [1,1;1,-1];
-%          Rho(:,:,Rho_index) = [1,-1;1,1];
-%          if triangle_blah(i, 6) < 0
-% %             Rho(:,:,Rho_index) = [-1,1;-1,-1]; 
-%          end
-%          if triangle_blah(i+1-last,11) < 0
-%              Rho(:,:,Rho_index) = [1,1;1,-1];
-%              Rho2(:,:,Rho_index) = [1,1;1,-1];
-% %             Rho(:,:,Rho_index) = [1,-1;1,1];
-% %              Rho2(:,:,Rho_index) = [1,-1;1,1];
-%          end
+        
+    end
+    if cyl_def.lastNode == "conn" && i >= len_tri_mat - vert_num +1
+        DOF_mat1(row:row+1,col) = [triangle_blah(i,7);triangle_blah(i,13)];
+        DOF_mat3(row:row+1,col) = [triangle_blah(i,8);triangle_blah(i,14)];
+        Rho_index = sub2ind(size(DOF_mat3(1:2:end,:)), linear_row, col);
+%         Rho(:,:, Rho_index) = Rho(:,:,Rho_index) .* [-1,-1;-1,-1];
+%         Rho3(:,:, Rho_index) = Rho3(:,:,Rho_index) .* [-1,-1;-1,-1];
+%         Rho2(:,:, Rho_index) = Rho2(:,:,Rho_index) .* [-1,-1;-1,-1];
     end
 
 %     Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col);
@@ -150,10 +153,18 @@ end
 % DOF_mat1(:,32) = [];
 % DOF_mat2(:,32) = [];
 % DOF_mat3(:,32) = [];
+if connection
+    
+%     Rho2(:,:,end-numVertices+1:end) = Rho2(:,:,end-numVertices+1:end) .* [-1,-1;-1,-1];
+%     Rho3(:,:,end-numVertices+1:end) = Rho3(:,:,end-numVertices+1:end) .* [-1,-1;-1,-1];
+    
+%     Rho2(:,:,end-numVertices+1:end) = Rho2(:,:,end-numVertices+1:end) .* [1,-1;1,-1];
+%     Rho3(:,:,1:numVertices) = Rho3(:,:,1:numVertices) .* [-1,1;-1,1];
+end
 % -------------------------------------------------------------------------
 % -----------------------------Endcap stuff--------------------------------
 % -------------------------------------------------------------------------
-if oneEndcap || twoEndcaps %|| connection
+if oneEndcap || twoEndcaps || connection
     row1 = -1; % Fill up a new column, from row 1
     row2 = -1;
     linear_row = 0;
@@ -170,73 +181,21 @@ if oneEndcap || twoEndcaps %|| connection
                 DOF_mat1(row1:row1+1, col) = [triangle_blah(i,7); triangle_blah(i,13)];
                 DOF_mat3(row1:row1+1, col) = [triangle_blah(i+1,8-last); triangle_blah(i+1,14-last)];
                 Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col);
-%                 [Rho(:,:,Rho_index), Rho3(:,:,Rho_index)] = getSigns_new(triangle_blah,7,8-last, i,i+1);
-%                 Rho(:,:,Rho_index) = [1,-1;1,1];
-%                  Rho3(:,:,Rho_index) = [1,1;1,-1];% Rho2(:,:,Rho_index) .* [1,-1;1,-1];
-                if triangle_blah(i+1,11-last) < 0
-%                     Rho3(:,:,Rho_index) = [1,-1;1,1];% Rho2(:,:,Rho_index) .* [1,-1;1,-1];
-                   
-%                     Rho2(:,:,Rho_index) = [1,-1;1,1];% Rho2(:,:,Rho_index) .* [1,-1;1,-1];
-                end
+%                 
+%                 if triangle_blah(i+1,11-last) < 0
+% 
+%                 end
             else
                 DOF_mat1(row1:row1+1, col) = [triangle_blah(i,9); triangle_blah(i,15)];
                 DOF_mat3(row1:row1+1, col) = [triangle_blah(i,7+last); triangle_blah(i,13+last)];
             end
             
-
-            
-            
-%             [Rho(:,:,Rho_index), Rho2(:,:,Rho_index)] = getSigns_new(triangle_blah,7+last,9,i,i);
-            %             Rho(:,:,i) = [-1,1;-1,-1];
-            %             Rho(:,:,i+1) = [-1,1;-1,-1];
         end
 %         DOF_mat1(:,col) = sort(DOF_mat1(:,col));
     end
     
-    if cyl_def.firstNode == "conn1"
-        row = -1;
-        linear_row = 0;
-         DOF_mat3(:, col) = DOF_mat2(:,1); 
-         extra_dof_col = 1;
-        for i = len_tri_mat + vert_num + numVertices +3:2:length(triangle_blah) - cyl_def.num_plate_nodes + 1
-            row = row + 2;
-            linear_row = linear_row + 1;
-            last = 0;
-            if (i == length(triangle_blah) - cyl_def.num_plate_nodes + 1)
-                last = 1;
-            end
-            
-            % First MBF on the cylinder
-            DOF_mat1(row:row+1, col) = [triangle_blah(i,9); triangle_blah(i,15)];
-%             DOF_mat2(row:row+1, col) = [triangle_blah(i-vert_num -numVertices -3,7); triangle_blah(i-vert_num -numVertices -3,13)];
-            DOF_mat2(row:row+1, col) = [triangle_blah(i,8-last); triangle_blah(i,14-last)]; % Need to select all edges, since there aren't exactly straight edges here (all are diagonal)
-%             DOF_mat3(row:row+1, col) = [triangle_blah(i-vert_num,7); triangle_blah(i-vert_num, 13)]; 
-            %            DOF_mat3(row
-            
-            % Second MBF (Cyl -> Plate)
-            DOF_mat1(row:row+1, col+extra_dof_col) = [triangle_blah(i-1,7); triangle_blah(i-1,13)];
-            DOF_mat3(row:row+1, col+extra_dof_col) = [triangle_blah(i,8-last); triangle_blah(i,14-last)];
-          
-            Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col);
-%              Rho(:,:,Rho_index) = Rho(:,:,Rho_index) .* [1,-1;1,-1];
-%             [Rho(:,:,Rho_index), Rho2(:,:,Rho_index)] = getSigns_new(triangle_blah,9,8-last, i,i);
-
-           
-            Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col+extra_dof_col);
-             sign1 = triangle_blah(i,5); % Should always be -1
-            sign2 = triangle_blah(i,4); % Should always be 1
-            if sign1*sign2 == -1
-                Rho(:,:,Rho_index) = [-1,1;-1,-1];
-            end
-
-%             Rho2(:,:,Rho_index) = Rho2(:,:,Rho_index) .* [1,-1;1,-1];
-%             [Rho(:,:,Rho_index), Rho2(:,:,Rho_index)] = getSigns_new(triangle_blah,7, 8-last, i-1,i);
-
-        end
-        %         col = col + 1;
-    end
     linear_row = 0;
-    if cyl_def.lastNode == "endCap" || cyl_def.lastNode == "conn" % Something goes wrong here when firstnode == conn
+    if cyl_def.lastNode == "endCap" || cyl_def.lastNode == "conn1" % Something goes wrong here when firstnode == conn
         for i = (length(triangle_blah)-vert_num-endCapExclude- connCapExclude - cyl_def.num_plate_nodes+1):2:length(triangle_blah)-endCapExclude-connCapExclude-cyl_def.num_plate_nodes % Second endcap, or connection triangles
             %          for i = (length(triangle_blah)-vert_num- endCapExclude -cyl_def.num_plate_nodes+1):1:length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-numVertices+1 % Second endcap, or connection triangles
             row2 = row2 + 2;
@@ -249,9 +208,8 @@ if oneEndcap || twoEndcaps %|| connection
             end
             
 %             DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i,7); triangle_blah(i,13)];
-            if cyl_def.firstNode == "conn" 
-%                 DOF_mat2(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+last,7); triangle_blah(i+last,13)];
-%                 DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+1,7+last); triangle_blah(i+1,13+last)];
+%             if cyl_def.lastNode == "conn" 
+            if cyl_def.firstNode == "conn" % Dofs are assigned differently when first node is a connection
                DOF_mat2(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+last,7+last); triangle_blah(i+last,13+last)];
                 DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+1,7); triangle_blah(i+1,13)];
             else
@@ -260,6 +218,8 @@ if oneEndcap || twoEndcaps %|| connection
             end
             
              Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col+1+extra_dof_col);
+%                              Rho2(:,:, Rho_index) = Rho2(:,:,i) .* [1,-1;1,-1];
+%                 Rho3(:,:, Rho_index) = Rho3(:,:,i) .* [1,-1;1,-1];
 %             [Rho(:,:,Rho_index), Rho2(:,:,Rho_index)] = getSigns_new(triangle_blah,7,9-last,i,i);
             
         end
@@ -269,17 +229,9 @@ if oneEndcap || twoEndcaps %|| connection
         end
         
     end
-    % This piece of code is to align the DOF mats, and it needs to do it
-    % correctly.
-%         DOF_mat1 = sortrows(DOF_mat1.')';
-%         DOF_mat2 = sortrows(DOF_mat2.')';
-%         DOF_mat3 = sortrows(DOF_mat3.')';
-%     DOF_mat1 = [circshift(DOF_mat1(:,1:end-1), [0 1]), DOF_mat1(:,end)]; % Swap columns, so that DOFs are ascending from column 1
-%     DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
-%     DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
 end
 
-if (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap") || cyl_def.firstNode == "conn"
+if (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap") || (cyl_def.firstNode == "conn" && cyl_def.lastNode ~= "conn")
     DOF_mat1 = [circshift(DOF_mat1(:,1:end-1), [0 1]), DOF_mat1(:,end)]; % Swap columns, so that DOFs are ascending from column 1
     DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
     DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
@@ -289,11 +241,6 @@ elseif cyl_def.firstNode == "endCap"
     Rho(:,:,end-numVertices+1:end) = Rho(:,:,end-numVertices+1:end) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
 end
 
-% [Rho(:,:,end-numVertices+1:end), Rho(:,:,end-numVertices+1:end)] = getSigns(triangle_blah(end-numVertices+1:end,:));
-% Rho(:,:,end-numVertices+1:end) = Rho(:,:,end-numVertices+1:end) .* [-1,1;-1,1];
-% DOF_mat1 = sort(DOF_mat1);
-% DOF_mat2 = sort(DOF_mat2);
-% DOF_mat3 = sort(DOF_mat3);
 
 temp1        = nonzeros(DOF_mat1); % Create temporary column vector
 temp2        = nonzeros(DOF_mat2);
@@ -342,20 +289,6 @@ lim1_for_3 = lim1_for_3(1:2:end);
 
 theta_1      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
 theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
-% theta_1 = theta_2;
-% figure();
-% quiver3(mesh_data.node_coords(edge_nodes_2(1:lim2,1),1),mesh_data.node_coords(edge_nodes_2(1:lim2,1),2),mesh_data.node_coords(edge_nodes_2(1:lim2,1),3),edge_vecs_2(1:lim3,1),edge_vecs_2(1:lim2,2),edge_vecs_2(1:lim2,3))
-% quiver3(mesh_data.node_coords(edge_nodes_3(1:lim3,1),1),mesh_data.node_coords(edge_nodes_3(1:lim3,1),2),mesh_data.node_coords(edge_nodes_3(1:lim3,1),3),edge_vecs_3(1:lim3,1),edge_vecs_3(1:lim3,2),edge_vecs_3(1:lim3,3))
-% hold on
-% quiver3(mesh_data.node_coords(edge_nodes_1(lim1_for_3,1),1),mesh_data.node_coords(edge_nodes_1(lim1_for_3,1),2),mesh_data.node_coords(edge_nodes_1(lim1_for_3,1),3),edge_vecs_1(lim1_for_3,1),edge_vecs_1(lim1_for_3,2),edge_vecs_1(lim1_for_3,3))
-% quiver3(mesh_data.node_coords(edge_nodes_1(lim1_for_2,1),1),mesh_data.node_coords(edge_nodes_1(lim1_for_2,1),2),mesh_data.node_coords(edge_nodes_1(lim1_for_2,1),3),edge_vecs_1(lim1_for_2,1),edge_vecs_1(lim1_for_2,2),edge_vecs_1(lim1_for_2,3))
-% axis equal
-% ind = find(theta_1 < 8); % Temporary fix, since there is no way of telling why these vectors are perpendicular suddenly
-% theta_1(ind) = theta_1((ind  - numVertices+1));
-% ind = find(theta_2 < 8); % Temporary fix, since there is no way of telling why these vectors are perpendicular suddenly
-% theta_2(ind) = theta_2((ind - numVertices+1));
-
-% test = abs(90 - acosd(dot(edge_vecs_1(121,:),edge_vecs_3(121,:),2)./(vecnorm(edge_vecs_1(121,:),2,2).*vecnorm(edge_vecs_3(121,:),2,2))));
 
 for MBF_num = 1:3
     
