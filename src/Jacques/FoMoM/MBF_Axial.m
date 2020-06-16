@@ -75,18 +75,22 @@ numMBFNodes_new = ((numNodes+2)*numVertices) + length(cyl_def.plate_polygon_node
 sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
 cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
 ones_mat = (ones(numMBFNodes_new,1));
-contour_nodes = (1:(numNodes+2)*numVertices)';
+
+contour_nodes = (1:numMBFNodes_new)';
 
 if connection
+    contour_nodes = (1:(numNodes+2)*numVertices)';
 %     contour_nodes(end-(numVertices*2)+1:end-numVertices) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ;
 %     contour_nodes(end-(numVertices)+1:end)               =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes_end ;
-    
-contour_nodes = [contour_nodes; cyl_def.last_element_val+ cyl_def.plate_polygon_nodes;  cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
+%     * (cyl_def.lastNode ~= "conn"))
+contour_nodes = [contour_nodes; cyl_def.last_element_val+  cyl_def.plate_polygon_nodes;  cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
 
 elseif cyl_def.firstNode == "conn"
+%     contour_nodes = [contour_nodes; cyl_def.last_element_val  + cyl_def.plate_polygon_nodes];
     contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
 elseif cyl_def.lastNode == "conn"
-    contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes_end ;
+    contour_nodes = [contour_nodes; cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
+%     contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes_end ;
 end
 % Contour_nodes can now be used to set the values through linear indexing:
 MBF_mat = zeros(numMBFNodes*2, 3); % Don't really care how big this matrix is, as long as the rows correspond to the nodes.
@@ -112,9 +116,7 @@ for i = 1:2:len_tri_mat
     else
         last = 0;
     end
-    if col == 23
-        test = 1;
-    end
+    
     % Create matrix containing DOFs of the edges
     DOF_mat1(row:row+1,col) = [triangle_blah(i+1,7);triangle_blah(i+1,13)];
     DOF_mat2(row:row+1,col) = [triangle_blah(i+last,7+last);triangle_blah(i+last,13+last)];
@@ -127,7 +129,7 @@ for i = 1:2:len_tri_mat
     end
     if cyl_def.lastNode == "conn" && i >= len_tri_mat - vert_num +1 % Assign last MBF with new DOFs from generated connection
         % This is NOT the transition from cyl -> plate
-        DOF_mat3(row:row+1,col) = [triangle_blah(i+vert_num+1,8);triangle_blah(i+vert_num+1,14)];
+        DOF_mat3(row:row+1,col) = [triangle_blah(i+vert_num+2-last,8);triangle_blah(i+vert_num+2-last,14)];
     end
 
     if last == 1
@@ -169,15 +171,17 @@ if oneEndcap || twoEndcaps || connection
             if (i == vert_num)
                 last = 1;
             end
-            
+
             if cyl_def.firstNode == "conn"
                 DOF_mat1(row1:row1+1, col) = [triangle_blah(i,7); triangle_blah(i,13)];
                 DOF_mat3(row1:row1+1, col) = [triangle_blah(i+1,8-last); triangle_blah(i+1,14-last)];
+                
+%                  Rho2(:,:, Rho_index) = Rho2(:,:,Rho_index) .* [-1,-1;-1,-1];
+            if connection
                 Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col);
-%                 
-%                 if triangle_blah(i+1,11-last) < 0
-% 
-%                 end
+                Rho3(:,:, Rho_index) = Rho3(:,:,Rho_index) .* [-1,-1;-1,-1]; % This fixes the 'connection' case (2 connections)
+            end
+%                  
             else
                 DOF_mat1(row1:row1+1, col) = [triangle_blah(i,9); triangle_blah(i,15)];
                 DOF_mat3(row1:row1+1, col) = [triangle_blah(i,7+last); triangle_blah(i,13+last)];
@@ -188,7 +192,7 @@ if oneEndcap || twoEndcaps || connection
     end
     
     linear_row = 0;
-    if cyl_def.lastNode == "endCap" || cyl_def.lastNode == "conn" % Something goes wrong here when firstnode == conn
+    if cyl_def.lastNode == "endCap" || cyl_def.lastNode == "conn" 
         for i = (length(triangle_blah)-vert_num-endCapExclude- connCapExclude - cyl_def.num_plate_nodes+1):2:length(triangle_blah)-endCapExclude-connCapExclude-cyl_def.num_plate_nodes % Second endcap, or connection triangles
             row2 = row2 + 2;
             linear_row = linear_row + 1;
@@ -197,7 +201,7 @@ if oneEndcap || twoEndcaps || connection
             if i ==  length(triangle_blah)-endCapExclude-connCapExclude-cyl_def.num_plate_nodes
                 last = 1;
             end
-            
+            Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col+1+extra_dof_col);
 %             DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i,7); triangle_blah(i,13)];
 %             if cyl_def.lastNode == "conn" 
             if cyl_def.firstNode == "conn" && cyl_def.lastNode ~= "conn" % Dofs are assigned differently when first node is a connection
@@ -206,14 +210,22 @@ if oneEndcap || twoEndcaps || connection
             elseif cyl_def.lastNode == "conn"
                 DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i,7); triangle_blah(i,13)];
                 DOF_mat2(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i+1-last,8); triangle_blah(i+1-last,14)];
+                if connection
+                    Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col+1+extra_dof_col);
+                    Rho(:,:, Rho_index) = Rho(:,:,Rho_index) .* [-1,-1;-1,-1]; % This fixes the 'connection' case (2 connections)
+                    Rho2(:,:, Rho_index) = Rho2(:,:,Rho_index) .* [-1,-1;-1,-1];
+                    Rho3(:,:, Rho_index) = Rho3(:,:,Rho_index) .* [-1,-1;-1,-1];
+                end
+%                 Rho3(:,:, Rho_index) = Rho3(:,:,Rho_index) .* [-1,-1;-1,-1];
+%                 Rho2(:,:, Rho_index) = Rho2(:,:,Rho_index) .* [1,-1;1,-1];
             else
                 DOF_mat1(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i,7); triangle_blah(i,13)];
                 DOF_mat2(row2:row2+1, col+1+extra_dof_col) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];
             end
             
-             Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col+1+extra_dof_col);
-%                              Rho2(:,:, Rho_index) = Rho2(:,:,i) .* [1,-1;1,-1];
-%                 Rho3(:,:, Rho_index) = Rho3(:,:,i) .* [1,-1;1,-1];
+             
+
+%              Rho3(:,:, Rho_index) = Rho3(:,:,Rho_index) .* [-1,-1;-1,-1];
 %             [Rho(:,:,Rho_index), Rho2(:,:,Rho_index)] = getSigns_new(triangle_blah,7,9-last,i,i);
             
         end
@@ -311,6 +323,11 @@ for MBF_num = 1:3
 
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
+        
+        if MBF_node == 1
+            
+            test = 1;
+        end
 
         % Skip the zero columns
         if DOF_mat1(1,MBF_node) ~= 0

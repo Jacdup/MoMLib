@@ -5,6 +5,7 @@ function [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ(mesh_data, dof_data, numVer
 extra = 0;
 oneEndcap = (cyl_def.firstNode == "endCap" && cyl_def.lastNode ~= "endCap") || (cyl_def.firstNode ~= "endCap" && cyl_def.lastNode == "endCap"); % Only one is an endcap
 twoEndcaps = cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap";
+connection = cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn";
 
 theta1 = [];
 theta2 = [];
@@ -16,7 +17,7 @@ theta2 = [];
 % else
 %     numMBFNodes = (numNodes+2)*numVertices;
 % end
-numMBFNodes = ((numNodes+2)*numVertices) + length(cyl_def.plate_polygon_nodes);
+numMBFNodes = ((numNodes+2)*numVertices) + length(cyl_def.plate_polygon_nodes)+ length(cyl_def.plate_polygon_nodes_end);
 phi = 360/numVertices;
 
 DOF_mat = zeros(numVertices*2,numNodes+1);
@@ -30,7 +31,7 @@ if oneEndcap % TODO: connection functionality
     
      if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn"
 %         connCapExclude = vert_num;
-        connectionExclude = numVertices; % This means the routine goes an extra 2*numVertices into triangle_blah
+%         connectionExclude = numVertices; % This means the routine goes an extra 2*numVertices into triangle_blah
         connectionExclude = -numVertices;
 %         endCapExclude = numVertices*2;
 %         numNodes_new = numNodes + 4;
@@ -43,8 +44,11 @@ elseif twoEndcaps
     endCapExclude = (2*numVertices);
     connectionExclude = 0;
 else
+    if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn"
+        connectionExclude = 0;
+    end
     endCapExclude = 0;
-    connectionExclude = 0;
+%     connectionExclude = 0;
 end
 
 % if endCap && (connection==0)
@@ -58,21 +62,27 @@ end
 %     connectionExclude = 0;
 % end
 
-EPS = 0.0001;
 % -------------------------------------------------------------------------
 % Set up MBF matrix
 % -------------------------------------------------------------------------
 
 sin_mat = sind(phi*(0:(numMBFNodes-1)));
 cos_mat = cosd(phi*(0:(numMBFNodes-1)));
-contour_nodes = (1:numMBFNodes);
+% contour_nodes = (1:(numNodes+2)*numVertices)';
+ contour_nodes = (1:numMBFNodes)';
 ones_mat = (ones(numMBFNodes,1));
 
-if cyl_def.firstNode == "conn"
-%    contour_nodes(end-numVertices+1:end) = ((numNodes+2)*numVertices) + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
- contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ;
-
+if connection
+    contour_nodes = (1:(numNodes+2)*numVertices)';
+    contour_nodes = [contour_nodes; cyl_def.last_element_val+ cyl_def.plate_polygon_nodes;  cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
+elseif cyl_def.firstNode == "conn"
+    %    contour_nodes(end-numVertices+1:end) = ((numNodes+2)*numVertices) + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
+     contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ;
+%     contour_nodes = [contour_nodes; cyl_def.last_element_val + cyl_def.plate_polygon_nodes];
+elseif cyl_def.lastNode == "conn"
+    contour_nodes = [contour_nodes; cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
 end
+     
 % Contour_nodes can now be used to set the values through linear indexing:
 MBF_mat = zeros(numMBFNodes*2, 3); % Don't really care how big this matrix is, as long as the rows correspond to the nodes.
 MBF_mat(contour_nodes, :) = [ones_mat,sin_mat',cos_mat'];
@@ -91,8 +101,6 @@ if oneEndcap || twoEndcaps
         MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,0,0];
         MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,0,0];
     end
-    
-
 %     maxNodes(1,1:2) = [maxNode,numMBFNodes-numVertices+maxNode]; % Nodes where maximum current flows over endcap
 end
 
@@ -102,18 +110,24 @@ col = 1;
 Rho = [1,1;1,-1];
 Rho = repmat(Rho, 1,1,length(triangle_blah));
 
+len_tri_mat = length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-connectionExclude;
+
 % Fill each column of matrix with DOFs for each MBF
-for i = 1:2:length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-connectionExclude% Every odd row
+for i = 1:2:len_tri_mat% Every odd row
     row = row + 4;
+
+    sign1 = triangle_blah(i,5); % Should always be -1
+    sign2 = triangle_blah(i,4); % Should always be 1
     
     if i <= numVertices*2 && cyl_def.firstNode == "conn"
+        DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,9);triangle_blah(i,15)];
+    elseif i > len_tri_mat - (2*numVertices) && cyl_def.lastNode == "conn"
         DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,9);triangle_blah(i,15)];
     else
         DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
     end
     
-    sign1 = triangle_blah(i,5); % Should always be -1
-    sign2 = triangle_blah(i,4); % Should always be 1
+
     if sign1*sign2 == 1
         Rho(:,:,i) = [-1,1;-1,-1];
     end
@@ -121,6 +135,8 @@ for i = 1:2:length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-connecti
 %     [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,8,7,i,i);
     if (row == (4*numVertices)-3)
         if i <= numVertices*2 && cyl_def.firstNode == "conn"
+            DOF_mat(row:row+3,col) = [triangle_blah(i,9);triangle_blah(i,15);triangle_blah(i,8);triangle_blah(i,14)];
+        elseif i > len_tri_mat - (2*numVertices) && cyl_def.lastNode == "conn"
             DOF_mat(row:row+3,col) = [triangle_blah(i,9);triangle_blah(i,15);triangle_blah(i,8);triangle_blah(i,14)];
         else
             DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
@@ -307,12 +323,6 @@ for MBF_num = 1:3
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
         
-        if MBF_node == 17 || MBF_node == 18
-            test = 1;
-        end
-%         if col_index == 101
-%             test = 1;
-%         end
         fillDofs_1 = nonzeros(DOF_mat(1:2:end, MBF_node));
         fillDofs_2 = nonzeros(DOF_mat(2:2:end, MBF_node));
         
@@ -323,9 +333,3 @@ for MBF_num = 1:3
         
     end
 end
-
-% 
-% if oneEndcap && twoEndcaps
-%     U_Mat(:,end-2) = []; % Remove constant columns at endcaps
-%     U_Mat(:,end-4) = [];
-% end

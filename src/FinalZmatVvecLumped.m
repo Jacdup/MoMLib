@@ -1,5 +1,5 @@
 function [Z_lump, V_lump] = FinalZmatVvecLumped(Z_rowcolval, V_rowcolval, global_to_redu_dofs, num_obs, num_src, observer_map, source_map)
-% This is a simple routime which takes the lumped element (voltage sources
+% This is a simple routine which takes the lumped element (voltage sources
 % and lumped impedances) contributions to the global system of linear
 % equations and reduces it to the corresponding contributions to the
 % reduced system. I.e. the indices are updated and contributions associated
