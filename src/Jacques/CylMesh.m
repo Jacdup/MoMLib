@@ -164,8 +164,8 @@ for node = 1:num_nodes
 end
 
 % This ensures the first and last nodes are on the plate
-points(1:num_vertices,3) = Contour(1,3);
-points(end-num_vertices+1:end,3) = Contour(end,3);
+% points(1:num_vertices,3) = Contour(1,3);
+% points(end-num_vertices+1:end,3) = Contour(end,3);
 
 % ------------------------------------------------------------------------
 % -------------------------New 13/05/2020---------------------------------

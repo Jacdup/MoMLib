@@ -33,7 +33,8 @@ polygon_points_2 = node_coords(end-vertices+1:end,:);
             [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\2_square_plate_hole_20v_fine.nas');
        else
 %            [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_hole_20v_regular.nas');
-           [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_2holes.nas');
+%            [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_2holes.nas');
+            [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_2holes_smaller.nas');
        end
 
         if cyl_def.firstNode == "conn" && cyl_def.lastNode ~= "conn"
@@ -113,6 +114,9 @@ polygon_points_2 = node_coords(end-vertices+1:end,:);
             elements(end-vertices+1:end,:) = elements(end-vertices+1:end,:) - vertices;
             last_element_val = max(max(elements));
             cyl_def.last_element_val = last_element_val;
+%             if length(plate_polygon_nodes_1) < vertices
+%                 ""
+%             end
             
             elements(1:vertices,1) = plate_polygon_nodes_1 + last_element_val;
             elements(1:vertices,2) = circshift(plate_polygon_nodes_1,-1) + last_element_val;

@@ -44,11 +44,12 @@ elseif twoEndcaps
     endCapExclude = (2*numVertices);
     connectionExclude = 0;
 else
+    connectionExclude = 0;
     if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn"
         connectionExclude = 0;
     end
     endCapExclude = 0;
-%     connectionExclude = 0;
+    
 end
 
 % if endCap && (connection==0)
@@ -148,33 +149,16 @@ for i = 1:2:len_tri_mat% Every odd row
         col = col + 1;
     end
 end
-if cyl_def.firstNode == "conn"
+if cyl_def.firstNode == "conn" 
     DOF_mat(:,1) = sort(DOF_mat(:,1));
     
 %     Rho(:,:,i-numVertices+2:i) = Rho(:,:,i-numVertices+2:i).*[1,-1;1,-1];
 %     Rho(:,:,i-numVertices+1) = Rho(:,:,i-numVertices+1).*[-1,1;-1,1];
 end
-
-% col = col + 1;
-%  DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
-if cyl_def.firstNode == "connblabla"
-    col = col + 1;
-    extra = 1;
-% extra = 0;
-    row = -3;
-   for i = length(triangle_blah) - cyl_def.num_plate_nodes - (2*numVertices) + 3 : 2 : length(triangle_blah) - cyl_def.num_plate_nodes + 1 % TODO. Select extra DOFs of connection here. Previous algo did not do this correctly. 
-       row = row + 4;
-%                    sign1 = triangle_blah(i,5); % Should always be -1
-%             sign2 = triangle_blah(i,4); % Should always be 1
-%             if sign1*sign2 == 1
-%                 Rho(:,:,i) = [-1,1;-1,-1];
-%             end
-       DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
-%        Rho(:,:,i) = Rho(:,:,i) .* [-1,-1;-1,-1];
-   end
-   col = col +1;
-   row = -3;
+if cyl_def.lastNode == "conn" 
+    DOF_mat(:,end) = sort(DOF_mat(:,end));
 end
+
 
 linear_row = 0;
 % Rho_index = i;

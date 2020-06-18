@@ -16,8 +16,8 @@ function [Z_rowcolval, V_rowcolval] = CalcZmatVvecLumpedFO(dof_data, num_dofs, m
 num_lumped  = size(interelem_VsrcZload,1); % max (max possible number of lumped V's, max possible number of lumped Z's)
 V_rowcolval = [ -ones(num_lumped,1)  -ones(num_lumped,1)  zeros(num_lumped,1) ];
 Z_rowcolval = [ -ones(num_lumped,1)  -ones(num_lumped,1)  zeros(num_lumped,1) ];
-Vnum        = 0; % actual number of V's (to be determined)
-Znum        = 0; % actual number of Z's (to be determined)
+Vnum        = -1; % actual number of V's (to be determined)
+Znum        = -1; % actual number of Z's (to be determined)
 
 % Cycle through all specified loads and sources and assemble their
 % contributions:
@@ -43,16 +43,19 @@ for ii = 1:num_lumped
                 else
                     dofsign = -1;
                 end
-                Vnum                = Vnum + 1;
-                V_rowcolval(Vnum,:) = [ this_dof  1  dofsign*ELength*V_val ];
+                Vnum                  = Vnum + 2;
+                V_rowcolval(Vnum,:)   = [ this_dof   1  dofsign*ELength*V_val ];
+                V_rowcolval(Vnum+1,:) = [ this_dof-1 1  dofsign*ELength*V_val ]; % Extra DOF for first order spec
             end
             
             % Add Z_mat contribution:
             Z_val = interelem_VsrcZload(ii,5) + 1i*interelem_VsrcZload(ii,6);
             if abs(Z_val) > 1e-8
-                Znum                = Znum + 1;
-                Z_rowcolval(Znum,:) = [ this_dof  this_dof  (ELength^2)*Z_val ]; % lack of minus sign here is due to E_tot sign in EFIE: - E_scat + E_tot = E_inc 
-%                 disp('');
+                Znum                  = Znum + 2;
+                Z_rowcolval(Znum,:)   = [ this_dof  this_dof  (ELength^2)*Z_val ]; % lack of minus sign here is due to E_tot sign in EFIE: - E_scat + E_tot = E_inc 
+                Z_rowcolval(Znum+1,:) = [ this_dof-1  this_dof+1  (ELength^2)*Z_val ];
+                %                 
+% disp('');
             end
         end
     end

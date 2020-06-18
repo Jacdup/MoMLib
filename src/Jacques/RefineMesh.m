@@ -1,5 +1,5 @@
 function new_points = RefineMesh(Contour, N)
-% Description: Creates N elements for every element in the original contour
+% Description: Creates N new elements for every element in the original contour
 
  for n = 1:N
      iter = 0;

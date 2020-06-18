@@ -1,4 +1,4 @@
-function [tri_indices] = FindTrianglesAroundNode(contour_point, tri_nodes,tri_coords)
+function [tri_indices] = FindTrianglesAroundNode(contour_point, tri_nodes,tri_coords, coord)
 
 % This function simply cycles through all the triangles and selects those
 % who have two nodes on the MBF node (along the contour of a cylinder) to
@@ -9,10 +9,11 @@ function [tri_indices] = FindTrianglesAroundNode(contour_point, tri_nodes,tri_co
 EPS = 1e-2;
 EPS = 0.005;
 
+
 iter = 1;
 for i = 1:length(tri_nodes)
     
-    LocB = abs(contour_point- tri_coords(tri_nodes(i,:),1))<EPS; % Only look at z-coordinate here
+    LocB = abs(contour_point- tri_coords(tri_nodes(i,:),coord))<EPS; % Only look at z-coordinate here
    
     if length(nonzeros(LocB)) > 1 % If there are more than two points on the contour, then we know the triangle is part of the excitation/load
        tri_indices(iter,1) = i; 

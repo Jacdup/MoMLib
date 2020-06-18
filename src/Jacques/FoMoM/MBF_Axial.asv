@@ -241,9 +241,7 @@ if (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap") || (cyl_def.f
     DOF_mat1 = [circshift(DOF_mat1(:,1:end-1), [0 1]), DOF_mat1(:,end)]; % Swap columns, so that DOFs are ascending from column 1
     DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
     DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
-%     DOF_mat1(:,end) = sort(DOF_mat1(:,end));
-%     DOF_mat2(:,end) = sort(DOF_mat2(:,end));
-%     DOF_mat3(:,end) = sort(DOF_mat3(:,end));
+    DOF_mat1(:,1) = sort(DOF_mat(:,1));
     Rho(:,:,1:numVertices) = Rho(:,:,1:numVertices) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
 %      Rho2(:,:,1:numVertices) = Rho2(:,:,1:numVertices) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
 elseif cyl_def.firstNode == "endCap"
