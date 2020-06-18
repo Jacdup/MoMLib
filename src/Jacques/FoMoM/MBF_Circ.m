@@ -226,39 +226,9 @@ edge_vecs  = mesh_data.node_coords(edge_nodes(:,1),:)-mesh_data.node_coords(edge
 theta      =  abs(90 - acosd(dot(edge_vecs(1:2:end,:),edge_vecs(2:2:end,:),2)./(vecnorm(edge_vecs(1:2:end,:),2,2).*vecnorm(edge_vecs(2:2:end,:),2,2))));
 
 if oneEndcap || twoEndcaps
-    extra = extra + 1;
-    
-    if cyl_def.firstNode == "endCap"
-        first_endcap = length(edge_nodes)-(2*numVertices)+1:length(edge_nodes)-numVertices;
-%         maxEdge1 = edge_nodes(:,:) == maxNodes(1,1); % First endcap
-        maxFirstEndCapNode1 = mesh_data.node_coords(edge_nodes(maxNode,1),:); % Smallest numbers
-        maxFirstEndCapNode1 = maxFirstEndCapNode1(1,:); % First node
-        maxFirstEndCapNode2 = mesh_data.node_coords(end-1,:);
-        max_edge_vec_1 = maxFirstEndCapNode1 - maxFirstEndCapNode2;
-         % Angle between every endcap edge and first edge in edge_vecs
-        theta1 = abs(90 - acosd(dot(repmat(max_edge_vec_1,[numVertices 1]),edge_vecs(first_endcap,:),2)./(vecnorm(max_edge_vec_1,2,2)*vecnorm(edge_vecs(first_endcap,:),2,2))));
-    end
-    
-    if cyl_def.lastNode == "endCap"
-        second_endcap = length(edge_nodes)-(numVertices)+1:length(edge_nodes);
-%         maxEdge2 = edge_nodes(:,:) == maxNodes(1,2); % Second endcap
-        maxSecondEndCapNode1 = mesh_data.node_coords(edge_nodes(maxNode(:,1),1),:);
-%         maxSecondEndCapNode1 = mesh_data.node_coords(edge_nodes(maxEdge2(:,1),1),:);
-        maxSecondEndCapNode1 = maxSecondEndCapNode1(end,:); % Last node
-        maxSecondEndCapNode2 = mesh_data.node_coords(end,:);
-        max_edge_vec_2 = maxSecondEndCapNode1 - maxSecondEndCapNode2;
-        %      max_edge_vec_2 = max_edge_vec_1;
-         % Angle between every endcap edge and first edge in edge_vecs
-        theta2 = abs(90 - acosd(dot(repmat(max_edge_vec_2,[numVertices 1]),edge_vecs(second_endcap,:),2)./(vecnorm(max_edge_vec_2,2,2)*vecnorm(edge_vecs(second_endcap,:),2,2))));
-    end
     theta(end-round((endCapExclude/2))+1:end,:) = []; % TODO
 end
 lim = 1:length(edge_nodes);
-if cyl_def.firstNode == "conn"
-%    lim = 1:length(edge_nodes)- numVertices;
-%    theta(end-round((endCapExclude/2))+1:end,:) = []; % TODO
-end
-% temp = MBF_mat(edge_nodes(lim,1),1);
 
 % Retrieve the 1/sin/cos value at the corresponding node
 B_const(1:2,:) = [MBF_mat(edge_nodes(lim,1),1),MBF_mat(edge_nodes(lim,2),1)]';
@@ -270,11 +240,14 @@ B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [sind(the
 B_sin(:,2:2:end-endCapExclude) = B_sin(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
 B_cos(:,2:2:end-endCapExclude) = B_cos(:,2:2:end-endCapExclude) .*[sind(theta)';sind(theta)'];
 if oneEndcap || twoEndcaps
+    extra = extra + 1;
 
     if cyl_def.firstNode == "endCap"
+         first_endcap = length(edge_nodes)-(2*numVertices)+1:length(edge_nodes)-numVertices;
         B_const(:,first_endcap) = 0;
     end
     if cyl_def.lastNode == "endCap"
+        second_endcap = length(edge_nodes)-(numVertices)+1:length(edge_nodes);
         B_const(:,second_endcap) = 0;
     end
 
