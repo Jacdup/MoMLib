@@ -30,7 +30,8 @@ polygon_points_2 = node_coords(end-vertices+1:end,:);
         
         %          [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_hole_regular.nas');
        if cyl_def.firstNode == "conn" && cyl_def.lastNode ~= "conn"
-            [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\2_square_plate_hole_20v_fine.nas');
+%             [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\2_square_plate_hole_20v_fine.nas');
+       [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_hole_20v_regular.nas');
        else
 %            [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_hole_20v_regular.nas');
 %            [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_2holes.nas');

@@ -53,7 +53,7 @@ for ii = 1:num_lumped
             if abs(Z_val) > 1e-8
                 Znum                  = Znum + 2;
                 Z_rowcolval(Znum,:)   = [ this_dof  this_dof  (ELength^2)*Z_val ]; % lack of minus sign here is due to E_tot sign in EFIE: - E_scat + E_tot = E_inc 
-                Z_rowcolval(Znum+1,:) = [ this_dof-1  this_dof+1  (ELength^2)*Z_val ];
+                Z_rowcolval(Znum+1,:) = [ this_dof-1  this_dof-1  (ELength^2)*Z_val ];
                 %                 
 % disp('');
             end
