@@ -1673,6 +1673,10 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                             double lq = Distance(qPoints[jj], qPoints[(jj+1)%3]);
                                             
                                             complex double temp = (InnerIntPoints[iip][3]/(Rm*qArea))*cexp(-I*k*Rm);
+                                            
+//                                             if (isnan(real(temp))){
+//                                                 mexPrintf( "in here");
+//                                             }
 
                                             A[0] += (qRho[0]*I*lq*mu*w*temp)/(16*M_PI);
                                             A[1] += (qRho[1]*I*lq*mu*w*temp)/(16*M_PI);
@@ -1681,7 +1685,9 @@ void MoM(double freq, int P, double *points, int T, double *triangles, int N, co
                                         }
                                         complex double AdotpRho = A[0]*pRho[0] + A[1]*pRho[1] + A[2]*pRho[2];
                                         
-                                        Zmat[(num_obs*(q_src_index-1)) + (p_obs_index-1)] += (OuterIntPoints[oip][3]/pArea)*lp*(AdotpRho + pTri[3+(ii+2)%3]*Phi);    
+                                        Zmat[(num_obs*(q_src_index-1)) + (p_obs_index-1)] += (OuterIntPoints[oip][3]/pArea)*lp*(AdotpRho + pTri[3+(ii+2)%3]*Phi);
+                                        
+                                        
                                     }
                                 }
                                    

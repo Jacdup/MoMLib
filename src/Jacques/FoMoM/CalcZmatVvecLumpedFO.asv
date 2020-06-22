@@ -44,16 +44,16 @@ for ii = 1:num_lumped
                     dofsign = -1;
                 end
                 Vnum                  = Vnum + 2;
-                V_rowcolval(Vnum,:)   = [ this_dof-1   1  dofsign*ELength*V_val ];
-                V_rowcolval(Vnum+1,:) = [ this_dof 1  0]; % Extra DOF for first order spec
+                V_rowcolval(Vnum,:)   = [ this_dof   1  dofsign*ELength*V_val ];
+                V_rowcolval(Vnum+1,:) = [ this_dof-1 1  0]; % Extra DOF for first order spec
             end
             
             % Add Z_mat contribution:
             Z_val = interelem_VsrcZload(ii,5) + 1i*interelem_VsrcZload(ii,6);
             if abs(Z_val) > 1e-8
                 Znum                  = Znum + 2;
-                Z_rowcolval(Znum,:)   = [ this_dof-1  this_dof-1  (ELength^2)*Z_val ]; % lack of minus sign here is due to E_tot sign in EFIE: - E_scat + E_tot = E_inc 
-                Z_rowcolval(Znum+1,:) = [ this_dof  this_dof  0];
+                Z_rowcolval(Znum,:)   = [ this_dof  this_dof  (ELength^2)*Z_val ]; % lack of minus sign here is due to E_tot sign in EFIE: - E_scat + E_tot = E_inc 
+                Z_rowcolval(Znum+1,:) = [ this_dof-1  this_dof-1  0];
                 %                 
 % disp('');
             end

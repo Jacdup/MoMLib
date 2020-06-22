@@ -3,7 +3,7 @@ function new_points = RefineMesh(Contour, N)
 
  for n = 1:N
      iter = 0;
-    for i = 1:length(Contour)-1
+    for i = 1:length(Contour(:,1))-1
 
         next_point = Contour(i+1,:);
         curr_point = Contour(i,:);
@@ -14,6 +14,6 @@ function new_points = RefineMesh(Contour, N)
         iter = iter + 1;
     end
     
-    new_points(length(Contour)*2 - 1,:) = Contour(end,:);
+    new_points(length(Contour(:,1))*2 - 1,:) = Contour(end,:);
     Contour = new_points;
  end

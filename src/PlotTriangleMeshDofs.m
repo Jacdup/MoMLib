@@ -18,9 +18,9 @@ edge_midpoints = ALPHA*mesh_data.node_coords(mesh_data.edges(:,1),:) + (1-ALPHA)
 if TextOn 
     for ii = 1:order+1:num_dofs
         thisedge = dof_data.dofs_to_edges(ii,1);
-        if (abs(edge_midpoints(thisedge,3) - 0.1) < eps) || (abs(edge_midpoints(thisedge,3)- 2.9375) < eps)
+%         if (abs(edge_midpoints(thisedge,3) - 0.1) < eps) || (abs(edge_midpoints(thisedge,3)- 2.9375) < eps)
             plot3(edge_midpoints(thisedge,1),edge_midpoints(thisedge,2),edge_midpoints(thisedge,3),'rs');
             text(edge_midpoints(thisedge,1),edge_midpoints(thisedge,2),edge_midpoints(thisedge,3),[' ',num2str(ii)],'HorizontalAlignment','left','Color','r');
-        end
+%         end
     end
 end
