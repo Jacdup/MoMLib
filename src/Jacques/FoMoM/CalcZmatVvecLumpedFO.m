@@ -52,8 +52,8 @@ for ii = 1:num_lumped
             Z_val = interelem_VsrcZload(ii,5) + 1i*interelem_VsrcZload(ii,6);
             if abs(Z_val) > 1e-8
                 Znum                  = Znum + 2;
-                Z_rowcolval(Znum,:)   = [ this_dof-1  this_dof-1  (ELength^2)*Z_val ]; % lack of minus sign here is due to E_tot sign in EFIE: - E_scat + E_tot = E_inc 
-                Z_rowcolval(Znum+1,:) = [ this_dof  this_dof  0];
+                Z_rowcolval(Znum,:)   = [ this_dof-1  this_dof-1  (ELength^2)*Z_val]; % lack of minus sign here is due to E_tot sign in EFIE: - E_scat + E_tot = E_inc 
+                Z_rowcolval(Znum+1,:) = [ this_dof  this_dof  0 ];
                 %                 
 % disp('');
             end
@@ -64,3 +64,5 @@ for ii = 1:num_lumped
 
 
 end
+
+ Z_rowcolval(1:1:end,3) = Z_rowcolval(1:1:end,3)*size(interelem_VsrcZload,1); % Normalise by number of vertices

@@ -30,7 +30,7 @@ double BF(double Zeta[3],double points[][3], int edge, int sign, double Delta[])
     double sf = 1;
     double div = 1;
     double sign_sf = sign;
-       t_index = (edge+2)%3;
+       t_index = (edge+2)%3; // Same as (edge-1)%3
         l_index = (edge+1)%3;
     //VectorCross(t[1],t[2],normal);
     //double ns[3];

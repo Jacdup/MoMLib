@@ -60,7 +60,7 @@ for node = 1:num_nodes
 %         norm_vec(1:2) = norm_vec(1:2) +Contour(node,1:2);
         i = 2;
         basis_vec = [-norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1) 1 0];
-        while isnan(norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)) || isinf(norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1))
+        while isnan(norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)) || isinf(norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)) || (i < 4)
             i = i + 1;
 %             basis_vec = [ 0 1 -norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)];
             basis_vec = [-norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1) 1 0];

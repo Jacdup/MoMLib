@@ -148,6 +148,15 @@ patch('Faces', elems_f5_new(:,:), 'Vertices',r_s, 'FaceColor', 'm')
 patch('Faces', elems_f6_new(:,:), 'Vertices',r_s, 'FaceColor', 'c')
 axis equal
 
+figure
+patch('Faces', elems_f1_new(:,:), 'Vertices',new_Points, 'FaceColor', 'r')
+patch('Faces', elems_f2_new(:,:), 'Vertices',new_Points, 'FaceColor', 'b')
+patch('Faces', elems_f3_new(:,:), 'Vertices',new_Points, 'FaceColor', 'g')
+patch('Faces', elems_f4_new(:,:), 'Vertices',new_Points, 'FaceColor', 'y')
+patch('Faces', elems_f5_new(:,:), 'Vertices',new_Points, 'FaceColor', 'm')
+patch('Faces', elems_f6_new(:,:), 'Vertices',new_Points, 'FaceColor', 'c')
+axis equal
+
 node_coords = r_s;
 quad_elems = elems;
 % patch('Faces', elems(:,:), 'Vertices',r_s, 'FaceColor','Green' )

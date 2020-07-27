@@ -1,4 +1,4 @@
-function [dof_data,num_dofs] = CreateBasisFunctions_New(mesh_data, first_order, numVertices)
+function [dof_data,num_dofs] = CreateBasisFunctions_New(mesh_data, first_order)
 % This function assigns RWG degrees of freedom (dofs) to all shared edges of
 % the entire mesh <tri_nodes> and assigns the current directions over each
 % edge, such that the RWGs are uniquely defined. Unshared edges do not get

@@ -1,4 +1,4 @@
-function [quadElements,N, basis_supports, edges, dofs_to_edges] = EdgeCalcQuad(quadElements,vertices)%filename recieved is a string
+function [quadElements,N, basis_supports, edges, dofs_to_edges] = EdgeCalcQuad(quadElements, vertices)%filename recieved is a string
 %Jacques T du Plessis
 %September 2019
 %19083688@sun.ac.za

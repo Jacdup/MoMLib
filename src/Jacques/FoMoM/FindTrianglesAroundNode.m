@@ -6,8 +6,8 @@ function [tri_indices] = FindTrianglesAroundNode(contour_point, tri_nodes,tri_co
 
 % 2020-06-12. JT du Plessis
 
-EPS = 1e-6;
-% EPS = 0.005;
+% EPS = 1e-6;
+EPS = 0.005;
 % tri_indices = zeros(num_vertices,2);
 
 if ~isempty(test_nodes)
