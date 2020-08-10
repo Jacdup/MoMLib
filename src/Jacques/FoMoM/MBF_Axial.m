@@ -45,15 +45,10 @@ else
     endCapExclude = 0;
     connCapExclude = 0;
 end
-% temp = 1;
+
 numDofs = size(dof_data.basis_supports,1);
 numMBFNodes = numVertices*(numNodes_new) ;
-DOF_mat1 = zeros(numVertices*2,numNodes_new);
-DOF_mat2 = zeros(numVertices*2,numNodes_new);
-DOF_mat3 = zeros(numVertices*2,numNodes_new);
-X1       = zeros(2,numMBFNodes);
-X2       = zeros(2,numMBFNodes);
-X3       = zeros(2,numMBFNodes);
+
 U_Mat = zeros(numDofs, numNodes_new*numMBF);
 % -------------------------------------------------------------------------
 % Set up MBF matrix
@@ -95,15 +90,24 @@ rho_ind = 0;
 
 
 for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
+    
+    DOF_mat1 = zeros(numVertices*2,numNodes_new);
+    DOF_mat2 = zeros(numVertices*2,numNodes_new);
+    DOF_mat3 = zeros(numVertices*2,numNodes_new);
+    X1       = zeros(2,numMBFNodes);
+    X2       = zeros(2,numMBFNodes);
+    X3       = zeros(2,numMBFNodes);
+    
+    
     startNode = 1;
-    endNode   = 700;
+    endNode   = cyl_def.last_element_val;
     if numCyl == 2
         startNode = endNode + 1;
-        endNode = cyl_def.last_element_val;
+        endNode = cyl_def.last_element_val*2;
     end
     
     
-    len_tri_mat = 1:2:(length(triangle_blah)-vert_num-1-endCapExclude-cyl_def.num_plate_nodes - connCapExclude); % The length of the matrix with just the cylinder
+    len_tri_mat = 1:2:(length(triangle_blah)-vert_num-1-endCapExclude-cyl_def.num_plate_nodes - connCapExclude); % The length of the matrix with just the cylinder(s)
     
     if cyl_def.coupling
         len_tri_mat = startNode:2:endNode; % TODO: check if this is the same as above formulation 
@@ -137,7 +141,7 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
             DOF_mat1(row:row+1,col) = [triangle_blah(i+1,9);triangle_blah(i+1,15)];
             DOF_mat2(row:row+1,col) = [triangle_blah(i+1-last,8);triangle_blah(i+1-last,14)];
         end
-        if cyl_def.lastNode == "conn" && i >= len_tri_mat - vert_num +1 % Assign last MBF with new DOFs from generated connection
+        if cyl_def.lastNode == "conn" && i >= endNode - vert_num +1 % Assign last MBF with new DOFs from generated connection
             % This is NOT the transition from cyl -> plate
             DOF_mat3(row:row+1,col) = [triangle_blah(i+vert_num+2-last,8);triangle_blah(i+vert_num+2-last,14)];
         end
