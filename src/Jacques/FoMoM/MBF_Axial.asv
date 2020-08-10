@@ -3,94 +3,46 @@ function [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = MBF_Axial(mesh_data, dof_data, 
 % The MBF is agnostic to signs on the basis functions, and only cares about
 % if all the DOFS where the MBF is defined have the same orientation
 
-% -------------------------------------------------------------------------
-% Init
-% -------------------------------------------------------------------------
-oneEndcap = (cyl_def.firstNode == "endCap" && cyl_def.lastNode ~= "endCap") || (cyl_def.firstNode ~= "endCap" && cyl_def.lastNode == "endCap"); % Only one is an endcap
-twoEndcaps = cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap";
-connection = cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn";
+    % -------------------------------------------------------------------------
+    % Init
+    % -------------------------------------------------------------------------
+
+    % -------------------------------------------------------------------------
+    % Set up MBF matrix
+    % -------------------------------------------------------------------------
+    % MBF matrix is the analytical MBF
+    % MBF_mat has the value of the MBF at each contour node point
+    % num_nodes x [nodes,constant,sin,cos]
+    % numMBFNodes_new = numVertices*(numNodes+4); % For coupling
+    % numMBFNodes_new = numVertices*(numNodes_new+2) ; % This is only for filling the MBF_mat
+    numMBFNodes_new = ((numNodes+2)*numVertices) + length(cyl_def.plate_polygon_nodes) + length(cyl_def.plate_polygon_nodes_end);
+    sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
+    cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
+    ones_mat = (ones(numMBFNodes_new,1));
     
-phi = 360/numVertices;
-vert_num = (2*numVertices)-1;
-extra_dof_col = 0;
-if twoEndcaps
-    % if endCap || connection
-    % In the connection case, the setup is exactly the same as the endcap,
-    % since it is a special case of the endcap
-    numNodes_new = numNodes + 2;
-    endCapExclude = (2*numVertices); % exclude last (2*numVertices) from i/row assignment
-    connCapExclude = 0;
-elseif oneEndcap
-    numNodes_new = numNodes + 1;
+    contour_nodes = (1:numMBFNodes_new)';
     
-    if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn"
-        %         connCapExclude = vert_num;
-        connCapExclude = -vert_num -1;
-        %         endCapExclude = numVertices;
-        endCapExclude = (3*numVertices);
-        %         numNodes_new = numNodes + 4;
-        numNodes_new = numNodes + 2;
-        %      numNodes_new = numNodes + 1;
-    else
-        endCapExclude = numVertices;
-        connCapExclude = 0;
+    if connection
+        contour_nodes = (1:(numNodes+2)*numVertices)';
+        contour_nodes = [contour_nodes; cyl_def.last_element_val +  cyl_def.plate_polygon_nodes;  cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
+    elseif cyl_def.firstNode == "conn"
+        contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
+    elseif cyl_def.lastNode == "conn"
+        contour_nodes = [contour_nodes; cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
     end
     
-elseif connection
-    connCapExclude = -(vert_num*2)-2;
-    endCapExclude = (4*numVertices);
-    numNodes_new = numNodes + 3;
-else
-    numNodes_new = numNodes;
-    endCapExclude = 0;
-    connCapExclude = 0;
-end
-% temp = 1;
-numDofs = size(dof_data.basis_supports,1);
-numMBFNodes = numVertices*(numNodes_new) ;
-DOF_mat1 = zeros(numVertices*2,numNodes_new);
-DOF_mat2 = zeros(numVertices*2,numNodes_new);
-DOF_mat3 = zeros(numVertices*2,numNodes_new);
-X1       = zeros(2,numMBFNodes);
-X2       = zeros(2,numMBFNodes);
-X3       = zeros(2,numMBFNodes);
-U_Mat = zeros(numDofs, numNodes_new*numMBF);
-% -------------------------------------------------------------------------
-% Set up MBF matrix
-% -------------------------------------------------------------------------
-% MBF matrix is the analytical MBF
-% MBF_mat has the value of the MBF at each contour node point
-% num_nodes x [nodes,constant,sin,cos]
-% numMBFNodes_new = numVertices*(numNodes+4); % For coupling
-% numMBFNodes_new = numVertices*(numNodes_new+2) ; % This is only for filling the MBF_mat
-numMBFNodes_new = ((numNodes+2)*numVertices) + length(cyl_def.plate_polygon_nodes) + length(cyl_def.plate_polygon_nodes_end);
-sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
-cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
-ones_mat = (ones(numMBFNodes_new,1));
-
-contour_nodes = (1:numMBFNodes_new)';
-
-if connection
-    contour_nodes = (1:(numNodes+2)*numVertices)';
-    contour_nodes = [contour_nodes; cyl_def.last_element_val +  cyl_def.plate_polygon_nodes;  cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
-elseif cyl_def.firstNode == "conn"
-    contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
-elseif cyl_def.lastNode == "conn"
-    contour_nodes = [contour_nodes; cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
-end
-
-% Contour_nodes can now be used to set the values through linear indexing:
-MBF_mat = zeros(numMBFNodes*2, 3); % Don't really care how big this matrix is, as long as the rows correspond to the nodes.
-MBF_mat(contour_nodes, :) = [ones_mat,sin_mat',cos_mat'];
-
-
-% MBF_mat = MBF_mat(1:end-36,:); % Temporary for coupling
-
-row = -1;
-iter = 1;
-col = 1;
-linear_row = 0;
-rho_ind = 0;
+    % Contour_nodes can now be used to set the values through linear indexing:
+    MBF_mat = zeros(numMBFNodes*2, 3); % Don't really care how big this matrix is, as long as the rows correspond to the nodes.
+    MBF_mat(contour_nodes, :) = [ones_mat,sin_mat',cos_mat'];
+    
+    
+    % MBF_mat = MBF_mat(1:end-36,:); % Temporary for coupling
+    
+    row = -1;
+    iter = 1;
+    col = 1;
+    linear_row = 0;
+    rho_ind = 0;
 
 
 
@@ -102,11 +54,65 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
         endNode = cyl_def.last_element_val;
     end
     
+    oneEndcap = (cyl_def.firstNode == "endCap" && cyl_def.lastNode ~= "endCap") || (cyl_def.firstNode ~= "endCap" && cyl_def.lastNode == "endCap"); % Only one is an endcap
+    twoEndcaps = cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap";
+    connection = cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn";
+    % oneEndcap = 0;
+    % twoEndcaps = 0;
+    % -------------------------------------------------------------------------
+    % Init
+    % -------------------------------------------------------------------------
+    phi = 360/numVertices;
+    vert_num = (2*numVertices)-1;
+    extra_dof_col = 0;
+    if twoEndcaps
+        % if endCap || connection
+        % In the connection case, the setup is exactly the same as the endcap,
+        % since it is a special case of the endcap
+        numNodes_new = numNodes + 2;
+        endCapExclude = (2*numVertices); % exclude last (2*numVertices) from i/row assignment
+        connCapExclude = 0;
+    elseif oneEndcap
+        numNodes_new = numNodes + 1;
+        
+        if cyl_def.firstNode == "conn" || cyl_def.lastNode == "conn"
+            %         connCapExclude = vert_num;
+            connCapExclude = -vert_num -1;
+            %         endCapExclude = numVertices;
+            endCapExclude = (3*numVertices);
+            %         numNodes_new = numNodes + 4;
+            numNodes_new = numNodes + 2;
+            %      numNodes_new = numNodes + 1;
+        else
+            endCapExclude = numVertices;
+            connCapExclude = 0;
+        end
+        
+    elseif connection
+        connCapExclude = -(vert_num*2)-2;
+        endCapExclude = (4*numVertices);
+        numNodes_new = numNodes + 3;
+    else
+        numNodes_new = numNodes;
+        endCapExclude = 0;
+        connCapExclude = 0;
+    end
+    % temp = 1;
+    numDofs = size(dof_data.basis_supports,1);
+    numMBFNodes = numVertices*(numNodes_new) ;
+    DOF_mat1 = zeros(numVertices*2,numNodes_new);
+    DOF_mat2 = zeros(numVertices*2,numNodes_new);
+    DOF_mat3 = zeros(numVertices*2,numNodes_new);
+    X1       = zeros(2,numMBFNodes);
+    X2       = zeros(2,numMBFNodes);
+    X3       = zeros(2,numMBFNodes);
+    U_Mat = zeros(numDofs, numNodes_new*numMBF);
     
     len_tri_mat = 1:2:(length(triangle_blah)-vert_num-1-endCapExclude-cyl_def.num_plate_nodes - connCapExclude); % The length of the matrix with just the cylinder
     
     if cyl_def.coupling
-        len_tri_mat = startNode:2:endNode; % TODO: check if this is the same as above formulation 
+        len_tri_mat = startNode:2:endNode; % TODO: check if this is the same as above formulation
+        
     end
     
     Rho = [1,1;1,-1]; % This is the matrix of RWG and linear components at the two edge nodes
@@ -270,6 +276,11 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     edge_nodes_3 = mesh_data.edges(dof_data.dofs_to_edges(temp3(1:2:end,1)),:); % Second diagonal
     
     clear temp1 temp2 temp3
+    % [Rho] = CalculateBasisFunction(mesh_data, triangle_blah,edge_nodes_1);
+    % [Rho2] = CalculateBasisFunction(mesh_data, triangle_blah,edge_nodes_2);
+    % [Rho3] = CalculateBasisFunction(mesh_data, triangle_blah,edge_nodes_3);
+    
+    
     
     edge_vecs_1  = mesh_data.node_coords(edge_nodes_1(:,1),:) - mesh_data.node_coords(edge_nodes_1(:,2),:); % Vector of edges
     edge_vecs_2  = mesh_data.node_coords(edge_nodes_2(:,1),:) - mesh_data.node_coords(edge_nodes_2(:,2),:);

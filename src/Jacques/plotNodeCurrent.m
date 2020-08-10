@@ -1,4 +1,4 @@
-function [x_axis, current_norm, current_MBF] = plotNodeCurrent(I_vec,I_vec_norm,DOF_mat1,DOF_mat2,DOF_mat3,DOF_mat, numNodes, endcap)
+function [x_axis, current_norm, current_MBF] = plotNodeCurrent(I_vec,I_vec_norm,DOF_mat1,DOF_mat2,DOF_mat3,DOF_mat, numNodes, cyl_def)
 iter = 0;
 % Current magnitude at all nodes
 for node = 1:numNodes
@@ -12,13 +12,14 @@ for node = 1:numNodes
 %     x_axis = 0:360/vertices:359;
     x_axis = linspace(0,360,length(dofs));
     x_axis_circ = linspace(0,360,length(dofs_circ));
-    if (endcap) % Exclude zeros
+    if (cyl_def.firstNode == "endcap" && cyl_def.lastNode == "endcap" ) % Exclude zeros
         DOF_mat2 = DOF_mat2(:,2:end);
         DOF_mat3 = DOF_mat3(:,1:end-1);
     end
 %     current_norm(:,iter) = abs(I_vec_norm(DOF_mat1(dofs,node)) + I_vec_norm(DOF_mat1(dofsLin,node)));
 %      current_MBF(:,iter) = abs(I_vec(DOF_mat1(dofs,node)) + I_vec(DOF_mat1(dofsLin,node)));
-    current_norm(:,iter) = abs(I_vec_norm(DOF_mat1(dofs,node)) + I_vec_norm(DOF_mat1(dofsLin,node)) + I_vec_norm(DOF_mat2(dofs,node)) + I_vec_norm(DOF_mat2(dofsLin,node)) + I_vec_norm(DOF_mat3(dofs,node)) + I_vec_norm(DOF_mat3(dofsLin,node))) ;
+  current_norm(:,iter) = abs(I_vec_norm(DOF_mat1(dofs,node)) + I_vec_norm(DOF_mat2(dofs,node)) + I_vec_norm(DOF_mat3(dofs,node)) ) ;
+%     current_norm(:,iter) = abs(I_vec_norm(DOF_mat1(dofs,node)) + I_vec_norm(DOF_mat1(dofsLin,node)) + I_vec_norm(DOF_mat2(dofs,node)) + I_vec_norm(DOF_mat2(dofsLin,node)) + I_vec_norm(DOF_mat3(dofs,node)) + I_vec_norm(DOF_mat3(dofsLin,node))) ;
     current_MBF(:,iter) = abs(I_vec(DOF_mat1(dofs,node)) + I_vec(DOF_mat1(dofsLin,node)) + I_vec(DOF_mat2(dofs,node)) + I_vec(DOF_mat2(dofsLin,node)) + I_vec(DOF_mat3(dofs,node)) + I_vec(DOF_mat3(dofsLin,node))) ;
 
 %     current_norm(:,iter) = abs(I_vec_norm(DOF_mat1(dofs,node))+I_vec_norm(DOF_mat2(dofs,node))+I_vec_norm(DOF_mat3(dofs,node)));
@@ -47,14 +48,20 @@ end
 %         hold on
 %         plot(x_axis_circ,current_MBF_circ);
 %         hold off
-surf(x_axis, linspace(0,2,numNodes), (current_norm - current_MBF)');
-xlabel('Circumference (\phi)');
+surf(x_axis, linspace(0,2,numNodes), (current_MBF)');
+xlabel('Circumference ($\phi$)');
 ylabel('Cylinder length (m)');
-zlabel('Axial Current magnitude');
+zlabel('MBF Axial Current magnitude');
+
+figure
+surf(x_axis, linspace(0,2,numNodes), (current_norm)');
+xlabel('Circumference ($\phi$)');
+ylabel('Cylinder length (m)');
+zlabel('RWG Axial Current magnitude');
 
 figure
 surf(x_axis_circ, linspace(0,2,numNodes+1), (current_norm_circ - current_MBF_circ )');
-xlabel('Circumference (\phi)');
+xlabel('Circumference ($\phi$)');
 ylabel('Cylinder length (m)');
 zlabel('Azimuthal Current magnitude');
 % hold on

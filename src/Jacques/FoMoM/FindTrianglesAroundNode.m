@@ -6,8 +6,8 @@ function [tri_indices] = FindTrianglesAroundNode(contour_point, tri_nodes,tri_co
 
 % 2020-06-12. JT du Plessis
 
-% EPS = 1e-6;
-EPS = 0.005;
+EPS = 1e-6;
+% EPS = 0.005;
 % tri_indices = zeros(num_vertices,2);
 
 if ~isempty(test_nodes)
@@ -35,14 +35,11 @@ else % No connection, Simply check one coordinate value for finding indices arou
     iter = 1;
     for i = 1:length(tri_nodes)
             
-        LocB = abs(contour_point - tri_coords(tri_nodes(i,:),coord))<EPS; % Only look at 'coord'-coordinate here
+        LocB = (abs(contour_point - tri_coords(tri_nodes(i,:),coord))<EPS) ;%&& (abs(contour_point2 - tri_coords(tri_nodes(i,:),coord2))<0.2); % Look at x & y here
+        % Only look at 'coord'-coordinate here
         
         if length(nonzeros(LocB)) > 1 % If there are more than two points on the contour, then we know the triangle is part of the excitation/load
             tri_indices(iter,1) = i;
-            
-            if i == 1
-                test = 1;
-            end
             
             % Find corresponding (negative) tri that shares the edge:
             t = ismember(tri_nodes(:,:),tri_nodes(i,LocB));
