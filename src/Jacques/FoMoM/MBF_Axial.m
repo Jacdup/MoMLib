@@ -89,7 +89,7 @@ rho_ind = 0;
 
 
 
-for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
+for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     
     DOF_mat1 = zeros(numVertices*2,numNodes_new);
     DOF_mat2 = zeros(numVertices*2,numNodes_new);
@@ -99,19 +99,18 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     X3       = zeros(2,numMBFNodes);
     
     
+%     len_tri_mat = 1:2:(length(triangle_blah)-vert_num-1-endCapExclude-cyl_def.num_plate_nodes - connCapExclude); % The length of the matrix with just the cylinder(s)
     startNode = 1;
-    endNode   = cyl_def.last_element_val;
-    if numCyl == 2
-        startNode = endNode + 1;
-        endNode = cyl_def.last_element_val*2;
-    end
-    
-    
-    len_tri_mat = 1:2:(length(triangle_blah)-vert_num-1-endCapExclude-cyl_def.num_plate_nodes - connCapExclude); % The length of the matrix with just the cylinder(s)
-    
+    endNode = (length(triangle_blah)-vert_num-1-endCapExclude-cyl_def.num_plate_nodes - connCapExclude);
+     
     if cyl_def.coupling
-        len_tri_mat = startNode:2:endNode; % TODO: check if this is the same as above formulation 
+        if numCyl == 2
+%             startNode = endNode + 1;
+        end
+%         endNode = round((length(triangle_blah)-vert_num-1-endCapExclude-cyl_def.num_plate_nodes - connCapExclude)/(mod(numCyl,2)+1));
+%         endNode = (length(triangle_blah) -1- cyl_def.num_plate_nodes)/(mod(numCyl,2)+1);
     end
+    len_tri_mat = startNode:2:endNode;
     
     Rho = [1,1;1,-1]; % This is the matrix of RWG and linear components at the two edge nodes
     Rho = repmat(Rho,1,1,numMBFNodes);
@@ -135,13 +134,14 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
         DOF_mat1(row:row+1,col) = [triangle_blah(i+1,7);triangle_blah(i+1,13)];
         DOF_mat2(row:row+1,col) = [triangle_blah(i+last,7+last);triangle_blah(i+last,13+last)];
         DOF_mat3(row:row+1,col) = [triangle_blah(i+vert_num+1,7+last);triangle_blah(i+vert_num+1,13+last)];
-        
-        if i <= numVertices*2 && cyl_def.firstNode == "conn" % Assign first MBF with new DOFs from generated connection
+
+%         if i <= numVertices*2 && cyl_def.firstNode == "conn" % Assign first MBF with new DOFs from generated connection
+        if (i <= startNode + vert_num) && cyl_def.firstNode == "conn" % Assign first MBF with new DOFs from generated connection
             % This is NOT the transition from cyl -> plate
             DOF_mat1(row:row+1,col) = [triangle_blah(i+1,9);triangle_blah(i+1,15)];
             DOF_mat2(row:row+1,col) = [triangle_blah(i+1-last,8);triangle_blah(i+1-last,14)];
         end
-        if cyl_def.lastNode == "conn" && i >= endNode - vert_num +1 % Assign last MBF with new DOFs from generated connection
+        if (i >= endNode - vert_num +1) && cyl_def.lastNode == "conn"  % Assign last MBF with new DOFs from generated connection
             % This is NOT the transition from cyl -> plate
             DOF_mat3(row:row+1,col) = [triangle_blah(i+vert_num+2-last,8);triangle_blah(i+vert_num+2-last,14)];
         end
@@ -150,6 +150,9 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
             row = -1;
             linear_row = 0;
             col = col + 1;
+            if col == 36
+                test = 1;
+            end
         end
     end
     for i = numVertices:numVertices:length(Rho) % DOFs at the end of each node have switched signs
@@ -157,19 +160,7 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
         Rho3(:,:,i) = Rho3(:,:,i) .* [1,-1;1,-1];
         %     Rho(:,:,i) = Rho(:,:,i) .* [1,-1;1,-1];
     end
-    
-    % Temporary for coupling
-    % DOF_mat1(:,32) = [];
-    % DOF_mat2(:,32) = [];
-    % DOF_mat3(:,32) = [];
-    if connection
-        
-        %     Rho2(:,:,end-numVertices+1:end) = Rho2(:,:,end-numVertices+1:end) .* [-1,-1;-1,-1];
-        %     Rho3(:,:,end-numVertices+1:end) = Rho3(:,:,end-numVertices+1:end) .* [-1,-1;-1,-1];
-        
-        %     Rho2(:,:,end-numVertices+1:end) = Rho2(:,:,end-numVertices+1:end) .* [1,-1;1,-1];
-        %     Rho3(:,:,1:numVertices) = Rho3(:,:,1:numVertices) .* [-1,1;-1,1];
-    end
+
     % -------------------------------------------------------------------------
     % -----------------------------Endcap stuff--------------------------------
     % -------------------------------------------------------------------------
@@ -178,7 +169,8 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
         row2 = -1;
         linear_row = 0;
         if cyl_def.firstNode == "endCap" || cyl_def.firstNode == "conn"
-            for i = 1:2:(vert_num) % First endcap, or connection triangles
+%             for i = 1:2:(vert_num) % First endcap, or connection triangles
+            for i = startNode:2:startNode + vert_num
                 linear_row = linear_row + 1;
                 row1 = row1+ 2;
                 last = 0;
@@ -207,12 +199,14 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
         
         linear_row = 0;
         if cyl_def.lastNode == "endCap" || cyl_def.lastNode == "conn"
-            for i = (length(triangle_blah)-vert_num-endCapExclude- connCapExclude - cyl_def.num_plate_nodes+1):2:length(triangle_blah)-endCapExclude-connCapExclude-cyl_def.num_plate_nodes % Second endcap, or connection triangles
+%             for i = (length(triangle_blah)-vert_num-endCapExclude- connCapExclude - cyl_def.num_plate_nodes+1):2:length(triangle_blah)-endCapExclude-connCapExclude-cyl_def.num_plate_nodes % Second endcap, or connection triangles
+            for i = endNode+2:2:endNode+vert_num+1
                 row2 = row2 + 2;
                 linear_row = linear_row + 1;
                 last = 0;
                 
-                if i ==  length(triangle_blah)-endCapExclude-connCapExclude-cyl_def.num_plate_nodes
+%                 if i ==  length(triangle_blah)-endCapExclude-connCapExclude-cyl_def.num_plate_nodes
+                if i == endNode+vert_num+1
                     last = 1;
                 end
                 Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col+1+extra_dof_col);

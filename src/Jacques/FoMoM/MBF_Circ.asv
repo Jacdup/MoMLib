@@ -107,7 +107,7 @@ end
 
 
 
-for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
+for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     DOF_mat = zeros(numVertices*2,numNodes+1);
     
     row = -3;
@@ -120,9 +120,9 @@ for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     endNode = length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-connectionExclude;
     if cyl_def.coupling
         if numCyl == 2
-%             startNode = endNode + 1;
+            startNode = endNode + 1;
         end
-%         endNode = (length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes - connectionExclude)/(mod(numCyl,2)+1);
+        endNode = (length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes - connectionExclude)/(mod(numCyl,2)+1);
     end
     len_tri_mat = startNode:2:endNode;
     
@@ -208,8 +208,9 @@ for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
         DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
         %     Rho(:,:,i+2) = [1,-1;1,1];
         if cyl_def.lastNode == "endCap" && cyl_def.firstNode ~= "conn"
-%             for i = length(triangle_blah)-numVertices+2-cyl_def.num_plate_nodes:2:length(triangle_blah)-cyl_def.num_plate_nodes% Second endcap
-            for i = (endNode - numVertices + 2 + endCapExclude + connectionExclude):2:(endNode+endCapExclude+connectionExclude)
+%             length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-connectionExclude
+            for i = length(triangle_blah)-numVertices+2-cyl_def.num_plate_nodes:2:length(triangle_blah)-cyl_def.num_plate_nodes% Second endcap
+            for i = endNode - numVertices + 2 + endCapExclude + connectionExclude:2
                 
                 row = row + 4;
                 DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
