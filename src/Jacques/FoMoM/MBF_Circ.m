@@ -3,6 +3,9 @@ function [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ(mesh_data, dof_data, numVer
 
 % numNodes = numNodes+2;% For coupling
 extra = 0;
+if cyl_def.coupling
+    extra = -1;
+end
 oneEndcap = (cyl_def.firstNode == "endCap" && cyl_def.lastNode ~= "endCap") || (cyl_def.firstNode ~= "endCap" && cyl_def.lastNode == "endCap"); % Only one is an endcap
 twoEndcaps = cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap";
 connection = cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn";
@@ -41,6 +44,7 @@ if oneEndcap % TODO: connection functionality
     
 elseif twoEndcaps
     extra = 1;
+
     endCapExclude = (2*numVertices);
     connectionExclude = 0;
 else
@@ -108,7 +112,7 @@ end
 
 
 for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
-    DOF_mat = zeros(numVertices*2,numNodes+1);
+    DOF_mat = zeros(numVertices*2,numNodes+2);
     
     row = -3;
     col = 1;
@@ -118,12 +122,16 @@ for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
 %     len_tri_mat = 1:2:length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-connectionExclude;
     startNode = 1;
     endNode = length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes-connectionExclude;
-    if cyl_def.coupling
-        if numCyl == 2
-%             startNode = endNode + 1;
-        end
-%         endNode = (length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes - connectionExclude)/(mod(numCyl,2)+1);
-    end
+%     if cyl_def.coupling
+%         startNode = 1;
+%         endNode = 1399;
+%         if numCyl == 2
+%             startNode = 1401;
+%             endNode = 2839;
+% %             startNode = endNode + 1;
+%         end
+% %         endNode = (length(triangle_blah)-endCapExclude-cyl_def.num_plate_nodes - connectionExclude)/(mod(numCyl,2)+1);
+%     end
     len_tri_mat = startNode:2:endNode;
     
     
@@ -251,9 +259,9 @@ for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     lim = 1:length(edge_nodes);
     
     % Retrieve the 1/sin/cos value at the corresponding node
-    B_const(1:2,:) = [MBF_mat(edge_nodes(lim,1),1),MBF_mat(edge_nodes(lim,2),1)]';
-    B_sin(1:2,:)   = [MBF_mat(edge_nodes(lim,1),2),MBF_mat(edge_nodes(lim,2),2)]';
-    B_cos(1:2,:)   = [MBF_mat(edge_nodes(lim,1),3),MBF_mat(edge_nodes(lim,2),3)]';
+    B_const = [MBF_mat(edge_nodes(lim,1),1),MBF_mat(edge_nodes(lim,2),1)]';
+    B_sin   = [MBF_mat(edge_nodes(lim,1),2),MBF_mat(edge_nodes(lim,2),2)]';
+    B_cos   = [MBF_mat(edge_nodes(lim,1),3),MBF_mat(edge_nodes(lim,2),3)]';
     
     % Multiply all diagonal edges
     B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
@@ -296,7 +304,7 @@ for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
             col_iter = 1;
         end
         x_ind_1 = 0;
-        for MBF_node = 1:numNodes+1+extra % numNodes is still without extra 2, TODO: add one if this MBF is added to endcap
+        for MBF_node = 1:(numNodes/(mod(cyl_def.coupling,2)+1))+1+extra % numNodes is still without extra 2, TODO: add one if this MBF is added to endcap
             col_index = col_iter + (MBF_num-1);
             col_iter = col_iter + numMBF;
             

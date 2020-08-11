@@ -40,6 +40,9 @@ elseif connection
     connCapExclude = -(vert_num*2)-2;
     endCapExclude = (4*numVertices);
     numNodes_new = numNodes + 3;
+    if cyl_def.coupling
+        numNodes_new = numNodes + 4;% A total of 4 connections
+    end
 else
     numNodes_new = numNodes;
     endCapExclude = 0;
@@ -67,6 +70,9 @@ contour_nodes = (1:numMBFNodes_new)';
 
 if connection
     contour_nodes = (1:(numNodes+2)*numVertices)';
+%     if cyl_def.coupling
+%         contour_nodes = (1:(numNodes+4)*numVertices)';
+%     end
     contour_nodes = [contour_nodes; cyl_def.last_element_val +  cyl_def.plate_polygon_nodes;  cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
 elseif cyl_def.firstNode == "conn"
     contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
@@ -103,13 +109,17 @@ for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     startNode = 1;
     endNode = (length(triangle_blah)-vert_num-1-endCapExclude-cyl_def.num_plate_nodes - connCapExclude);
      
-    if cyl_def.coupling
-        if numCyl == 2
-%             startNode = endNode + 1;
-        end
-%         endNode = round((length(triangle_blah)-vert_num-1-endCapExclude-cyl_def.num_plate_nodes - connCapExclude)/(mod(numCyl,2)+1));
-%         endNode = (length(triangle_blah) -1- cyl_def.num_plate_nodes)/(mod(numCyl,2)+1);
-    end
+%     if cyl_def.coupling
+%         startNode = 1;
+%         endNode = 1399;
+%         if numCyl == 2
+% %             startNode = endNode + 1;
+%             startNode = 1401;
+%             endNode = 2839;
+%         end
+% %         endNode = round((length(triangle_blah)-vert_num-1-endCapExclude-cyl_def.num_plate_nodes - connCapExclude)/(mod(numCyl,2)+1));
+% %         endNode = (length(triangle_blah) -1- cyl_def.num_plate_nodes)/(mod(numCyl,2)+1);
+%     end
     len_tri_mat = startNode:2:endNode;
     
     Rho = [1,1;1,-1]; % This is the matrix of RWG and linear components at the two edge nodes
@@ -266,7 +276,9 @@ for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     edge_nodes_1 = mesh_data.edges(dof_data.dofs_to_edges(temp1(1:2:end,1)),:); % Edges on contour
     edge_nodes_2 = mesh_data.edges(dof_data.dofs_to_edges(temp2(1:2:end,1)),:); % First diagonal
     edge_nodes_3 = mesh_data.edges(dof_data.dofs_to_edges(temp3(1:2:end,1)),:); % Second diagonal
-    
+    B1       = zeros(2,length(edge_nodes_1(:,1)));
+    B2       = zeros(2,length(edge_nodes_2(:,2)));
+    B3       = zeros(2,length(edge_nodes_3(:,1)));
     clear temp1 temp2 temp3
     
     edge_vecs_1  = mesh_data.node_coords(edge_nodes_1(:,1),:) - mesh_data.node_coords(edge_nodes_1(:,2),:); % Vector of edges

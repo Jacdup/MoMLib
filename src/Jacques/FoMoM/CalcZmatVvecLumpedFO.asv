@@ -37,13 +37,11 @@ for ii = 1:num_lumped
         % It goes something like this
         [~,b] = ismember(dof_data.basis_supports(this_dof,:),interelem_VsrcZload(:,1:2));
         if (nnz(b) == 2)
-            [b(2),~] = ind2sub(size(interelem_VsrcZload(:,1:2)),b(2)); % Get actual index
-            % Then, swap the elements of column 2 around to row of column 1
-            temp = interelem_VsrcZload(b(1), 2);
-            interelem_VsrcZload(b(1), 2) = interelem_VsrcZload(b(2),2);
-            interelem_VsrcZload(b(2), 2) = temp;
-            
-        end
+         [b(2),~] = ind2sub(size(interelem_VsrcZload(:,1:2)),b(2)); % Get actual index
+         % Then, swap the elements of column 2 around to row of column 1
+         temp = interelem_VsrcZload(b(1), 2);
+         interelem_VsrcZload(b(1), 2) = interelem_VsrcZload(b(2),2);
+         interelem_VsrcZload(b(2), 2) = temp;\
         
         % This check does not work if the rows are not aligned (if the
         % triangles do not match)
