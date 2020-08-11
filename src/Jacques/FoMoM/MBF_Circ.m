@@ -3,9 +3,6 @@ function [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ(mesh_data, dof_data, numVer
 
 % numNodes = numNodes+2;% For coupling
 extra = 0;
-if cyl_def.coupling
-    extra = -1;
-end
 oneEndcap = (cyl_def.firstNode == "endCap" && cyl_def.lastNode ~= "endCap") || (cyl_def.firstNode ~= "endCap" && cyl_def.lastNode == "endCap"); % Only one is an endcap
 twoEndcaps = cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap";
 connection = cyl_def.firstNode == "conn" && cyl_def.lastNode == "conn";
@@ -125,6 +122,8 @@ for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
 %     if cyl_def.coupling
 %         startNode = 1;
 %         endNode = 1399;
+% extra = -1;
+% numNodes = numNodes/(mod(cyl_def.coupling,2)+1);
 %         if numCyl == 2
 %             startNode = 1401;
 %             endNode = 2839;
@@ -304,7 +303,7 @@ for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
             col_iter = 1;
         end
         x_ind_1 = 0;
-        for MBF_node = 1:(numNodes/(mod(cyl_def.coupling,2)+1))+1+extra % numNodes is still without extra 2, TODO: add one if this MBF is added to endcap
+        for MBF_node = 1:(numNodes)+1+extra % numNodes is still without extra 2, TODO: add one if this MBF is added to endcap
             col_index = col_iter + (MBF_num-1);
             col_iter = col_iter + numMBF;
             
