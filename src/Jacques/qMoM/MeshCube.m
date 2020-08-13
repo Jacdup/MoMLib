@@ -131,31 +131,43 @@ elems(:,[3 4]) = elems(:,[4 3]);
 
 % Make sphere
 for new_index = 1:length(new_Points(:,1))
-        r_s(new_index,1) = new_Points(new_index,1)/norm(new_Points(new_index,1:3));
-        r_s(new_index,2) = new_Points(new_index,2)/norm(new_Points(new_index,1:3));
-        r_s(new_index,3) = new_Points(new_index,3)/norm(new_Points(new_index,1:3));
+        x = new_Points(new_index,1);
+        y = new_Points(new_index,2);
+        z = new_Points(new_index,3);
+        
+        r_s(new_index,1) = x*sqrt(1-((y^2)/2) - ((z^2)/2) + (((y^2)*(z^2))/3));
+        r_s(new_index,2) = y*sqrt(1-((z^2)/2) - ((x^2)/2) + (((z^2)*(x^2))/3));
+        r_s(new_index,3) = z*sqrt(1-((x^2)/2) - ((y^2)/2) + (((x^2)*(y^2))/3));
+%         p  = sqrt(x^2 + y^2);
+%         c  = 2*asin(0.5*p);
+        
+%         r_s(new_index,1) = 
+%         r_s(new_index,1) = new_Points(new_index,1)/norm(new_Points(new_index,1:3));
+%         r_s(new_index,2) = new_Points(new_index,2)/norm(new_Points(new_index,1:3));
+%         r_s(new_index,3) = new_Points(new_index,3)/norm(new_Points(new_index,1:3));
         r_s(new_index,:) = r_s(new_index,:) * a;
 end
 % patch('Faces', elems(:,:), 'Vertices',new_Points, 'FaceColor','Green' )
 c1 = repelem(0.1,points_per_dim)';
 c2 = repelem(0.5,points_per_dim)';
 col = [c1; c2;c1;c2;c1;c2];
-patch('Faces', elems_f1_new(:,:), 'Vertices',r_s, 'FaceColor', 'r')
-patch('Faces', elems_f2_new(:,:), 'Vertices',r_s, 'FaceColor', 'b')
-patch('Faces', elems_f3_new(:,:), 'Vertices',r_s, 'FaceColor', 'g')
-patch('Faces', elems_f4_new(:,:), 'Vertices',r_s, 'FaceColor', 'y')
-patch('Faces', elems_f5_new(:,:), 'Vertices',r_s, 'FaceColor', 'm')
-patch('Faces', elems_f6_new(:,:), 'Vertices',r_s, 'FaceColor', 'c')
-axis equal
+% figure
+% patch('Faces', elems_f1_new(:,:), 'Vertices',r_s, 'FaceColor', 'r')
+% patch('Faces', elems_f2_new(:,:), 'Vertices',r_s, 'FaceColor', 'b')
+% patch('Faces', elems_f3_new(:,:), 'Vertices',r_s, 'FaceColor', 'g')
+% patch('Faces', elems_f4_new(:,:), 'Vertices',r_s, 'FaceColor', 'y')
+% patch('Faces', elems_f5_new(:,:), 'Vertices',r_s, 'FaceColor', 'm')
+% patch('Faces', elems_f6_new(:,:), 'Vertices',r_s, 'FaceColor', 'c')
+% axis equal
 
-figure
-patch('Faces', elems_f1_new(:,:), 'Vertices',new_Points, 'FaceColor', 'r')
-patch('Faces', elems_f2_new(:,:), 'Vertices',new_Points, 'FaceColor', 'b')
-patch('Faces', elems_f3_new(:,:), 'Vertices',new_Points, 'FaceColor', 'g')
-patch('Faces', elems_f4_new(:,:), 'Vertices',new_Points, 'FaceColor', 'y')
-patch('Faces', elems_f5_new(:,:), 'Vertices',new_Points, 'FaceColor', 'm')
-patch('Faces', elems_f6_new(:,:), 'Vertices',new_Points, 'FaceColor', 'c')
-axis equal
+% figure
+% patch('Faces', elems_f1_new(:,:), 'Vertices',new_Points, 'FaceColor', 'r')
+% patch('Faces', elems_f2_new(:,:), 'Vertices',new_Points, 'FaceColor', 'b')
+% patch('Faces', elems_f3_new(:,:), 'Vertices',new_Points, 'FaceColor', 'g')
+% patch('Faces', elems_f4_new(:,:), 'Vertices',new_Points, 'FaceColor', 'y')
+% patch('Faces', elems_f5_new(:,:), 'Vertices',new_Points, 'FaceColor', 'm')
+% patch('Faces', elems_f6_new(:,:), 'Vertices',new_Points, 'FaceColor', 'c')
+% axis equal
 
 node_coords = r_s;
 quad_elems = elems;
