@@ -99,11 +99,11 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
     
     int i, j, ii, jj, iter;
     int oip;
-     FILE *fp;
-     FILE *fp1;
-	
-                fp = fopen("Delta.txt","w");
-                fp1 = fopen("Ruv.txt","w");
+//      FILE *fp;
+//      FILE *fp1;
+// 	
+//                 fp = fopen("Delta.txt","w");
+//                 fp1 = fopen("Ruv.txt","w");
     
     for (i=0; i< T; i++) //Observation triangle
     {
@@ -195,6 +195,7 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
                         }
                         
                         Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*int_eval*n;
+//                         mxFree(Einc_eval);
 //                         Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*(cexp(I*k*ruv[1])*n*pRho[2]); // This integral is not in reference coordinates
                     }
                 }
@@ -204,10 +205,11 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
                 mxFree(OuterIntPoints[iter]);
             mxFree(OuterIntPoints);
             
+            
         }//this brace is new if statement
     }
-                fclose(fp);
-                fclose(fp1);
+//                 fclose(fp);
+//                 fclose(fp1);
 }
 
 /*====================================================================================================

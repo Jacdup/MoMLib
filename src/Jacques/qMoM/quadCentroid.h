@@ -6,7 +6,7 @@
 #include "mex.h"
 
 
-#define EPS 1e-10 // Make this as small as you like. 
+#define EPS 1e-13 // Make this as small as you like. 
 #define FALSE 0
 #define TRUE 1
 

@@ -95,7 +95,7 @@ rho_ind = 0;
 
 
 
-for numCyl = 2:cyl_def.coupling+1 % Iterates twice if there are two cylinders
+for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     
     DOF_mat1 = zeros(numVertices*2,numNodes_new);
     DOF_mat2 = zeros(numVertices*2,numNodes_new);

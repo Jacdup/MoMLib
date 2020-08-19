@@ -138,10 +138,7 @@ for new_index = 1:length(new_Points(:,1))
         r_s(new_index,1) = x*sqrt(1-((y^2)/2) - ((z^2)/2) + (((y^2)*(z^2))/3));
         r_s(new_index,2) = y*sqrt(1-((z^2)/2) - ((x^2)/2) + (((z^2)*(x^2))/3));
         r_s(new_index,3) = z*sqrt(1-((x^2)/2) - ((y^2)/2) + (((x^2)*(y^2))/3));
-%         p  = sqrt(x^2 + y^2);
-%         c  = 2*asin(0.5*p);
-        
-%         r_s(new_index,1) = 
+
 %         r_s(new_index,1) = new_Points(new_index,1)/norm(new_Points(new_index,1:3));
 %         r_s(new_index,2) = new_Points(new_index,2)/norm(new_Points(new_index,1:3));
 %         r_s(new_index,3) = new_Points(new_index,3)/norm(new_Points(new_index,1:3));

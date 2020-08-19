@@ -23,7 +23,7 @@
 
 
 // return the integration points and weights based on a gaussian rule
- 
+
 void GaussianQuadrature(double points[][3], int numIntPoints, double **returnPoints)
 {
     /*
@@ -166,14 +166,14 @@ void GaussianQuadrature(double points[][3], int numIntPoints, double **returnPoi
         
         for (j=0; j<iter; j++)
         {
-          //  for(ii=0; ii<3; ii++)
-           // {
-                //returnPoints[place][ii] = (*qpPointer)[i][j]*points[0][ii] + (*qpPointer)[i][(j+1)%3]*points[1][ii] +
-                //        (*qpPointer)[i][(j+2)%3]*points[2][ii];
-                 returnPoints[place][0] = (*qpPointer)[i][j]; //Zeta_1
-                returnPoints[place][1] = (*qpPointer)[i][(j+1)%3]; // Zeta_2
-                returnPoints[place][2] = (*qpPointer)[i][(j+2)%3]; // Zeta_3
-           // }
+            //  for(ii=0; ii<3; ii++)
+            // {
+            //returnPoints[place][ii] = (*qpPointer)[i][j]*points[0][ii] + (*qpPointer)[i][(j+1)%3]*points[1][ii] +
+            //        (*qpPointer)[i][(j+2)%3]*points[2][ii];
+            returnPoints[place][0] = (*qpPointer)[i][j]; //Zeta_1
+            returnPoints[place][1] = (*qpPointer)[i][(j+1)%3]; // Zeta_2
+            returnPoints[place][2] = (*qpPointer)[i][(j+2)%3]; // Zeta_3
+            // }
             returnPoints[place][3] = Area*(*qpPointer)[i][3];
             place++;
         }
@@ -211,18 +211,18 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
         {4,6,7,12},
         {6,7,12,16},
         {7,13,16,25}};
-    //the RAR level is dependant oon the mode as well.
-    int RAR_level[4] = {7,7,7,7};
-    
-    double unitvec_theta[3] = {cos(theta_inc)*cos(phi_inc), cos(theta_inc)*sin(phi_inc), -sin(theta_inc)};
-    double unitvec_phi[3]   = { -sin(phi_inc) ,cos(phi_inc) ,0  };
-    double unitvec_beta[3]  = {  -sin(theta_inc)*cos(phi_inc),  -sin(theta_inc)*sin(phi_inc) ,-cos(theta_inc)  };
-    double unitvec_eta[3];
-    int coord;
-    for (coord =0;coord<3; coord++){     
-        unitvec_eta[coord] = (-cos(eta_pol)*unitvec_theta[coord])+ (sin(eta_pol)*unitvec_phi[coord]);
-    }
-    
+        //the RAR level is dependant oon the mode as well.
+        int RAR_level[4] = {7,7,7,7};
+        
+        double unitvec_theta[3] = {cos(theta_inc)*cos(phi_inc), cos(theta_inc)*sin(phi_inc), -sin(theta_inc)};
+        double unitvec_phi[3]   = { -sin(phi_inc) ,cos(phi_inc) ,0  };
+        double unitvec_beta[3]  = {  -sin(theta_inc)*cos(phi_inc),  -sin(theta_inc)*sin(phi_inc) ,-cos(theta_inc)  };
+        double unitvec_eta[3];
+        int coord;
+        for (coord =0;coord<3; coord++){
+            unitvec_eta[coord] = (-cos(eta_pol)*unitvec_theta[coord])+ (sin(eta_pol)*unitvec_phi[coord]);
+        }
+        
 //        FILE *fp;
 //       FILE *fp1;
 //        fp = fopen("Delta1.txt","w");
@@ -231,172 +231,175 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
 //       FILE *fp3;
 //        fp2 = fopen("Delta.txt","w");
 //         fp3 = fopen("Ruv.txt","w");
-    
-    
-    double c0 = 299792456.2;
-    double k = (2*M_PI*freq)/c0;
-    double mu = 1.25663706143592e-06;
-    double w = 2*M_PI*freq;
-    double eps = 8.85418781761e-12;
-    
-  
-    int i, j, ii, jj, iter;
-    int oip;
-    
-    for (i=0; i< T; i++) //Observation triangle
-    {
         
-        //create a 3 by 3 matrix of a single triangles points each row is the x y z coordinate
-        //pPoints is the outer triangle
-        double pPoints[3][3] = {
-        {points[P*0+(int)(triangles[T*0 + i]-1)],points[P*1+(int)(triangles[T*0 + i]-1)],points[P*2+(int)(triangles[T*0 + i]-1)]},
-        {points[P*0+(int)(triangles[T*1 + i]-1)],points[P*1+(int)(triangles[T*1 + i]-1)],points[P*2+(int)(triangles[T*1 + i]-1)]},
-        {points[P*0+(int)(triangles[T*2 + i]-1)],points[P*1+(int)(triangles[T*2 + i]-1)],points[P*2+(int)(triangles[T*2 + i]-1)]}
-        };
-        //Outer triangle
+        
+        double c0 = 299792456.2;
+        double k = (2*M_PI*freq)/c0;
+        double mu = 1.25663706143592e-06;
+        double w = 2*M_PI*freq;
+        double eps = 8.85418781761e-12;
+        
+        
+        int i, j, ii, jj, iter;
+        int oip;
+        
+        for (i=0; i< T; i++) //Observation triangle
+        {
+            
+            //create a 3 by 3 matrix of a single triangles points each row is the x y z coordinate
+            //pPoints is the outer triangle
+            double pPoints[3][3] = {
+                {points[P*0+(int)(triangles[T*0 + i]-1)],points[P*1+(int)(triangles[T*0 + i]-1)],points[P*2+(int)(triangles[T*0 + i]-1)]},
+                {points[P*0+(int)(triangles[T*1 + i]-1)],points[P*1+(int)(triangles[T*1 + i]-1)],points[P*2+(int)(triangles[T*1 + i]-1)]},
+                {points[P*0+(int)(triangles[T*2 + i]-1)],points[P*1+(int)(triangles[T*2 + i]-1)],points[P*2+(int)(triangles[T*2 + i]-1)]}
+            };
+            //Outer triangle
 //         if (order == 0){
 //             int pTri[9] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
 //                            (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i])};
 //             int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
 //         }else{
             int pTri[15] = {(int)(triangles[T*0 + i]-1), (int)(triangles[T*1 + i]-1), (int)(triangles[T*2 + i]-1),(int)(triangles[T*3 + i]), (int)(triangles[T*4 + i]),
-                            (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i]),
-                            (int)(triangles[T*9 + i]),(int)(triangles[T*10 + i]),(int)(triangles[T*11 + i]),(int)(triangles[T*12 + i]),
-                            (int)(triangles[T*13 + i]),(int)(triangles[T*14 + i])};
+            (int)(triangles[T*5 + i]), (int)(triangles[T*6 + i]), (int)(triangles[T*7 + i]),(int)(triangles[T*8 + i]),
+            (int)(triangles[T*9 + i]),(int)(triangles[T*10 + i]),(int)(triangles[T*11 + i]),(int)(triangles[T*12 + i]),
+            (int)(triangles[T*13 + i]),(int)(triangles[T*14 + i])};
             int pbasisindex[6] = {pTri[6],pTri[7],pTri[8],pTri[12], pTri[13], pTri[14]};
 //         }
-        
+            
             if ((abs(pTri[10]) != 1) && (abs(pTri[10]) != 2) ){ // Checks if there are extra columns. If not, solve standard RWG.
-                    order = 0;
+                order = 0;
             }else{
                 order = 1;
+//                 mexPrintf("Not correct, no.");
             }
 //         int pbasisindex[3] = {pTri[6],pTri[7],pTri[8]};
-
-        if (ObserverOnTriangle(pbasisindex, obs_map, order))
-        {
-            double pArea = TriangleArea(pPoints);
-            double **OuterIntPoints = NULL;
             
-            //at this point I know my integration domains and I will allocate memory
-            //allocate memory for the integration points, do outer and inner here if far interaction
-            NumOuterIntPoints = mode_select[4][MODE]; // Choose highest int points
-            OuterIntPoints = mxMalloc(sizeof(double *) * NumOuterIntPoints);
-            
-            for (iter=0; iter < NumOuterIntPoints; iter++)
-                OuterIntPoints[iter] = mxMalloc(sizeof(double) * 4);
-            //find the integration points for the outer triangle
-            GaussianQuadrature(pPoints, NumOuterIntPoints, OuterIntPoints);
-            
-            int pEdgeIndex ;
-            for (ii=0; ii<(3+(3*order)); ii++) //Edges of observation triangle
-            {	// This checks if the edge is a DOF and returns the edges index in the edge list
-                // pEdgeIndex will determine the row of this interaction on the Zmat
+            if (ObserverOnTriangle(pbasisindex, obs_map, order))
+            {
+                double pArea = TriangleArea(pPoints);
+                double **OuterIntPoints = NULL;
                 
-                if (ii<3){
-                    pEdgeIndex = pTri[6+(ii+2)%3];
-                }else{
-                     pEdgeIndex = pTri[12+(ii+2)%3];
-                }
-                int p_obs_index = obs_map[pEdgeIndex-1];
+                //at this point I know my integration domains and I will allocate memory
+                //allocate memory for the integration points, do outer and inner here if far interaction
+                NumOuterIntPoints = mode_select[4][MODE]; // Choose highest int points
+                OuterIntPoints = mxMalloc(sizeof(double *) * NumOuterIntPoints);
                 
-                // below just checks that the edge index is any number other the -1, meaning it will be a DOF
-                // this if statement asks two questions, is it a basis function? and is it an observer?
-                if ((pEdgeIndex + 1) && (p_obs_index + 1))
+                for (iter=0; iter < NumOuterIntPoints; iter++)
+                    OuterIntPoints[iter] = mxMalloc(sizeof(double) * 4);
+                //find the integration points for the outer triangle
+                GaussianQuadrature(pPoints, NumOuterIntPoints, OuterIntPoints);
+                
+                
+                //outer integral
+                for (oip=0; oip<NumOuterIntPoints; oip++) //outer integral points
                 {
-                    //mexPrintf("edge = %d\n", pEdgeIndex);
-                    
-                    // find the length of the outer edge in question
+                    int pEdgeIndex ;
+                    for (ii=0; ii<(3+(3*order)); ii++) //Edges of observation triangle
+                    {	// This checks if the edge is a DOF and returns the edges index in the edge list
+                        // pEdgeIndex will determine the row of this interaction on the Zmat
+                        
+                        if (ii<3){
+                            pEdgeIndex = pTri[6+(ii+2)%3];
+                        }else{
+                            pEdgeIndex = pTri[12+(ii+2)%3];
+//                             mexPrintf("Not supposed to be in here now");
+                        }
+                        int p_obs_index = obs_map[pEdgeIndex-1];
+                        
+                        // below just checks that the edge index is any number other the -1, meaning it will be a DOF
+                        // this if statement asks two questions, is it a basis function? and is it an observer?
+                        if ((pEdgeIndex + 1) && (p_obs_index + 1))
+                        {
+                            //mexPrintf("edge = %d\n", pEdgeIndex);
+                            
+                            // find the length of the outer edge in question
 //                     double lp = Distance(pPoints[ii+1], pPoints[(ii+2)%3]);
-        
-                    //outer integral
-                    for (oip=0; oip<NumOuterIntPoints; oip++) //outer integral points
-                    {
-                     
-                        double pRho[3];
-                        double ruv[3];
-                        // (ii+2)%3 goes 2,0,1 
-                         ParametricMap(pPoints, OuterIntPoints[oip], ruv);// this is just for plotting purposes
-                         //mexPrintf("%f %f %f\n", OuterIntPoints[oip][0], OuterIntPoints[oip][1], OuterIntPoints[oip][2]);
-                         
-                         int iiSignSelector = 0;
-                         if (ii>=3){
-                            iiSignSelector = 6;   
-                         }
-                         
-                         double N = BF(OuterIntPoints[oip],pPoints, (ii+2)%3, pTri[3+iiSignSelector+(ii+2)%3], pRho);
-                         if (isnan(pRho[0])){
-                             mexPrintf("error fillPlane\n");
-                         }
-                        //VectorSubtract(pPoints[(ii+2)%3], ruv, pRho);
-                        //MultiplyVectorByConstant(pRho, 3, pTri[3+(ii+2)%3]);
-                        // mexPrintf("pRho = %f %f %f", pRho[0],pRho[1],pRho[2]);
-                         
-//                           
+                            
+                            
+                            double pRho[3];
+                            double ruv[3];
+                            // (ii+2)%3 goes 2,0,1
+                            ParametricMap(pPoints, OuterIntPoints[oip], ruv);// this is just for plotting purposes
+                            //mexPrintf("%f %f %f\n", OuterIntPoints[oip][0], OuterIntPoints[oip][1], OuterIntPoints[oip][2]);
+                            
+                            int iiSignSelector = 0;
+                            if (ii>=3){
+                                iiSignSelector = 6;
+                            }
+                            
+                            double N = BF(OuterIntPoints[oip],pPoints, (ii+2)%3, pTri[3+iiSignSelector+(ii+2)%3], pRho);
+                            if (isnan(pRho[0])){
+                                mexPrintf("error fillPlane\n");
+                            }
+                            //VectorSubtract(pPoints[(ii+2)%3], ruv, pRho);
+                            //MultiplyVectorByConstant(pRho, 3, pTri[3+(ii+2)%3]);
+                            // mexPrintf("pRho = %f %f %f", pRho[0],pRho[1],pRho[2]);
+                            
+//
 //                          if (pEdgeIndex == 5){
 // //                            if ((i%2)==0){
 //                           //   mexPrintf("intPoints = %f %f %f\n pPoints = %f\n", OuterIntPoints[oip][0],OuterIntPoints[oip][1],OuterIntPoints[oip][2], pPoints[0][0]);
 //                             // mexPrintf("ruv = %f %f %f\n", pRho[0],pRho[1],pRho[2]);
 //                                        fprintf(fp,"%f,%f,%f\n", pRho[0], pRho[1], pRho[2]);
 //                                        fprintf(fp1,"%f,%f,%f\n", ruv[0],ruv[1],ruv[2]);
-//                                        
+//
 //                                                 }
 // // //                          }
 //                           if (pEdgeIndex == 6){
-// //                            
+// //
 // //                           //   mexPrintf("intPoints = %f %f %f\n pPoints = %f\n", OuterIntPoints[oip][0],OuterIntPoints[oip][1],OuterIntPoints[oip][2], pPoints[0][0]);
 // //                             // mexPrintf("ruv = %f %f %f\n", pRho[0],pRho[1],pRho[2]);
 //                                        fprintf(fp2,"%f,%f,%f\n", pRho[0], pRho[1], pRho[2]);
 //                                        fprintf(fp3,"%f,%f,%f\n", ruv[0],ruv[1],ruv[2]);
 //                            }
-
-                        //This is an issue when using matlabs native edges and boundary solver cuz pEdgeIndex
-                        // Fill excitation vector
-                       // For incident direction:
-                        // z: OuterIntPoints[oip][2]*pRho[0]
-                        // x: OuterIntPoints[oip][0]*pRho[1]
-                        // y: OuterIntPoints[oip][1]*pRho[2]
-                        // incident_dir is 0 -> z
-                        //                 1 -> x
-                        //                 2 -> y
-                          int coord;
-                        double Ruv_eval;
-                        complex double Einc_eval[3];
+                            
+                            //This is an issue when using matlabs native edges and boundary solver cuz pEdgeIndex
+                            // Fill excitation vector
+                            // For incident direction:
+                            // z: OuterIntPoints[oip][2]*pRho[0]
+                            // x: OuterIntPoints[oip][0]*pRho[1]
+                            // y: OuterIntPoints[oip][1]*pRho[2]
+                            // incident_dir is 0 -> z
+                            //                 1 -> x
+                            //                 2 -> y
+                            int coord;
+                            double Ruv_eval;
+                            complex double Einc_eval[3];
 //                         complex double int_eval[3];
-                        double temp[3][1] = {{1}, {1}, {1}};
-                        Ruv_eval = dotProduct(ruv,unitvec_beta);
-                        for (coord = 0; coord < 3; coord++){
-                            Einc_eval[coord] = cexp(-I*k*Ruv_eval) * unitvec_eta[coord]*  pRho[coord];
+                            double temp[3][1] = {{1}, {1}, {1}};
+                            Ruv_eval = dotProduct(ruv,unitvec_beta);
+                            for (coord = 0; coord < 3; coord++){
+                                Einc_eval[coord] = cexp(-I*k*Ruv_eval) * unitvec_eta[coord]*  pRho[coord];
 //                             Einc_eval[coord] = Einc_eval[coord]
 //                             int_eval[coord] = Einc_eval[coord] *  pRho[coord];
-                        }
+                            }
 //                         complex double int_eval  = dotProduct(Einc_eval, temp);
-                        complex double int_eval = 0.0 + 0.0j;
-                        
-                        for (coord = 0;coord < 3;coord++){
-                            int_eval += Einc_eval[coord]*temp[coord][1];
-                        }
-                        
-                        Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*int_eval;
-                         
-                         
-                         
+                            complex double int_eval = 0.0 + 0.0j;
+                            
+                            for (coord = 0;coord < 3;coord++){
+                                int_eval += Einc_eval[coord]*temp[coord][1];
+                            }
+                            
+                            Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*int_eval;
+                            
+                            
+                            
 //                          Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3]/(1))*(cexp(I*k*ruv[2])*pRho[0]);
-                        //Vvec[p_obs_index-1] += (OuterIntPoints[oip][3]/pArea)*(-lp/2)*(cexp(I*k*OuterIntPoints[oip][2])*pRho[0]);
-                        //Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*(cexp(I*k*ruv[2])*n*pRho[0]);
+                            //Vvec[p_obs_index-1] += (OuterIntPoints[oip][3]/pArea)*(-lp/2)*(cexp(I*k*OuterIntPoints[oip][2])*pRho[0]);
+                            //Vvec[p_obs_index-1] += -(OuterIntPoints[oip][3])*(cexp(I*k*ruv[2])*n*pRho[0]);
 //printf("%d\n", pEdgeIndex);
-                        
+                            
+                        }
                     }
                 }
-            }
-            // Free memory
-            for (iter=0; iter < NumOuterIntPoints; iter++)
-                mxFree(OuterIntPoints[iter]);
-            mxFree(OuterIntPoints);
-            
-            
-        }//this brace is new if statement
-    }
+                // Free memory
+                for (iter=0; iter < NumOuterIntPoints; iter++)
+                    mxFree(OuterIntPoints[iter]);
+                mxFree(OuterIntPoints);
+                
+                
+            }//this brace is new if statement
+        }
 //     fclose(fp);
 //     fclose(fp1);
 //     fclose(fp2);
@@ -421,13 +424,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     /*Populate points array*/
     //get the number of rows in the points array
     P = mxGetM(prhs[0]);
-
+    
     //set the pointer to recieve points data
     points = mxGetDoubles(prhs[0]);
     
     /*Populate triangles array*/
     T = mxGetM(prhs[1]);
-
+    
     //mexgetdoubles recieves doubles, this sets them to integers
     triangles =  mxGetDoubles(prhs[1]);
     
@@ -447,11 +450,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     double phi_inc = mxGetScalar(prhs[9]);
     double eta_pol = mxGetScalar(prhs[10]);
     mexPrintf("MODE = %d\n", MODE);
-
+    
     Vvec = mxMalloc(sizeof(complex double) * N);
-
+    
     for (i = 0; i < N; i++)
-    {     
+    {
         Vvec[i] = 0.000 + 0.000*I;
     }
     
