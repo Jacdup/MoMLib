@@ -306,16 +306,20 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     % lim1_for_2 = 1:lim2;
     
     
-    theta_1      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
-    theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
+%     theta_1      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
+%     theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
     
+    theta_1      =  abs(acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
+    theta_2      =  abs(acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
     for MBF_num = 1:3
         
         B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
         B2(1:2,:) = [zeros(lim2,1),MBF_mat(edge_nodes_2(:,2),MBF_num)]';
         B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),zeros(lim3,1)]';
-        B2 = B2(:,:) .* [sind(theta_1)';sind(theta_1)'];
-        B3 = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
+%         B2 = B2(:,:) .* [sind(theta_1)';sind(theta_1)'];
+%         B3 = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
+        B2 = B2(:,:) .* [cosd(2.*theta_1)';cosd(2.*theta_1)'];
+        B3 = B3(:,:) .* [cosd(2.*theta_2)';cosd(2.*theta_2)'];
         
         for i = 1:lim1
             X1(:,i) = Rho(:,:,i)\B1(:,i);

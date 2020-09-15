@@ -149,8 +149,8 @@ for node = 1:num_nodes
             point_index      = v + num_vertices*(node-1);
             point_index_prev = v + num_vertices*(node-2);
             
-            vec1 = points(point_index_prev,:) - Contour(node,:);
-            dist = dot(vec1,basis_vec_rotated);
+            vec1 = points(point_index_prev,:) - Contour(node,:); % 
+            dist = dot(vec1,basis_vec_rotated); % Perpendicular distance to plane
             
             if dist < 0
                 dist = -1 * dist;
@@ -219,7 +219,7 @@ offset = 0;
 % ------------------------------------------------------------------------
 % -------------------------New 13/05/2020---------------------------------
 % ------------------------------------------------------------------------
-% if connection_flag
+% if cyl_def.firstNode == "conn"
 %     offset = num_vertices*4;
 %     for v = 1:num_vertices % There will be num_vertices extra points at first and last node
 %         % The elements at the start
@@ -263,8 +263,8 @@ offset = 0;
 % %     N = nearestNeighbor(TR, points);
 % %     testd = delaunayTriangulation(points);
 % end
-%  [tri_nodes,triangles] = QuadtoTri(element, num_vertices, 0,1);
-
+%  [tri_nodes,triangles] = QuadtoTri(element, num_vertices, cyl_def);
+% 
 %  PlotMesh(points,tri_nodes, tri_nodes, 1);
 % ------------------------------------------------------------------------
 % -------------------------New 19/02/2020---------------------------------

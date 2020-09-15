@@ -23,8 +23,8 @@ k0                       = 2*pi/lambda0;   % free space wavenumber
 E_scalfac                = -1;              % plane wave spec
 theta_inc                = 0;              % plane wave spec
 phi_inc                  = 0;              % plane wave spec
-% eta_pol                  = pi/2;              % plane wave spec
-eta_pol                  = 0;
+eta_pol                  = 0;              % plane wave spec
+% eta_pol                  = pi;
 flag_planewave           = true;
 flag_lumped              = false;           % lumped sources and/or loads are present
 interelem_VsrcZload      = [];             % init lumped circuit element specification
@@ -34,32 +34,34 @@ mesh_create_option       = 4;              % 1 : Square plate
 % 4 : Cylinder
 % 5 : Sphere
 
-cyl_def.firstNode = ''; % Tells algorithm how to mesh the first node. Format: "conn"/"endCap"/" "
-cyl_def.lastNode  = ''; % Tells algorithm to mesh the last node 
+cyl_def.firstNode = 'endCap'; % Tells algorithm how to mesh the first node. Format: "conn"/"endCap"/" "
+cyl_def.lastNode  = 'endCap'; % Tells algorithm to mesh the last node 
 cyl_def.coupling  = false; % Meshes the same cylinder at a y-offset
 
 TextOn                   = true;           % mesh visualisation text
 flag_mesh_refine_uniform = false;
 h_split_num              = 2;
-show_output              = true;  % Display currents
+show_output              = false;  % Display currents
 
 %---------------------------------------------------------------
 % Solver select:
-%---------------------------------------------------------------
-solver                   = 2;              % 1 : RWG
+%---------------------------------------------------------------]
+MODE = 0; % set the quadrature accuracy
+solver                   = 3;              % 1 : RWG
 % 2 : First order triangular
 % 3 : Zeroth order quadrilateral solver
-MBF                      = 1;              % MBF currently only supported for solvers 2,3 and cylinder mesh
+MBF                      = 0;              % MBF currently only supported for solvers 2,3 and cylinder mesh
 
 % Meshing
-for iter = 1:1
+for iter = 12:12
 %     clear mex
-%     for solver = 1:2
-%         if solver == 2
-%             MBF = 1
-%         else
-%            MBF = 0; 
-%         end
+% figure;
+    for solver = 2:2
+        if solver == 1
+            MBF = 0;
+        else
+           MBF = 1; 
+        end
 
 %---------------------------------------------------------------
 % Read/create the mesh and visualise --- the end result here is <node_coords>
@@ -76,7 +78,8 @@ for iter = 1:1
 %     tri_nodes           = delaunay(node_coords(:,1:2));
 % end
 if mesh_create_option == 1
-    [node_coords,quad_Elements] = MeshRectanglularPlate(1,1,iter*2,iter*2) ;
+    a = [0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,0.8,0.9,1];
+    [node_coords,quad_Elements] = MeshRectanglularPlate(a(iter),a(iter),4,4) ;
     node_coords(:,3) = 0;
     quad_nodes = cell(length(quad_Elements),1);
     for node = 1:length(quad_Elements)
@@ -88,11 +91,12 @@ end
 
 % Import from a Nastran file that was created by FEKO:
 if mesh_create_option == 2
-        [node_coords,tri_nodes] = ImportTriangleMeshNastran('bowtie_1.nas');
-%     [node_coords, tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_hole_regular.nas');
+%         [node_coords,tri_nodes] = ImportTriangleMeshNastran('bowtie_1.nas');
+[node_coords, tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_hole_20v_regular.nas');
+%     [node_coords, tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\cylinder_endcaps_finer.nas');
     %node_coords(:,3)        = 0.1*rand(size(node_coords,1),1); % just a test
-    interelem_VsrcZload     = [ 43 108 1 0 50 0]; % [tri- tri+ V_src^real V_src^imag Z_load^real Z_load^imag]
-    flag_lumped             = true;
+%     interelem_VsrcZload     = [ 43 108 1 0 50 0]; % [tri- tri+ V_src^real V_src^imag Z_load^real Z_load^imag]
+%     flag_lumped             = true;
     %     interelem_VsrcZload     = [ 43 108 0 0  5e4 0
     %                                 90  80 1 0   0 0
     %                                 82  79 1 0   0 0]; % [tri- tri+ V_src^real V_src^imag Z_load^real Z_load^imag]
@@ -115,13 +119,15 @@ if mesh_create_option == 4
     
     %     rho = 0.1+((iter-1)*0.1);
 %     temp = [0.0002 0.0004 0.0008 0.001 0.002 0.003 0.006 0.01 0.03 0.06 0.1];
+%     temp = [0.0002 0.0004 0.0008 0.001 0.005 0.008 0.01 0.05 0.08 0.1 0.12 0.2];
+    temp =[ 0.0001,0.0004, 0.0008, 0.001, 0.004, 0.008, 0.01, 0.04, 0.08, 0.1, 0.14, 0.18];
 %     temp = [0.0509,0.1129,0.0064]
-%     rho = temp(iter);
+    rho = temp(iter);
 %     rho = 0.0509;
-    rho = 0.2;
+%     rho = 0.4;
 %     rho = 0.02 + ((iter - 1) * 0.05)
 
-    vertices = 20; % Only even number here for endcap mesh
+    vertices = 24; % Only even number here for endcap mesh
 %     vertices = 8+(2*iter);
 
     %      Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 0.1; 5 0 0.2; 6 0.1 0.3; 7 0.2 0.4; 8 0.25 0.5; 9 0.2 0.6; 10 0.2 0.5; 11 0.2 0.45 ]; % Hardcode some contour
@@ -145,6 +151,7 @@ if mesh_create_option == 4
 %      Contour = [1 0.5 0; 1 0.5 0.2; 0.6 0.5 0.4; 0.3 0.5 0.8; 0.2 0.5 1.2; 0 0.5 1.2; -0.2 0.5 1.2; -0.3 0.5 0.8; -0.6 0.5 0.4; -1 0.5 0.2; -1 0.5 0];
     %     Contour = [0.5 0.5 0; 0.5 0.5 0.5; 0.6 0.6 1; 0.7 0.7 1.5; 0.65 0.5 2];
         Contour = [0 0 0; 1 0 0; 2 0 0];
+%         Contour = [0 0 0; 0 0 1; 0 0 2];
 %         Contour = [0 0 0; 1 0 1; 2 0 2; 3 0 2];
     %     Contour = [0.4 0.4 0.1; 0.1 1 1; 2 2 2];
     %     Contour = [0.5 0.5 0; 0.5 0.5 0.25; 0.5 0.5 0.5];
@@ -152,7 +159,7 @@ if mesh_create_option == 4
 
 % Mesh a dipole
 %      del = (rho*1.2)/2;
-%      del = (rho*1.189)/2;
+% %      del = (rho*1.189)/2;
 %     Contour = [0 0 0; 0 0 0.25-del; 0 0 0.25; 0 0 0.25+del;0 0 0.5];
 %     Contour1 = RefineMesh(Contour(1:2,:),4);
 %     Contour2 = RefineMesh(Contour(end-1:end,:),4);
@@ -315,7 +322,7 @@ end
 if solver == 3
     % NB: EdgeCalcQuad has functionality for specific directions tailored to cylinders, for help in constructing the MBF
     % If it is desired to run this on generic meshes, comment that code
-    vertices = 1;
+%     vertices = 1;
     [quad_blah,N,basis_supports_quad, quad_Edges,quad_dofs_to_edges] = EdgeCalcQuad(quad_nodes,vertices);
     
     obs_basis_select = {1:N};
@@ -368,7 +375,7 @@ else
     % Assign the dofs and define each associated basis function:
     [dof_data,num_dofs] = CreateBasisFunctions_New(mesh_data, solver-1); % 1 for first order
     %     [dof_data,num_dofs] = CreateBasisFunctions(mesh_data); % 1 for first order
-%             PlotTriangleMeshDofs(mesh_data,dof_data,TextOn, solver -1);
+% %             PlotTriangleMeshDofs(mesh_data,dof_data,TextOn, solver -1);
     N = num_dofs;
     %---------------------------------------------------------------
     % Reduce the matrix if required; set up the excitation vector, system
@@ -426,7 +433,7 @@ else
 end
 % MoM Calculations
 
-MODE = 1; % set the quadrature accuracy
+
 if solver == 3
     tic
     [Z_mat] = qmom(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map),int32(quad_source_map), num_obs, num_src, MODE);
@@ -437,6 +444,7 @@ else
     
     tic
     if solver == 1
+%          [Z_mat] = FOmom(reduced_node_coords, reduced_tri_dofs, reduced_num_dofs, FREQUENCY,int32(observer_map),int32(source_map), num_obs, num_src, MODE, solver-1);
           [Z_mat] = mom(reduced_node_coords, reduced_tri_dofs, reduced_num_dofs, FREQUENCY,int32(observer_map),int32(source_map), num_obs, num_src, MODE);
     else
             [Z_mat] = FOmom(reduced_node_coords, reduced_tri_dofs, reduced_num_dofs, FREQUENCY,int32(observer_map),int32(source_map), num_obs, num_src, MODE, solver-1);
@@ -474,14 +482,15 @@ if solver == 3
         [U_Mat] = SelectDOFMBF(basis_supports_quad, vertices,numNodes,numMBF);
         %         U_Mat = zeros(length(basis_supports_quad),1);
         [U_Mat] = SelectDOFMBF_2(basis_supports_quad, vertices, U_Mat,numNodes,numMBF);
-        %         PlotTriangleMeshDofsMBFQuad(node_coords,quad_blah,TextOn, U_Mat, quad_Edges, quad_dofs_to_edges);
+%                 PlotTriangleMeshDofsMBFQuad(node_coords,quad_blah,TextOn, U_Mat, quad_Edges, quad_dofs_to_edges);
+        U_Mat(:,~any(U_Mat,1)) = []; % Remove zero columns
     end
 else
     if MBF == 1
         U_Mat = zeros(length(V_vec));
-        [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = MBF_Axial(mesh_data, dof_data, vertices, numMBF, numNodes, reduced_tri_dofs,cyl_def);
-        [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ(mesh_data, dof_data, vertices ,numMBF, numNodes, reduced_tri_dofs, cyl_def, U_Mat);
-        
+        [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = MBF_Axial_endcap(mesh_data, dof_data, vertices, numMBF, numNodes, reduced_tri_dofs,cyl_def);
+%         [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ(mesh_data, dof_data, vertices ,numMBF, numNodes, reduced_tri_dofs, cyl_def, U_Mat);
+         [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ_endcap(mesh_data, dof_data, vertices ,numMBF, numNodes, reduced_tri_dofs, cyl_def, U_Mat);
         
         
         if cyl_def.firstNode == "conn"
@@ -620,7 +629,7 @@ elseif show_output
         tri_currents_real(ii,1) = norm(real(J_centroid));
         tri_currents_imag(ii,1) = norm(imag(J_centroid));
         
-        tri_currents_dir(ii,:) = real(J_centroid);
+        tri_currents_dir(ii,:) = imag(J_centroid);
         tri_currents_dir_norm(ii,:) = real(J_centroid_norm);
 
         for jj = 1:3
@@ -642,15 +651,17 @@ end
 if solver == 3 && show_output
 %      PlotCurrent3DQuad(0,false,quad_blah, node_coords,quad_currents_cent);
     PlotCurrent3DQuad(1,false,quad_blah,node_coords,quad_currents_vert);
+    PlotCurrentDir3D(0,quad_blah,node_coords,quad_currents_dir_real,quad_currents_dir);
 %     PlotCurrent3DQuad(0,false,quad_blah,node_coords,quad_currents_real);
 %     PlotCurrent3DQuad(0,false,quad_blah,node_coords,quad_currents_imag);
-    PlotCurrentDir3D(0,quad_blah,node_coords,quad_currents_dir_real,quad_currents_dir_imag);
+%     PlotCurrentDir3D(0,quad_blah,node_coords,quad_currents_dir_real,quad_currents_dir_imag);
 elseif solver == 2 && show_output
     
-    [x_axis, current_norm, current_MBF] = plotNodeCurrent(I_vec,I_vec_norm,DOF_mat1,DOF_mat2,DOF_mat3,DOF_mat, numNodes,cyl_def);
+%     [x_axis, current_norm, current_MBF] = plotNodeCurrent(I_vec,I_vec_norm,DOF_mat1,DOF_mat2,DOF_mat3,DOF_mat, numNodes,cyl_def);
 %     PlotCurrent3D(0,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_real);
 %     PlotCurrent3D(0,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_imag);
     PlotCurrent3D(1,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_vert);
+%     PlotCurrent3D(0,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_cent);
 % set(gcf,'Visible','on')
 %         PlotCurrent3D(1,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_vert_norm);
 % PlotCurrent3D(0,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords, tri_currents_cent_norm);
@@ -703,14 +714,14 @@ if flag_lumped
     
 %     abs(Z_11)
 %     abs(Z_11_norm)
-       voltage         = sum(Zlump_rowcolval(1:40,3));
-    current         = sum(I_vec(Zlump_rowcolval(1:40,1),1));
-    current_norm    = sum(I_vec_norm(Zlump_rowcolval(1:40,1),1));
+       voltage         = sum(Vlump_rowcolval(1:20,3));
+    current         = sum(I_vec(Vlump_rowcolval(1:20,1),1));
+    current_norm    = sum(I_vec_norm(Vlump_rowcolval(1:20,1),1));
     voltage         = voltage/(vertices*ELength); % Sanity check
     Z_11            = 1/(ELength*current) % Ohm's law, Voltage=1V.
     Z_11_norm       = 1/(ELength*current_norm)
     
-%     G_B(iter) = 1/Z_11  % Input Conductance + Susceptance
+    G_B(iter) = 1/Z_11  % Input Conductance + Susceptance
 %     G_B_norm(iter) = 1/Z_11_norm;
     
    
@@ -728,14 +739,14 @@ end
 % The output of the farfield routine has this row format:
 % THETA     PHI     magn{Etheta} phase{Etheta} magn{Ephi} phase{Ephi}
 %   1        2            3           4            5          6
-plane               = 'XZ'; % set the observation plane: 'XY' or 'XZ' or 'YZ'
+plane               = 'XY'; % set the observation plane: 'XY' or 'XZ' or 'YZ'
 delta_angle_degrees = 2;    % degree increment for observation directions
 if solver == 3 
     [farfield_XY] = qfarfield(new_quad_points, new_quads, new_quad_N, FREQUENCY, I_vec, delta_angle_degrees, plane);
 %     [farfield_XY_norm] = qfarfield(new_quad_points, new_quads, new_quad_N, FREQUENCY, I_vec_norm, delta_angle_degrees, plane);
 elseif solver == 2 
     [farfield_XY] = FOfarfield(reduced_node_coords, reduced_tri_dofs, reduced_num_dofs, FREQUENCY, I_vec, delta_angle_degrees, plane, solver-1);
-%     [farfield_XY_norm] = FOfarfield(reduced_node_coords, reduced_tri_dofs, reduced_num_dofs, FREQUENCY, I_vec_norm, delta_angle_degrees, plane, solver-1);
+    [farfield_XY_norm] = FOfarfield(reduced_node_coords, reduced_tri_dofs, reduced_num_dofs, FREQUENCY, I_vec_norm, delta_angle_degrees, plane, solver-1);
 % [farfield_XY_norm] = FOfarfield(reduced_node_coords_RWG, reduced_tri_dofs_RWG, reduced_num_dofs_RWG, FREQUENCY, I_vec_norm, delta_angle_degrees, plane, 0);
 else
     [farfield_XY] = farfield(reduced_node_coords, reduced_tri_dofs, reduced_num_dofs, FREQUENCY, I_vec, delta_angle_degrees, plane);
@@ -744,7 +755,12 @@ end
 % disp('<farfield> routine still needs some generalisation work');
 if show_output
     figure;
-    plot(farfield_XY(:,1),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
+    if (plane == 'XZ') % Plot over theta
+         plot(farfield_XY(:,1),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
+    else % Plot over phi
+%         hold on
+       plot(farfield_XY(:,2),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
+    end
     hold on
 end
 
@@ -762,18 +778,18 @@ end
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\0.1_cyl_endcaps.txt');
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\hollow_cyl_8m_xz.txt');
 % [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\Masters\MoMLib\src\Jacques\FEKO\sphere_0.5.txt');
-[E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_plane_wave_MBF_qmom\Jacques\FEKO\Square_plate_scattered.txt');
+% [E_field_FEKO] = feko_farfield_extract('C:\Users\19083688\Desktop\MoM Codes\V_3.6_feat_plane_wave_MBF_qmom\Jacques\FEKO\Square_plate_scattered.txt');
 % semilogy
-plot(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2), '+-');
+% plot(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2), '+-');
 
 if MBF == 1 && show_output
     title('|$E_{\phi}$|')
-    plot(farfield_XY_norm(:,1),sqrt(farfield_XY_norm(:,3).^2 + farfield_XY_norm(:,5).^2));
+    plot(farfield_XY_norm(:,2),sqrt(farfield_XY_norm(:,3).^2 + farfield_XY_norm(:,5).^2));
     %     legend("Matlab, N(MBF) = " + New_N,  "FEKO", "Matlab, N = " + N)
     legend("Matlab, N(MBF) = " + New_N,  "Matlab, N = " + N)
 elseif show_output
     title('|$E_{\phi}$|')
-     plot(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2), '+-');
+%      plot(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2), '+-');
     legend("Matlab, N = " + N, "FEKO")
 end
 % xlabel('\phi')
@@ -785,18 +801,24 @@ elseif solver == 1
 else 
     s1 = "Quad" 
 end
+
+% hold on
+% semilogy(farfield_XY(:,2),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
 % farfield_XY_all(:,iter) = farfield_XY(:,5);
-% rcs(iter) = (4*pi*((abs(farfield_XY(1,5))^2)/(1)));
+for iter1 = 11:12
+rcsMBF(iter1) = (4*pi*((abs(FF_MBF{iter1}(46,5))^2)/(1)));
+end
 % save(strcat("Z_11_",s1,"_",int2str(iter)), 'Z_11');
 % % save(strcat("Current_",s1,"_",int2str(iter)), 'current');
 % save(strcat("G_B_",s1,"_",int2str(iter)), 'G_B');
 % save(strcat("G_B_norm_",s1,"_",int2str(iter)), 'G_B_norm');
-
+FF_MBF{iter} = farfield_XY;
+% FF_RWG{iter} = farfield_XY;
 % save(strcat("I_vec_",s1,"_",int2str(iter)), 'I_vec');
-% save(strcat("FF_",s1,"_",int2str(new_quad_N),"_",int2str(iter)), 'farfield_XY');
+% save(strcat("FF_",s1,"_",int2str(New_N),"_",int2str(iter)), 'farfield_XY');
 %     end
 save(strcat("FF_",s1,"_",int2str(N),"_",int2str(iter)), 'farfield_XY');
-
+    end
 end
 
 % for i = 1:60
@@ -908,5 +930,8 @@ end
 xlabel("x ($\lambda$)");
 ylabel("y ($\lambda$)");
 zlabel("z ($\lambda$)");
+
+
+
 
 

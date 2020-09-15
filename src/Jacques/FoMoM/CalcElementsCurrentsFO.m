@@ -6,7 +6,7 @@ function [triangles_vertices_currents] = CalcElementsCurrentsFO(I_vec, tri_dofs,
 % num_tri x 3(i.e. num vert per tri) x 3(three Cartesian components of J)
 %
 % 2019-12-16: Created. MMB.
-
+% order = 0;
 % Init:
 triangles_vertices_currents = zeros(num_tri,3,3);
 % local_edge_nodes_def        = [1 2
@@ -72,6 +72,8 @@ for ii = 1:size(tri_dofs,1)
             if (abs(sign) == 2)
                 first_order = 1;
                 sign = 0.5*tri_dofs(ii,3+sign_iter+edge);
+%                 ELength = 1;
+%                 TArea = 1;
             end
             t_index = mod(edge+1,3)+1;
             l_index = mod(edge,3)+1;

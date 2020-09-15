@@ -20,7 +20,7 @@ for phi_var = 0:2 % All 3 MBFs
     u_row = 1;
     for i = 1:numDOFS % Total number of DOFS
         
-        if (basis_supports(i,2) - basis_supports(i,1) ~= numVertices) % If edge sits on a contour node point
+        if (basis_supports(i,2) - basis_supports(i,1) ~= numVertices) % If edge does not sit on a contour node point
             phi_step = phi_step + 1;
             total_DOFS_selected = total_DOFS_selected + 1;
             

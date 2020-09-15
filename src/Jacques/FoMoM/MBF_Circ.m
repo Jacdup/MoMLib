@@ -188,7 +188,7 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     if oneEndcap || twoEndcaps
         if cyl_def.firstNode == "endCap"
 %             for i = length(triangle_blah)-endCapExclude+1-cyl_def.num_plate_nodes:2:length(triangle_blah)-(numVertices*(cyl_def.lastNode == "endCap")-cyl_def.num_plate_nodes)% Every odd row, only first endcap
-            for i = (endNode + 1 + connectionExclude):2:(endNode + 1 + connectionExclude + endCapExclude - (numVertices*cyl_def.lastNode == "endCap"))
+            for i = (endNode + 1 + connectionExclude):2:(endNode + 1 + connectionExclude + endCapExclude - (numVertices*(cyl_def.lastNode == "endCap")))
                 
                 row = row + 4;
                 linear_row = linear_row + 2;
@@ -251,7 +251,7 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     
     % Angles between straight and diagonal edges
     theta      =  abs(90 - acosd(dot(edge_vecs(1:2:end,:),edge_vecs(2:2:end,:),2)./(vecnorm(edge_vecs(1:2:end,:),2,2).*vecnorm(edge_vecs(2:2:end,:),2,2))));
-    
+%       theta      =  abs(acosd(dot(edge_vecs(1:2:end,:),edge_vecs(2:2:end,:),2)./(vecnorm(edge_vecs(1:2:end,:),2,2).*vecnorm(edge_vecs(2:2:end,:),2,2))));
     if oneEndcap || twoEndcaps
         theta(end-round((endCapExclude/2))+1:end,:) = []; % TODO
     end
@@ -266,6 +266,9 @@ for numCyl = 1:cyl_def.coupling+1 % Iterates twice if there are two cylinders
     B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
     B_sin(:,2:2:end-endCapExclude) = B_sin(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
     B_cos(:,2:2:end-endCapExclude) = B_cos(:,2:2:end-endCapExclude) .*[sind(theta)';sind(theta)'];
+%         B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [cosd(2.*theta)';cosd(2.*theta)'];
+%     B_sin(:,2:2:end-endCapExclude) = B_sin(:,2:2:end-endCapExclude) .* [cosd(2.*theta)';cosd(2.*theta)'];
+%     B_cos(:,2:2:end-endCapExclude) = B_cos(:,2:2:end-endCapExclude) .*[cosd(2.*theta)';cosd(2.*theta)'];
     if oneEndcap || twoEndcaps
         extra = extra + 1;
         

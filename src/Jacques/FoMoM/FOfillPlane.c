@@ -336,16 +336,16 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
                             // mexPrintf("pRho = %f %f %f", pRho[0],pRho[1],pRho[2]);
                             
 //
-//                          if (pEdgeIndex == 5){
+//                          if ((pEdgeIndex == 1)||(pEdgeIndex == 3)||(pEdgeIndex == 5)){
 // //                            if ((i%2)==0){
 //                           //   mexPrintf("intPoints = %f %f %f\n pPoints = %f\n", OuterIntPoints[oip][0],OuterIntPoints[oip][1],OuterIntPoints[oip][2], pPoints[0][0]);
 //                             // mexPrintf("ruv = %f %f %f\n", pRho[0],pRho[1],pRho[2]);
-//                                        fprintf(fp,"%f,%f,%f\n", pRho[0], pRho[1], pRho[2]);
+//                                        fprintf(fp,"%f,%f,%f\n", pRho[0], pRho[1], pRho[2]); //% Delta1
 //                                        fprintf(fp1,"%f,%f,%f\n", ruv[0],ruv[1],ruv[2]);
-//
+// 
 //                                                 }
 // // //                          }
-//                           if (pEdgeIndex == 6){
+//                           if ((pEdgeIndex == 2)||(pEdgeIndex == 4)||(pEdgeIndex == 6)){
 // //
 // //                           //   mexPrintf("intPoints = %f %f %f\n pPoints = %f\n", OuterIntPoints[oip][0],OuterIntPoints[oip][1],OuterIntPoints[oip][2], pPoints[0][0]);
 // //                             // mexPrintf("ruv = %f %f %f\n", pRho[0],pRho[1],pRho[2]);
