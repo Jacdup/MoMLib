@@ -53,7 +53,7 @@ solver                   = 3;              % 1 : RWG
 MBF                      = 0;              % MBF currently only supported for solvers 2,3 and cylinder mesh
 
 % Meshing
-for iter = 1:18
+for iter = 1:8
 %     clear mex
 % figure;
     for solver = 2:2
@@ -168,7 +168,7 @@ if mesh_create_option == 4
 % if (iter > 1)
 %     Contour = RefineMesh(Contour,iter-1);
 % end
-    Contour = RefineMesh(Contour,3);
+    Contour = RefineMesh(Contour,4);
     contour_length = length(Contour(:,1));
 %     i = 1;
 %     while i<contour_length % Remove nodes at the feedpoint to get constant gap width
@@ -809,7 +809,7 @@ for iter1 = 1:18
     for iter2 = 1:180
 % rcsMBF(iter1) = (4*pi*((abs(FF_MBF{iter1}(23,5))^2)/(1))); % Sidelobe
         rcsMBF(iter1,iter2) = (4*pi*((abs(FF_MBF{iter1}(iter2,5))^2)/(1))); % 73
-        rcsRWG(iter1,iter2) = (4*pi*((abs(FF_RWG{iter1}(iter2,5))^2)/(1)));
+%         rcsRWG(iter1,iter2) = (4*pi*((abs(FF_RWG{iter1}(iter2,5))^2)/(1)));
     end
 end
 % save(strcat("Z_11_",s1,"_",int2str(iter)), 'Z_11');
@@ -817,7 +817,7 @@ end
 % save(strcat("G_B_",s1,"_",int2str(iter)), 'G_B');
 % save(strcat("G_B_norm_",s1,"_",int2str(iter)), 'G_B_norm');
 FF_MBF{iter} = farfield_XY;
-FF_RWG{iter} = farfield_XY_norm;
+% FF_RWG{iter} = farfield_XY_norm;
 % save(strcat("I_vec_",s1,"_",int2str(iter)), 'I_vec');
 % save(strcat("FF_",s1,"_",int2str(New_N),"_",int2str(iter)), 'farfield_XY');
 %     end

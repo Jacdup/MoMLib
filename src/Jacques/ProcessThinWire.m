@@ -17,6 +17,7 @@ for k = 1:18
     FF_RWG{k} = textscan(fileID,formatSpec, 'HeaderLines',16 );
     FF_RWG{k} = cell2mat(FF_RWG{k});
     fclose(fileID);
+    rcsRWG(k,:) = FF_RWG{k}(1:180,8);
 %     FF_RWG{k} = feko_farfield_extract(filename);
 %     FF_RWG{k} = FF_RWG{k}(1:180,:);
 
@@ -40,11 +41,11 @@ formatSpec = '%f %f %f %f %f %f %f %f %f';
 end
 
 % Calculate RCS & Errors
-for k = 1:9
+for k = 1:18
     
-%     rcsRWG(k,:) = FF_RWG{k}(1:180,8);
+    rcsRWG(k,:) = FF_RWG{k}(1:180,8);
 
-    rcsThin(k,:) = FF_Thin{k}(1:180,8);
+%     rcsThin(k,:) = FF_Thin{k}(1:180,8);
     
 %     rcsMBF(k) = (4*pi*((abs(sum(FF_MBF{k}(:,5)))^2)/(180)));
 %     rcsMBF(k) = (4*pi*((abs(FF_MBF{k}(46,5))^2)/(1)));
@@ -81,7 +82,7 @@ end
     % Plot RCS as surf
     lim = 1:18;
     figure
-    surf(1:180,temp(lim),abs(rcsMBF(lim,:) -rcsRWG(lim,:)));
+    surf(1:2:360,temp(lim),abs(rcsMBF(lim,:) -rcsRWG(lim,:)));
         figure
     surf(1:180,temp(lim),rcsRWG(lim,:));
     surf(1:180,temp(1:9),rcsThin(1:9,:));
