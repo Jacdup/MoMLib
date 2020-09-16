@@ -21,7 +21,7 @@ c0                       = 2.99792458e8;   % Speed of light in free space
 lambda0                  = c0/FREQUENCY;   % Wavelength in free space
 k0                       = 2*pi/lambda0;   % free space wavenumber
 E_scalfac                = -1;              % plane wave spec
-theta_inc                = 0;              % plane wave spec
+theta_inc                = pi/4;              % plane wave spec
 phi_inc                  = 0;              % plane wave spec
 eta_pol                  = 0;              % plane wave spec
 % eta_pol                  = pi;
@@ -53,7 +53,7 @@ solver                   = 3;              % 1 : RWG
 MBF                      = 0;              % MBF currently only supported for solvers 2,3 and cylinder mesh
 
 % Meshing
-for iter = 12:12
+for iter = 1:18
 %     clear mex
 % figure;
     for solver = 2:2
@@ -120,14 +120,14 @@ if mesh_create_option == 4
     %     rho = 0.1+((iter-1)*0.1);
 %     temp = [0.0002 0.0004 0.0008 0.001 0.002 0.003 0.006 0.01 0.03 0.06 0.1];
 %     temp = [0.0002 0.0004 0.0008 0.001 0.005 0.008 0.01 0.05 0.08 0.1 0.12 0.2];
-    temp =[ 0.0001,0.0004, 0.0008, 0.001, 0.004, 0.008, 0.01, 0.04, 0.08, 0.1, 0.14, 0.18];
+    temp =[ 0.0001,0.0004, 0.0008, 0.001, 0.004, 0.008, 0.01, 0.04, 0.08, 0.1, 0.14, 0.18, 0.2, 0.24, 0.28, 0.3, 0.34, 0.38];
 %     temp = [0.0509,0.1129,0.0064]
     rho = temp(iter);
 %     rho = 0.0509;
 %     rho = 0.4;
 %     rho = 0.02 + ((iter - 1) * 0.05)
 
-    vertices = 24; % Only even number here for endcap mesh
+    vertices = 20; % Only even number here for endcap mesh
 %     vertices = 8+(2*iter);
 
     %      Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 0.1; 5 0 0.2; 6 0.1 0.3; 7 0.2 0.4; 8 0.25 0.5; 9 0.2 0.6; 10 0.2 0.5; 11 0.2 0.45 ]; % Hardcode some contour
@@ -168,7 +168,7 @@ if mesh_create_option == 4
 % if (iter > 1)
 %     Contour = RefineMesh(Contour,iter-1);
 % end
-    Contour = RefineMesh(Contour,4);
+    Contour = RefineMesh(Contour,3);
     contour_length = length(Contour(:,1));
 %     i = 1;
 %     while i<contour_length % Remove nodes at the feedpoint to get constant gap width
@@ -805,15 +805,19 @@ end
 % hold on
 % semilogy(farfield_XY(:,2),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
 % farfield_XY_all(:,iter) = farfield_XY(:,5);
-for iter1 = 11:12
-rcsMBF(iter1) = (4*pi*((abs(FF_MBF{iter1}(46,5))^2)/(1)));
+for iter1 = 1:18
+    for iter2 = 1:180
+% rcsMBF(iter1) = (4*pi*((abs(FF_MBF{iter1}(23,5))^2)/(1))); % Sidelobe
+        rcsMBF(iter1,iter2) = (4*pi*((abs(FF_MBF{iter1}(iter2,5))^2)/(1))); % 73
+        rcsRWG(iter1,iter2) = (4*pi*((abs(FF_RWG{iter1}(iter2,5))^2)/(1)));
+    end
 end
 % save(strcat("Z_11_",s1,"_",int2str(iter)), 'Z_11');
 % % save(strcat("Current_",s1,"_",int2str(iter)), 'current');
 % save(strcat("G_B_",s1,"_",int2str(iter)), 'G_B');
 % save(strcat("G_B_norm_",s1,"_",int2str(iter)), 'G_B_norm');
 FF_MBF{iter} = farfield_XY;
-% FF_RWG{iter} = farfield_XY;
+FF_RWG{iter} = farfield_XY_norm;
 % save(strcat("I_vec_",s1,"_",int2str(iter)), 'I_vec');
 % save(strcat("FF_",s1,"_",int2str(New_N),"_",int2str(iter)), 'farfield_XY');
 %     end
