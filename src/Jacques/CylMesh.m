@@ -107,10 +107,16 @@ for node = 1:num_nodes
         norm_vec = norm_vec/norm(norm_vec);
 %         basis_vec = [-norm_vec(2)/norm_vec(1) 1 0];
         i = 2;
-        basis_vec = [-norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1) 1 0];
+        if Contour(node,1) >= 5 && Contour(node,1) < 10
+            basis_vec = [0 -norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1) 1];
+%         elseif Contour(node,1) > 10
+%             basis_vec = [1 0 -norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)];
+        else
+            basis_vec = [0 -norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1) 1];
+        end
         while isnan(norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)) || isinf(norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1))
             i = i + 1;
-            basis_vec = [-norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1) 1 0];
+            basis_vec = [0 1 -norm_vec(mod(i,3)+1)/norm_vec(mod(i+1,3)+1)];
         end      
         
         if node == num_nodes

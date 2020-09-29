@@ -51,10 +51,10 @@ if cyl_def.firstNode == "conn" && cyl_def.lastNode ~= "conn"
     [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_hole_20v_regular.nas');
 else
 %      [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\2_square_plate_hole_20v_fine.nas');
-               [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_hole_20v_regular.nas');
+%                [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_hole_20v_regular.nas');
     %            [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_2holes.nas');
     %             [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_2holes_smaller.nas');
-%     [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_4holes.nas');
+    [plate_node_coords, plate_tri_nodes] = ImportTriangleMeshNastran('C:\Users\19083688\Desktop\Masters\FEKO Models\Meshes\square_plate_4holes.nas');
     
 end
 

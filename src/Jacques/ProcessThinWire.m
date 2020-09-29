@@ -44,7 +44,7 @@ end
 for k = 1:18
     
     rcsRWG(k,:) = FF_RWG{k}(1:180,8);
-
+    rcsMBF(k,:) = FF_MBF{k}(1:180,5);
 %     rcsThin(k,:) = FF_Thin{k}(1:180,8);
     
 %     rcsMBF(k) = (4*pi*((abs(sum(FF_MBF{k}(:,5)))^2)/(180)));

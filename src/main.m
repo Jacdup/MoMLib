@@ -16,17 +16,21 @@ set(0,'DefaultTextFontname', 'CMU Serif')
 %       mex  GCC='/usr/bin/gcc-7' -R2018a src\mom.c
 %     mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\qMoM\qfarfield.c
 %     mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\qMoM\qfillplane.c
+for iter = 1:1
+%     temp = linspace(150e6, 1200e6,22);
+%     temp = [150e6 200e6 250e6 300e6 350e6 400e6 450e6 500e6 550e6 600e6];
+%     FREQUENCY = temp(iter);
 FREQUENCY                = 300e6;          % Solution frequancy
 c0                       = 2.99792458e8;   % Speed of light in free space
 lambda0                  = c0/FREQUENCY;   % Wavelength in free space
 k0                       = 2*pi/lambda0;   % free space wavenumber
 E_scalfac                = -1;              % plane wave spec
-theta_inc                = pi/4;              % plane wave spec
+theta_inc                = 0;              % plane wave spec
 phi_inc                  = 0;              % plane wave spec
 eta_pol                  = 0;              % plane wave spec
 % eta_pol                  = pi;
-flag_planewave           = true;
-flag_lumped              = false;           % lumped sources and/or loads are present
+flag_planewave           = false;
+flag_lumped              = true;           % lumped sources and/or loads are present
 interelem_VsrcZload      = [];             % init lumped circuit element specification
 mesh_create_option       = 4;              % 1 : Square plate
 % 2 : NASTRAN
@@ -34,14 +38,14 @@ mesh_create_option       = 4;              % 1 : Square plate
 % 4 : Cylinder
 % 5 : Sphere
 
-cyl_def.firstNode = 'endCap'; % Tells algorithm how to mesh the first node. Format: "conn"/"endCap"/" "
-cyl_def.lastNode  = 'endCap'; % Tells algorithm to mesh the last node 
+cyl_def.firstNode = 'endCa'; % Tells algorithm how to mesh the first node. Format: "conn"/"endCap"/" "
+cyl_def.lastNode  = 'endCa'; % Tells algorithm to mesh the last node 
 cyl_def.coupling  = false; % Meshes the same cylinder at a y-offset
 
 TextOn                   = true;           % mesh visualisation text
 flag_mesh_refine_uniform = false;
 h_split_num              = 2;
-show_output              = false;  % Display currents
+show_output              = true;  % Display currents
 
 %---------------------------------------------------------------
 % Solver select:
@@ -50,18 +54,18 @@ MODE = 0; % set the quadrature accuracy
 solver                   = 3;              % 1 : RWG
 % 2 : First order triangular
 % 3 : Zeroth order quadrilateral solver
-MBF                      = 0;              % MBF currently only supported for solvers 2,3 and cylinder mesh
+MBF                      = 1;              % MBF currently only supported for solvers 2,3 and cylinder mesh
 
 % Meshing
-for iter = 1:8
+% for iter = 1:10
 %     clear mex
 % figure;
-    for solver = 2:2
-        if solver == 1
-            MBF = 0;
-        else
-           MBF = 1; 
-        end
+%     for solver = 1:2
+%         if solver == 1
+%             MBF = 0;
+%         else
+%            MBF = 1; 
+%         end
 
 %---------------------------------------------------------------
 % Read/create the mesh and visualise --- the end result here is <node_coords>
@@ -118,23 +122,34 @@ end
 if mesh_create_option == 4
     
     %     rho = 0.1+((iter-1)*0.1);
-%     temp = [0.0002 0.0004 0.0008 0.001 0.002 0.003 0.006 0.01 0.03 0.06 0.1];
+% %     temp = [0.0002 0.0004 0.0008 0.001 0.002 0.003 0.006 0.01 0.03 0.06 0.1];
 %     temp = [0.0002 0.0004 0.0008 0.001 0.005 0.008 0.01 0.05 0.08 0.1 0.12 0.2];
-    temp =[ 0.0001,0.0004, 0.0008, 0.001, 0.004, 0.008, 0.01, 0.04, 0.08, 0.1, 0.14, 0.18, 0.2, 0.24, 0.28, 0.3, 0.34, 0.38];
+%     temp =[ 0.0001,0.0004, 0.0008, 0.001, 0.004, 0.008, 0.01, 0.04, 0.08, 0.1, 0.14, 0.18, 0.2, 0.24, 0.28, 0.3, 0.34, 0.38];
 %     temp = [0.0509,0.1129,0.0064]
-    rho = temp(iter);
+%     rho = temp(iter);
 %     rho = 0.0509;
 %     rho = 0.4;
 %     rho = 0.02 + ((iter - 1) * 0.05)
+rho = 0.1;
 
     vertices = 20; % Only even number here for endcap mesh
 %     vertices = 8+(2*iter);
+% temptemp = linspace(1,40,20);
+% temp = linspace(34,100,10);
+% temp = [temptemp temp];
+% temp = [0.05,0.152631,0.255263,0.3578947,0.460526,0.56315,0.6657,0.76842,0.87105,0.97368,1.0763,1.1789,1.2815,1.3842,1.4868,1.58947,1.70,2.0666,2.433,2.8,3.1666,3.533,3.90,4.266,4.63,5];
+% l_a = temp./rho;
+% Contour = [0 0 0; temp(iter) 0 0];
+%  Contour = [0 0 0; 1 0 0; 2 0 0 ;3 0 0; 4 0 0.1; 5 0 0.4; 6 0.2 0.6; 7 0.4 0.8; 8 0.6 1; 9 0.8 1; 10 0.6 1; 11 0.6 0.8 ]; % Hardcode some contour
+% Contour(:,[1 2]) = Contour(:,[2 1]);
+%  Contour(:,[2 3]) = Contour(:,[3 2]);
 
-    %      Contour = [0 0 0; 1 0 0; 2 0 0; 3 0 0; 4 0 0.1; 5 0 0.2; 6 0.1 0.3; 7 0.2 0.4; 8 0.25 0.5; 9 0.2 0.6; 10 0.2 0.5; 11 0.2 0.45 ]; % Hardcode some contour
-    %      Contour = [0 0 0; 1 0 0.5; 2 0 1; 3 0 2; 4 0 2; 5 0 1; 6 0 0.5; 7 0 0; 8 0 0; 9 0 0.5; 10 0 1];
+ %          Contour = [0 0 0; 1 0 0; 2 0 0 ;3 0 0; 4 0 0.1; 5 0 0.4; 6 0.2 0.6; 7 0.4 0.8; 8 0.6 1; 9 0.8 1; 10 0.6 1; 11 0.6 0.8 ]; % Hardcode some contour
+%          Contour = [0 0 0; 1 0 0.5; 2 0 1; 3 0 2; 4 0 2; 5 0 1; 6 0 0.5; 7 0 0; 8 0 0; 9 0 0.5; 10 0 1];
     %     %      Contour = [0 0 0; 0.1 0 0; 0.2 0 0; 0.3 0 0; 0.4 0 0; 0.5 0 0];
 %     Contour = [0.5 0.5 0; 0.5 0.5 1; 0.5 0.5 2];
 %      Contour = [0.5 0.5 0; 0.5 0.5 0.125; 0.5 0.5 0.25];
+% Contour = [0 0 0; 0 0 0.5; 0 0 1];
 
     % Mesh a long wire connected to plate
 %      z = repelem(0.5,15)';
@@ -150,7 +165,7 @@ if mesh_create_option == 4
 %      Contour = [-1 0.5 0; -1 0.5 0.05; x y z; 3 0.5 0.05; 3 0.5 0];
 %      Contour = [1 0.5 0; 1 0.5 0.2; 0.6 0.5 0.4; 0.3 0.5 0.8; 0.2 0.5 1.2; 0 0.5 1.2; -0.2 0.5 1.2; -0.3 0.5 0.8; -0.6 0.5 0.4; -1 0.5 0.2; -1 0.5 0];
     %     Contour = [0.5 0.5 0; 0.5 0.5 0.5; 0.6 0.6 1; 0.7 0.7 1.5; 0.65 0.5 2];
-        Contour = [0 0 0; 1 0 0; 2 0 0];
+%         Contour = [0 0 0; 1 0 0; 2 0 0];
 %         Contour = [0 0 0; 0 0 1; 0 0 2];
 %         Contour = [0 0 0; 1 0 1; 2 0 2; 3 0 2];
     %     Contour = [0.4 0.4 0.1; 0.1 1 1; 2 2 2];
@@ -158,17 +173,17 @@ if mesh_create_option == 4
     
 
 % Mesh a dipole
-%      del = (rho*1.2)/2;
-% %      del = (rho*1.189)/2;
-%     Contour = [0 0 0; 0 0 0.25-del; 0 0 0.25; 0 0 0.25+del;0 0 0.5];
-%     Contour1 = RefineMesh(Contour(1:2,:),4);
-%     Contour2 = RefineMesh(Contour(end-1:end,:),4);
-%     Contour = [Contour1;0 0 0.25;Contour2]; % Constant feed gap width
+     del = (rho*1.2)/2;
+%      del = (rho*1.189)/2;
+    Contour = [0 0 0; 0 0 0.25-del; 0 0 0.25; 0 0 0.25+del;0 0 0.5];
+    Contour1 = RefineMesh(Contour(1:2,:),4);
+    Contour2 = RefineMesh(Contour(end-1:end,:),4);
+    Contour = [Contour1;0 0 0.25;Contour2]; % Constant feed gap width
 
 % if (iter > 1)
 %     Contour = RefineMesh(Contour,iter-1);
 % end
-    Contour = RefineMesh(Contour,4);
+%     Contour = RefineMesh(Contour,3);
     contour_length = length(Contour(:,1));
 %     i = 1;
 %     while i<contour_length % Remove nodes at the feedpoint to get constant gap width
@@ -243,7 +258,11 @@ if mesh_create_option == 4
         if cyl_def.coupling
             [tri_indices] = FindTrianglesAroundNode(0, tri_nodes,node_coords,vertices, 1,[]);
         else
-            [tri_indices] = FindTrianglesAroundNode(0.25, tri_nodes,node_coords,vertices, 3,[]);
+            if solver == 2
+                [tri_indices] = FindTrianglesAroundNode(0.25, tri_nodes,node_coords,vertices, 3,[]);
+            else
+                [tri_indices] = FindTrianglesAroundNode(0.25, elements,node_coords,vertices, 3,[]);
+            end
         end
         
         if cyl_def.coupling
@@ -324,13 +343,16 @@ if solver == 3
     % If it is desired to run this on generic meshes, comment that code
 %     vertices = 1;
     [quad_blah,N,basis_supports_quad, quad_Edges,quad_dofs_to_edges] = EdgeCalcQuad(quad_nodes,vertices);
-    
+    %dof_data.tri_to_dofs = 
     obs_basis_select = {1:N};
     src_basis_select      = {1:N};
     [common_basis_functions, num_obs, num_src] = common_basis(obs_basis_select,src_basis_select);
     quad_dof_idx = (1:N)';
     [new_quads,new_quad_points, new_quad_N, quad_observer_map, quad_source_map] = QuadBasisFunctionSelect(quad_blah ,common_basis_functions,basis_supports_quad,node_coords);
-    
+     
+    if flag_lumped     
+       [Zlump_rowcolval, Vlump_rowcolval] = CalcZmatVvecLumpedQuad(quad_blah, num_dofs, basis_supports_quad, interelem_VsrcZload);
+    end
 else
     
     if solver == 2
@@ -438,8 +460,14 @@ if solver == 3
     tic
     [Z_mat] = qmom(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map),int32(quad_source_map), num_obs, num_src, MODE);
     toc
-    V_vec = qfillPlane(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map), num_obs, MODE, theta_inc, phi_inc, eta_pol);
-    
+     V_vec     = zeros(new_quad_N,1);
+     if flag_lumped
+        [Zlump_reduced, Vlump_reduced] = FinalZmatVvecLumped(Zlump_rowcolval, Vlump_rowcolval, global_to_redu_dofs, num_obs, num_src, observer_map, source_map);
+        Z_mat = Z_mat + Zlump_reduced;
+        V_vec = V_vec + Vlump_reduced;
+     else
+         V_vec = qfillPlane(new_quad_points, new_quads, new_quad_N, FREQUENCY,int32(quad_observer_map), num_obs, MODE, theta_inc, phi_inc, eta_pol);
+     end
 else
     
     tic
@@ -549,7 +577,7 @@ else
     end
 end
 
-I_vec_norm = Z_mat\V_vec;
+% I_vec_norm = Z_mat\V_vec;
 
 % figure;
 % %         plot(nonzeros(U_Mat(1:2:end,4)))
@@ -691,37 +719,46 @@ end
 % end
 
 if flag_lumped
+ELength = 2*rho*sind((360/vertices)/2);
     Z_11_Z_mat_norm = 0;
     Z_load = 0;
     edge_select = 1-solver;
     
-    for i = 1:vertices
-        edge_select = edge_select + solver;
-        edge        = intersect(mesh_data.edges(mesh_data.tri_edges(tri_indices(i,1),:),:),mesh_data.edges(mesh_data.tri_edges(tri_indices(i,2),:),:), 'rows');
-        edgevectemp = reduced_node_coords(edge(1),:) - reduced_node_coords(edge(2),:);
-        ELength     = sqrt(edgevectemp*edgevectemp');
-    end
+%     for i = 1:vertices
+%         edge_select = edge_select + solver;
+%         edge        = intersect(mesh_data.edges(mesh_data.tri_edges(tri_indices(i,1),:),:),mesh_data.edges(mesh_data.tri_edges(tri_indices(i,2),:),:), 'rows');
+%         edgevectemp = reduced_node_coords(edge(1),:) - reduced_node_coords(edge(2),:);
+%         ELength     = sqrt(edgevectemp*edgevectemp');
+%     end
 
-%     voltage         = sum(Vlump_rowcolval(:,3));
-%     current         = sum(I_vec(Vlump_rowcolval(:,1),1));
-%     current_norm    = sum(I_vec_norm(Vlump_rowcolval(:,1),1));
-% %     current         = current/(vertices*ELength); % Average value of current, normalised by numVertices*ELength.
-% %     current_norm    = current_norm/(vertices*ELength); % Average value of current, normalised by numVertices*ELength.
-%     voltage         = voltage/(vertices*ELength); % Sanity check
-%    
-%     Z_11            = 1/(ELength*current) % Ohm's law, Voltage=1V.
-%     Z_11_norm       = 1/(ELength*current_norm)
-    
-%     abs(Z_11)
-%     abs(Z_11_norm)
-       voltage         = sum(Vlump_rowcolval(1:20,3));
-    current         = sum(I_vec(Vlump_rowcolval(1:20,1),1));
-    current_norm    = sum(I_vec_norm(Vlump_rowcolval(1:20,1),1));
+    voltage         = sum(Vlump_rowcolval(:,3));
+    current         = sum(I_vec(Vlump_rowcolval(:,1),1));
+    current_norm    = sum(I_vec_norm(Vlump_rowcolval(:,1),1));
+%     current         = current/(vertices*ELength); % Average value of current, normalised by numVertices*ELength.
+%     current_norm    = current_norm/(vertices*ELength); % Average value of current, normalised by numVertices*ELength.
     voltage         = voltage/(vertices*ELength); % Sanity check
+   
     Z_11            = 1/(ELength*current) % Ohm's law, Voltage=1V.
     Z_11_norm       = 1/(ELength*current_norm)
     
-    G_B(iter) = 1/Z_11  % Input Conductance + Susceptance
+%     abs(Z_11)
+%     abs(Z_11_norm)
+    % For double cylinder:
+    % lim = 41:2:80;
+    %        voltage         = sum(Zlump_rowcolval(lim,3));
+    %     current         = sum(I_vec(Zlump_rowcolval(lim,1),1));
+    %     current_norm    = sum(I_vec_norm(Zlump_rowcolval(lim,1),1));
+    % %     voltage = sum(V_vec_redu(Zlump_rowcolval(41:2:80,1),1));
+    % %     voltage_norm = sum(V_vec(Zlump_rowcolval(41:2:80,1),1));
+    % voltage = voltage*current;
+    % voltage_1         = sum(Zlump_rowcolval(lim,3));
+    % voltage_norm = voltage_1*current_norm;
+    % %     voltage         = voltage/(vertices*ELength); % Sanity check
+    %     Z_11            = 1/(ELength*current) % Ohm's law, Voltage=1V.
+    %     Z_11_norm       = 1/(ELength*current_norm)
+    % %     Z_11 = sum(Z_mat(Zlump_rowcolval(1:2:40,1)));
+    
+    G_B(iter) = 1/Z_11;  % Input Conductance + Susceptance
 %     G_B_norm(iter) = 1/Z_11_norm;
     
    
@@ -739,7 +776,7 @@ end
 % The output of the farfield routine has this row format:
 % THETA     PHI     magn{Etheta} phase{Etheta} magn{Ephi} phase{Ephi}
 %   1        2            3           4            5          6
-plane               = 'XY'; % set the observation plane: 'XY' or 'XZ' or 'YZ'
+plane               = 'XZ'; % set the observation plane: 'XY' or 'XZ' or 'YZ'
 delta_angle_degrees = 2;    % degree increment for observation directions
 if solver == 3 
     [farfield_XY] = qfarfield(new_quad_points, new_quads, new_quad_N, FREQUENCY, I_vec, delta_angle_degrees, plane);
@@ -782,9 +819,9 @@ end
 % semilogy
 % plot(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2), '+-');
 
-if MBF == 1 && show_output
+if MBF == 1 && solver ~= 3 && show_output
     title('|$E_{\phi}$|')
-    plot(farfield_XY_norm(:,2),sqrt(farfield_XY_norm(:,3).^2 + farfield_XY_norm(:,5).^2));
+    plot(farfield_XY_norm(:,1),sqrt(farfield_XY_norm(:,3).^2 + farfield_XY_norm(:,5).^2));
     %     legend("Matlab, N(MBF) = " + New_N,  "FEKO", "Matlab, N = " + N)
     legend("Matlab, N(MBF) = " + New_N,  "Matlab, N = " + N)
 elseif show_output
@@ -795,35 +832,64 @@ end
 % xlabel('\phi')
 % ylabel('|E_{\phi}|');
 if solver == 2
-    s1 = "MBF"
+    s1 = "MBF";
 elseif solver == 1
-    s1 = "RWG"
+    s1 = "RWG";
 else 
-    s1 = "Quad" 
+    s1 = "Quad" ;
 end
 
 % hold on
 % semilogy(farfield_XY(:,2),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
 % farfield_XY_all(:,iter) = farfield_XY(:,5);
-for iter1 = 1:18
-    for iter2 = 1:180
+% if solver == 2
+%     RCS_la_MBF_001(iter) = 4*pi*abs(farfield_XY(1,3)^2);
+%     FF_la_MBF_001{iter} = farfield_XY;
+% else
+%     RCS_la_001(iter) = 4*pi*abs(farfield_XY(1,3)^2);
+    FF{iter} = farfield_XY;
+% end
+% for iter1 = 1:15
+%     RCS_la(iter1) = 4*pi*(abs(FF_la{iter1}(1,3)^2));
+%     RCS_la_MBF(iter1) = 4*pi*(abs(FF_la_MBF{iter1}(1,3)^2));
+% end
+%     for iter2 = 1:180
 % rcsMBF(iter1) = (4*pi*((abs(FF_MBF{iter1}(23,5))^2)/(1))); % Sidelobe
-        rcsMBF(iter1,iter2) = (4*pi*((abs(FF_MBF{iter1}(iter2,5))^2)/(1))); % 73
+%         rcsMBF(iter1,iter2) = (4*pi*((abs(FF_MBF{iter1}(iter2,5))^2)/(1))); % 73
 %         rcsRWG(iter1,iter2) = (4*pi*((abs(FF_RWG{iter1}(iter2,5))^2)/(1)));
-    end
+%     end
 end
+% l_a = temp./rho;
+% figure
+% hold on
+% h = semilogy(l_a,RCS_la_001);
+% 
+% h1 = semilogy(l_a,RCS_la_MBF_001);
+% xlabel('$L/a$'); 
+% ylabel('$\sigma/\lambda^2$');
+% legend('RWG', 'MBF');
+
+% semilogy(l_a(2:end),RCS_Thin);
+
 % save(strcat("Z_11_",s1,"_",int2str(iter)), 'Z_11');
 % % save(strcat("Current_",s1,"_",int2str(iter)), 'current');
 % save(strcat("G_B_",s1,"_",int2str(iter)), 'G_B');
 % save(strcat("G_B_norm_",s1,"_",int2str(iter)), 'G_B_norm');
-FF_MBF{iter} = farfield_XY;
+% FF_MBF{iter} = farfield_XY;
 % FF_RWG{iter} = farfield_XY_norm;
 % save(strcat("I_vec_",s1,"_",int2str(iter)), 'I_vec');
 % save(strcat("FF_",s1,"_",int2str(New_N),"_",int2str(iter)), 'farfield_XY');
 %     end
-save(strcat("FF_",s1,"_",int2str(N),"_",int2str(iter)), 'farfield_XY');
-    end
-end
+% save(strcat("FF_",s1,"_",int2str(N),"_",int2str(iter)), 'farfield_XY');
+%     end
+% end
+% RCS against length plots
+% samplingRateIncrease = 10;
+% newXSamplePoints = linspace(1, 22, 22 * samplingRateIncrease);
+% lambda = c0./temp;
+% semilogy(1./lambda,RCS_l2 * 100)
+% hold on
+% semilogy(1./lambda,SEM_RCS,'o',newXSamplePoints,smoothedY)
 
 % for i = 1:60
 % %     js = sphbes(nu, x)
