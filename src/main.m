@@ -16,7 +16,7 @@ set(0,'DefaultTextFontname', 'CMU Serif')
 %       mex  GCC='/usr/bin/gcc-7' -R2018a src\mom.c
 %     mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\qMoM\qfarfield.c
 %     mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\qMoM\qfillplane.c
-for iter = 1:1
+for iter = 3:20
 %     temp = linspace(150e6, 1200e6,22);
 %     temp = [150e6 200e6 250e6 300e6 350e6 400e6 450e6 500e6 550e6 600e6];
 %     FREQUENCY = temp(iter);
@@ -45,20 +45,20 @@ cyl_def.coupling  = false; % Meshes the same cylinder at a y-offset
 TextOn                   = true;           % mesh visualisation text
 flag_mesh_refine_uniform = false;
 h_split_num              = 2;
-show_output              = true;  % Display currents
+show_output              = false;  % Display currents
 
 %---------------------------------------------------------------
 % Solver select:
 %---------------------------------------------------------------]
 MODE = 0; % set the quadrature accuracy
-solver                   = 3;              % 1 : RWG
+solver                   = 1;              % 1 : RWG
 % 2 : First order triangular
 % 3 : Zeroth order quadrilateral solver
-MBF                      = 1;              % MBF currently only supported for solvers 2,3 and cylinder mesh
+MBF                      = 0;              % MBF currently only supported for solvers 2,3 and cylinder mesh
 
 % Meshing
 % for iter = 1:10
-%     clear mex
+%     clear mex0
 % figure;
 %     for solver = 1:2
 %         if solver == 1
@@ -82,7 +82,7 @@ MBF                      = 1;              % MBF currently only supported for so
 %     tri_nodes           = delaunay(node_coords(:,1:2));
 % end
 if mesh_create_option == 1
-    a = [0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,0.8,0.9,1];
+    a = [1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,0.8,0.9,1];
     [node_coords,quad_Elements] = MeshRectanglularPlate(a(iter),a(iter),4,4) ;
     node_coords(:,3) = 0;
     quad_nodes = cell(length(quad_Elements),1);
@@ -122,7 +122,7 @@ end
 if mesh_create_option == 4
     
     %     rho = 0.1+((iter-1)*0.1);
-% %     temp = [0.0002 0.0004 0.0008 0.001 0.002 0.003 0.006 0.01 0.03 0.06 0.1];
+    temp = [0.0002 0.0004 0.0008 0.001 0.002 0.003 0.006 0.01 0.03 0.06 0.1 0.13 0.16 0.2 0.23 0.26 0.3 0.33 0.36 0.4];
 %     temp = [0.0002 0.0004 0.0008 0.001 0.005 0.008 0.01 0.05 0.08 0.1 0.12 0.2];
 %     temp =[ 0.0001,0.0004, 0.0008, 0.001, 0.004, 0.008, 0.01, 0.04, 0.08, 0.1, 0.14, 0.18, 0.2, 0.24, 0.28, 0.3, 0.34, 0.38];
 %     temp = [0.0509,0.1129,0.0064]
@@ -130,7 +130,7 @@ if mesh_create_option == 4
 %     rho = 0.0509;
 %     rho = 0.4;
 %     rho = 0.02 + ((iter - 1) * 0.05)
-rho = 0.1;
+rho = temp(iter);
 
     vertices = 20; % Only even number here for endcap mesh
 %     vertices = 8+(2*iter);
@@ -258,7 +258,7 @@ rho = 0.1;
         if cyl_def.coupling
             [tri_indices] = FindTrianglesAroundNode(0, tri_nodes,node_coords,vertices, 1,[]);
         else
-            if solver == 2
+            if solver == 2 || solver == 1
                 [tri_indices] = FindTrianglesAroundNode(0.25, tri_nodes,node_coords,vertices, 3,[]);
             else
                 [tri_indices] = FindTrianglesAroundNode(0.25, elements,node_coords,vertices, 3,[]);
@@ -295,10 +295,10 @@ rho = 0.1;
 %          tri_indices_load = rows;
         if solver == 2
             tri_indices = tri_indices*2; % For first order spec.
-            tri_indices_load = tri_indices_load*2;
-            tri_indices_load2 = tri_indices_load2*2;
+%             tri_indices_load = tri_indices_load*2;
+%             tri_indices_load2 = tri_indices_load2*2;
         end
-        
+        ELength = 2*rho*sind((360/vertices)/2);
         
         interelem_VsrcZload = [tri_indices, repmat([1 0], [vertices,1]), repmat([0 0], [vertices,1])]; % [tri- tri+ V_src^real V_src^imag Z_load^real Z_load^imag]:
       if cyl_def.coupling
@@ -338,6 +338,7 @@ end
 % Mesh pre-processing & Visualisation
 % The end result here is <mesh_data> which contains all the necessary derived information from the mesh, required for assigning dofs.
 % Create the mesh data, which includes edge definitions and connectivity:
+   
 if solver == 3
     % NB: EdgeCalcQuad has functionality for specific directions tailored to cylinders, for help in constructing the MBF
     % If it is desired to run this on generic meshes, comment that code
@@ -351,7 +352,8 @@ if solver == 3
     [new_quads,new_quad_points, new_quad_N, quad_observer_map, quad_source_map] = QuadBasisFunctionSelect(quad_blah ,common_basis_functions,basis_supports_quad,node_coords);
      
     if flag_lumped     
-       [Zlump_rowcolval, Vlump_rowcolval] = CalcZmatVvecLumpedQuad(quad_blah, num_dofs, basis_supports_quad, interelem_VsrcZload);
+     
+       [Zlump_rowcolval, Vlump_rowcolval] = CalcZmatVvecLumpedQuad(quad_blah, num_dofs, basis_supports_quad,ELength, interelem_VsrcZload);
     end
 else
     
@@ -415,6 +417,7 @@ else
     % assemple the lumped contributions (they are defined in terms of triangle
     % numbers, not just i.t.o. dof numbers and triangle coords).
     if flag_lumped
+%          ELength = 2*rho*sind((360/vertices)/2);
         if solver == 2
             [Zlump_rowcolval, Vlump_rowcolval] = CalcZmatVvecLumpedFO(dof_data, num_dofs, mesh_data, interelem_VsrcZload);
 %              [Zlump_rowcolval_load, Vlump_rowcolval_load] = CalcZmatVvecLumpedFO(dof_data, num_dofs, mesh_data, interelem_VsrcZload_load);
@@ -502,14 +505,14 @@ end
 
 % MBF Calculation
 
-numMBF = 6;
+numMBF = 1;
 if solver == 3
     if MBF == 1
         
         U_Mat = [];
         [U_Mat] = SelectDOFMBF(basis_supports_quad, vertices,numNodes,numMBF);
         %         U_Mat = zeros(length(basis_supports_quad),1);
-        [U_Mat] = SelectDOFMBF_2(basis_supports_quad, vertices, U_Mat,numNodes,numMBF);
+%         [U_Mat] = SelectDOFMBF_2(basis_supports_quad, vertices, U_Mat,numNodes,numMBF);
 %                 PlotTriangleMeshDofsMBFQuad(node_coords,quad_blah,TextOn, U_Mat, quad_Edges, quad_dofs_to_edges);
         U_Mat(:,~any(U_Mat,1)) = []; % Remove zero columns
     end
@@ -577,7 +580,7 @@ else
     end
 end
 
-% I_vec_norm = Z_mat\V_vec;
+I_vec_norm = Z_mat\V_vec;
 
 % figure;
 % %         plot(nonzeros(U_Mat(1:2:end,4)))
@@ -719,7 +722,7 @@ end
 % end
 
 if flag_lumped
-ELength = 2*rho*sind((360/vertices)/2);
+
     Z_11_Z_mat_norm = 0;
     Z_load = 0;
     edge_select = 1-solver;
@@ -739,7 +742,7 @@ ELength = 2*rho*sind((360/vertices)/2);
     voltage         = voltage/(vertices*ELength); % Sanity check
    
     Z_11            = 1/(ELength*current) % Ohm's law, Voltage=1V.
-    Z_11_norm       = 1/(ELength*current_norm)
+%     Z_11_norm       = 1/(ELength*current_norm)
     
 %     abs(Z_11)
 %     abs(Z_11_norm)
@@ -758,7 +761,7 @@ ELength = 2*rho*sind((360/vertices)/2);
     %     Z_11_norm       = 1/(ELength*current_norm)
     % %     Z_11 = sum(Z_mat(Zlump_rowcolval(1:2:40,1)));
     
-    G_B(iter) = 1/Z_11;  % Input Conductance + Susceptance
+    G_B_RWG(iter) = 1/Z_11;  % Input Conductance + Susceptance
 %     G_B_norm(iter) = 1/Z_11_norm;
     
    
@@ -794,6 +797,7 @@ if show_output
     figure;
     if (plane == 'XZ') % Plot over theta
          plot(farfield_XY(:,1),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
+         legend("MBF, N = " + New_N);
     else % Plot over phi
 %         hold on
        plot(farfield_XY(:,2),sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2));
@@ -824,7 +828,7 @@ if MBF == 1 && solver ~= 3 && show_output
     plot(farfield_XY_norm(:,1),sqrt(farfield_XY_norm(:,3).^2 + farfield_XY_norm(:,5).^2));
     %     legend("Matlab, N(MBF) = " + New_N,  "FEKO", "Matlab, N = " + N)
     legend("Matlab, N(MBF) = " + New_N,  "Matlab, N = " + N)
-elseif show_output
+elseif show_output && solver ~= 3
     title('|$E_{\phi}$|')
 %      plot(E_field_FEKO(:,1)*(pi/180),sqrt(E_field_FEKO(:,3).^2 + E_field_FEKO(:,5).^2), '+-');
     legend("Matlab, N = " + N, "FEKO")
@@ -847,7 +851,7 @@ end
 %     FF_la_MBF_001{iter} = farfield_XY;
 % else
 %     RCS_la_001(iter) = 4*pi*abs(farfield_XY(1,3)^2);
-    FF{iter} = farfield_XY;
+%     FF{iter} = farfield_XY;
 % end
 % for iter1 = 1:15
 %     RCS_la(iter1) = 4*pi*(abs(FF_la{iter1}(1,3)^2));
@@ -997,10 +1001,13 @@ end
 %     end
 % end
 
-xlabel("x ($\lambda$)");
-ylabel("y ($\lambda$)");
-zlabel("z ($\lambda$)");
-
+% xlabel("x ($\lambda$)");
+% ylabel("y ($\lambda$)");
+% zlabel("z ($\lambda$)");
+% G_B_Thin = zeros(20,1)
+% for k = 1:20
+%    G_B_Thin(k) = str2num(Z_thin(k));
+% end
 
 
 

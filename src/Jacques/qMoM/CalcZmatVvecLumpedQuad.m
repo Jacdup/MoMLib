@@ -1,4 +1,4 @@
-function [Z_rowcolval, V_rowcolval] = CalcZmatVvecLumpedQuad(quad_blah, num_dofs, basis_supports_quad, interelem_VsrcZload)
+function [Z_rowcolval, V_rowcolval] = CalcZmatVvecLumpedQuad(quad_blah, num_dofs, basis_supports_quad, ELength, interelem_VsrcZload)
 % The excitation vector is cacluated for the specfied dofs. <observer_map>
 % is -1 for dofs not to be tested with, with ascending 1,2,3,... for the
 % entries that has to be calculated. If only M entries must be calcuated,
@@ -16,7 +16,7 @@ V_rowcolval = [ -ones(num_lumped,1)  -ones(num_lumped,1)  zeros(num_lumped,1) ];
 Z_rowcolval = [ -ones(num_lumped,1)  -ones(num_lumped,1)  zeros(num_lumped,1) ];
 Vnum        = 0; % actual number of V's (to be determined)
 Znum        = 0; % actual number of Z's (to be determined)
-ELength = 0.031287; % Hardcode this for now
+% ELength = 0.031287; % Hardcode this for now
             
 % Cycle through all specified loads and sources and assemble their
 % contributions:
