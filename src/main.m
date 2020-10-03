@@ -10,13 +10,13 @@ set(0,'DefaultTextFontname', 'CMU Serif')
 % clear;
 % clear all;
 %       mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\FoMoM\FOmom.c
-%       mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\FoMoM\FOfillplane.c
+      mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\FoMoM\FOfillplane.c
 %       mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\FoMoM\FOfarfield.c
 %       mex GCC='/usr/bin/gcc-7' -O -R2018a src\Jacques\qMoM\qmom.c
 %       mex  GCC='/usr/bin/gcc-7' -R2018a src\mom.c
 %     mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\qMoM\qfarfield.c
-%     mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\qMoM\qfillplane.c
-for iter = 3:20
+    mex  GCC='/usr/bin/gcc-7' -R2018a -silent src\Jacques\qMoM\qfillplane.c
+for iter = 1:1
 %     temp = linspace(150e6, 1200e6,22);
 %     temp = [150e6 200e6 250e6 300e6 350e6 400e6 450e6 500e6 550e6 600e6];
 %     FREQUENCY = temp(iter);
@@ -29,10 +29,10 @@ theta_inc                = 0;              % plane wave spec
 phi_inc                  = 0;              % plane wave spec
 eta_pol                  = 0;              % plane wave spec
 % eta_pol                  = pi;
-flag_planewave           = false;
-flag_lumped              = true;           % lumped sources and/or loads are present
+flag_planewave           = true;
+flag_lumped              = false;           % lumped sources and/or loads are present
 interelem_VsrcZload      = [];             % init lumped circuit element specification
-mesh_create_option       = 4;              % 1 : Square plate
+mesh_create_option       = 1;              % 1 : Square plate
 % 2 : NASTRAN
 % 3 : Junction mesh
 % 4 : Cylinder
@@ -45,13 +45,13 @@ cyl_def.coupling  = false; % Meshes the same cylinder at a y-offset
 TextOn                   = true;           % mesh visualisation text
 flag_mesh_refine_uniform = false;
 h_split_num              = 2;
-show_output              = false;  % Display currents
+show_output              = true;  % Display currents
 
 %---------------------------------------------------------------
 % Solver select:
 %---------------------------------------------------------------]
-MODE = 0; % set the quadrature accuracy
-solver                   = 1;              % 1 : RWG
+MODE = 1; % set the quadrature accuracy
+solver                   = 3;              % 1 : RWG
 % 2 : First order triangular
 % 3 : Zeroth order quadrilateral solver
 MBF                      = 0;              % MBF currently only supported for solvers 2,3 and cylinder mesh
@@ -83,7 +83,7 @@ MBF                      = 0;              % MBF currently only supported for so
 % end
 if mesh_create_option == 1
     a = [1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,0.8,0.9,1];
-    [node_coords,quad_Elements] = MeshRectanglularPlate(a(iter),a(iter),4,4) ;
+    [node_coords,quad_Elements] = MeshRectanglularPlate(a(iter),a(iter),2,2) ;
     node_coords(:,3) = 0;
     quad_nodes = cell(length(quad_Elements),1);
     for node = 1:length(quad_Elements)
@@ -108,14 +108,24 @@ end
 
 % Create a custom, junction mesh:
 if mesh_create_option == 3
-    node_coords = [0   0   0
-        1   0   0
-        1   1   0
-        0   1   0
-        0.5 0.5 1];
-    tri_nodes   = [1   2   3
-        1   3   4
-        5   1   3];
+    node_coords = [0 0 0
+        1 0 0
+        1 1 0
+        0 1 0
+        0 2 0
+        1 2 0];
+    tri_nodes = [ 1 2 3
+        3 1 4
+        4 5 6
+        6 3 4];
+%     node_coords = [0   0   0
+%         1   0   0
+%         1   1   0
+%         0   1   0
+%         0.5 0.5 1];
+%     tri_nodes   = [1   2   3
+%         1   3   4
+%         5   1   3];
 end
 
 % Mesh a cylinder
@@ -127,12 +137,12 @@ if mesh_create_option == 4
 %     temp =[ 0.0001,0.0004, 0.0008, 0.001, 0.004, 0.008, 0.01, 0.04, 0.08, 0.1, 0.14, 0.18, 0.2, 0.24, 0.28, 0.3, 0.34, 0.38];
 %     temp = [0.0509,0.1129,0.0064]
 %     rho = temp(iter);
-%     rho = 0.0509;
-%     rho = 0.4;
+    rho = 0.2;
+%     rho = 0.1129;
 %     rho = 0.02 + ((iter - 1) * 0.05)
-rho = temp(iter);
+% rho = temp(iter);
 
-    vertices = 20; % Only even number here for endcap mesh
+    vertices = 8; % Only even number here for endcap mesh
 %     vertices = 8+(2*iter);
 % temptemp = linspace(1,40,20);
 % temp = linspace(34,100,10);
@@ -165,7 +175,7 @@ rho = temp(iter);
 %      Contour = [-1 0.5 0; -1 0.5 0.05; x y z; 3 0.5 0.05; 3 0.5 0];
 %      Contour = [1 0.5 0; 1 0.5 0.2; 0.6 0.5 0.4; 0.3 0.5 0.8; 0.2 0.5 1.2; 0 0.5 1.2; -0.2 0.5 1.2; -0.3 0.5 0.8; -0.6 0.5 0.4; -1 0.5 0.2; -1 0.5 0];
     %     Contour = [0.5 0.5 0; 0.5 0.5 0.5; 0.6 0.6 1; 0.7 0.7 1.5; 0.65 0.5 2];
-%         Contour = [0 0 0; 1 0 0; 2 0 0];
+        Contour = [0 0 0; 0.5 0 0; 1 0 0];
 %         Contour = [0 0 0; 0 0 1; 0 0 2];
 %         Contour = [0 0 0; 1 0 1; 2 0 2; 3 0 2];
     %     Contour = [0.4 0.4 0.1; 0.1 1 1; 2 2 2];
@@ -173,12 +183,13 @@ rho = temp(iter);
     
 
 % Mesh a dipole
-     del = (rho*1.2)/2;
+%      del = (rho*1.2)/2;
 %      del = (rho*1.189)/2;
-    Contour = [0 0 0; 0 0 0.25-del; 0 0 0.25; 0 0 0.25+del;0 0 0.5];
-    Contour1 = RefineMesh(Contour(1:2,:),4);
-    Contour2 = RefineMesh(Contour(end-1:end,:),4);
-    Contour = [Contour1;0 0 0.25;Contour2]; % Constant feed gap width
+%     Contour = [0 0 0; 0 0 0.25-del; 0 0 0.25; 0 0 0.25+del;0 0 0.5];
+%     Contour1 = RefineMesh(Contour(1:2,:),iter);
+%     Contour2 = RefineMesh(Contour(end-1:end,:),iter);
+%     Contour = [Contour1;0 0 0.25;Contour2]; % Constant feed gap width
+%     seg_len(iter) = 1./(length(Contour)-3);
 
 % if (iter > 1)
 %     Contour = RefineMesh(Contour,iter-1);
@@ -399,7 +410,7 @@ else
     % Assign the dofs and define each associated basis function:
     [dof_data,num_dofs] = CreateBasisFunctions_New(mesh_data, solver-1); % 1 for first order
     %     [dof_data,num_dofs] = CreateBasisFunctions(mesh_data); % 1 for first order
-% %             PlotTriangleMeshDofs(mesh_data,dof_data,TextOn, solver -1);
+            PlotTriangleMeshDofs(mesh_data,dof_data,TextOn, solver -1);
     N = num_dofs;
     %---------------------------------------------------------------
     % Reduce the matrix if required; set up the excitation vector, system
@@ -454,7 +465,7 @@ else
     else
         %         reduced_tri_dofs(:,10:15) = 0;
     end
-    
+%     reduced_tri_dofs(2,10:end) = -1; % Temporary, NB remove after use
 end
 % MoM Calculations
 
@@ -519,10 +530,15 @@ if solver == 3
 else
     if MBF == 1
         U_Mat = zeros(length(V_vec));
+%         cyl_def.lastNode = 'endCa';
+%         cyl_def.firstNode = 'endCa';
         [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = MBF_Axial_endcap(mesh_data, dof_data, vertices, numMBF, numNodes, reduced_tri_dofs,cyl_def);
 %         [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ(mesh_data, dof_data, vertices ,numMBF, numNodes, reduced_tri_dofs, cyl_def, U_Mat);
-         [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ_endcap(mesh_data, dof_data, vertices ,numMBF, numNodes, reduced_tri_dofs, cyl_def, U_Mat);
-        
+% cyl_def.lastNode = 'endC'; 
+%         cyl_def.lastNode = 'endCap';
+%         cyl_def.firstNode = 'endCap';
+[U_Mat, DOF_mat, theta1, theta2] = MBF_Circ_endcap(mesh_data, dof_data, vertices ,numMBF, numNodes, reduced_tri_dofs, cyl_def, U_Mat);
+%         
         
         if cyl_def.firstNode == "conn"
             col = length(U_Mat(1,:));
@@ -741,7 +757,7 @@ if flag_lumped
 %     current_norm    = current_norm/(vertices*ELength); % Average value of current, normalised by numVertices*ELength.
     voltage         = voltage/(vertices*ELength); % Sanity check
    
-    Z_11            = 1/(ELength*current) % Ohm's law, Voltage=1V.
+    Z_11(iter)            = 1/(ELength*current); % Ohm's law, Voltage=1V.
 %     Z_11_norm       = 1/(ELength*current_norm)
     
 %     abs(Z_11)
@@ -761,7 +777,7 @@ if flag_lumped
     %     Z_11_norm       = 1/(ELength*current_norm)
     % %     Z_11 = sum(Z_mat(Zlump_rowcolval(1:2:40,1)));
     
-    G_B_RWG(iter) = 1/Z_11;  % Input Conductance + Susceptance
+%     G_B_segment(iter) = 1/Z_11;  % Input Conductance + Susceptance
 %     G_B_norm(iter) = 1/Z_11_norm;
     
    
@@ -863,6 +879,9 @@ end
 %         rcsRWG(iter1,iter2) = (4*pi*((abs(FF_RWG{iter1}(iter2,5))^2)/(1)));
 %     end
 end
+figure;
+plot(seg_len/rho,real(Z_11))
+set(gca,'xdir','reverse')
 % l_a = temp./rho;
 % figure
 % hold on
