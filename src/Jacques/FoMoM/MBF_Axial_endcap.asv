@@ -265,7 +265,7 @@ if oneEndcap || twoEndcaps
             sign1 = triangle_blah(i,5); % Should always be -1
             sign2 = triangle_blah(i,4); % Should always be 1
             if sign1*sign2 == 1
-                Rho(:,:,i) = [-1,1;-1,-1];
+%                 Rho(:,:,i) = [-1,1;-1,-1];
             end
 %            Add the edges on the end cap
             DOF_mat2(row:row+3,1) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
@@ -292,7 +292,7 @@ if oneEndcap || twoEndcaps
 %             if sign1*sign2 == 1
 %                 Rho(:,:,i) = [-1,1;-1,-1];
 %             end
-            [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));   
+%             [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));   
 %             Rho_index = sub2ind(size(DOF_mat(1:2:end,:)), linear_row, col)-1;
 %             Rho_index = Rho_index + 2;
 %             [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,8,7,i,i);
@@ -300,14 +300,14 @@ if oneEndcap || twoEndcaps
             if (row == (2*numVertices)-3)
                 DOF_mat3(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
 %                 [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,7,8,i,i);
-                [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));          
+%                 [Rho(:,:,i), Rho(:,:,i+1)] = getSigns(triangle_blah(i,:));          
                 row = -3;
                 col = col+1;
                  linear_row = 0;
             end
         end
         DOF_mat3(:,col-1) = flip(DOF_mat3(:,col-1));
-%         DOF_mat3(:,col-1) = circshift(DOF_mat3(:,col-1),-1); % To get the edges that they are aligned to dof mats 1/2
+        DOF_mat3(:,col-1) = circshift(DOF_mat3(:,col-1),-1); % To get the edges that they are aligned to dof mats 1/2
     end
 end
 
@@ -331,7 +331,7 @@ end
 DOF_mat2( :, ~any(DOF_mat2,1) ) = [];  %remove zero columns
 DOF_mat3( :, ~any(DOF_mat3,1) ) = [];  %remove zero column
 for k = 1:size(DOF_mat1,2)
-    DOF_mat{k} = [DOF_mat2(:,k),DOF_mat1(:,k),DOF_mat3(:,k)]
+    DOF_mat{k} = [DOF_mat2(:,k),DOF_mat1(:,k),DOF_mat3(:,k)];
 %     edge_nodes{k} = mesh_data.edges(dof_data.dofs_to_edges(DOF_mat{k})
 end
 
@@ -378,23 +378,35 @@ lim1_for_3 = lim1_for_3(1:2:end);
 % lim1_for_2 = 1:lim2;
 
 theta_1      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
+theta_1(numVertices) = theta_1(numVertices-1); % Temp fix, last angle not correct.
 theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
-
-
+theta_2(end+1-numVertices:end) = theta_1(1:numVertices); % Getting the wrong angles here, will fix later.
+% theta_2(end+1-numVertices:end) = linspace(0, 90, 14);
+refVec2 = edge_vecs_2(1,:);
+refVec3 = edge_vecs_3(end,:);
+for k = 1:numVertices
+    theta_1(k) =  abs(90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k:end,:),2,2))));
+    theta_2(end+1-numVertices+k) =  abs(90 - acosd(dot(refVec3,edge_vecs_3(end+1-numVertices+k:end,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end+1-numVertices+k:end,:),2,2))));
+end
+%     theta_2(end+1-numVertices:end) = [0 20 40 60 80 60 40 20 0 20 40 60 80 60];
+% theta_1(1:numVertices) =theta_2(end+1-numVertices:end);
 for MBF_num = 1:3 % unity,sine,cosine
     
     B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
     B2(1:2,:) = [zeros(lim2,1),MBF_mat(edge_nodes_2(:,2),MBF_num)]';
     B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),zeros(lim3,1)]';
-    B2 = B2(:,:) .* [sind(theta_1)';sind(theta_1)']; % Get component of MBF_mat on edge normal
-    B3 = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
     if twoEndcaps && MBF_num > 1 % For only sine,cosine
-        % TODO, make sure actually making 1 the nodes on the endcap for 
-        B2(1:2,end+1-numVertices:end) = [repelem(1,numVertices)',B2(2,end+1-numVertices:end)']'; % Make centre vertex have value of 1
+        B2(1:2,1:numVertices) = [repelem(1,numVertices)',B2(2,1:numVertices)']'; % Make centre vertex have value of 1
         B3(1:2,end+1-numVertices:end) = [B3(1,end+1-numVertices:end)', repelem(1,numVertices)']';
     elseif MBF_num == 1 && twoEndcaps
-       B2 
+        % Don't want to include edges on the endcap for the unity case
+        B2(1:2,1:numVertices) = [zeros(numVertices,1),zeros(numVertices,1)]';
+        B3(1:2,end+1-numVertices:end) = [zeros(numVertices,1),zeros(numVertices,1)]';
     end
+    % Assume B1 (straight edges) are always aligned with axis (edge normal
+    % is on axis)
+    B2 = B2(:,:) .* [sind(theta_1)';sind(theta_1)']; % Get component of MBF_mat on edge normal
+    B3 = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
     
 % Solve 2x2 linear system
     for i = 1:lim1
