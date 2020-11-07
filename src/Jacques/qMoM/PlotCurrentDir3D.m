@@ -15,7 +15,7 @@ for ii = 1:nr_centroids
         centroid_coords(ii,:) = 0.25*(centroid_coords(ii,:));
     end
 end
-PlotMesh(node_coords,nodes, nodes,tri);
+% PlotMesh(node_coords,nodes, nodes,tri);
 hold on
 h = quiver3(centroid_coords(:,1),centroid_coords(:,2),centroid_coords(:,3),centroid_flowdirs(:,1),centroid_flowdirs(:,2),centroid_flowdirs(:,3), 2,'LineWidth', 2);
 

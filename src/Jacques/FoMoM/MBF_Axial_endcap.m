@@ -1,5 +1,7 @@
 function [U_Mat, DOF_mat1, DOF_mat2, DOF_mat3] = MBF_Axial_endcap(mesh_data, dof_data, numVertices ,numMBF, numNodes, triangle_blah, cyl_def)
-
+% TODO: make DOF_Mat1/2/3 a single cell matrix, so that it is much easier
+% to figure out which columns corresponds/which DOFs are part of the same
+% MBF.
 % The MBF is agnostic to signs on the basis functions, and only cares about
 % if all the DOFS where the MBF is defined have the same orientation
 
@@ -254,6 +256,8 @@ end
 % This comes straight from the Circ Endcap, to select the edges on the
 % endcap
 if oneEndcap || twoEndcaps
+     DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
+    row = -3;
     if cyl_def.firstNode == "endCap"
         for i = length(triangle_blah)-endCapExclude+1-cyl_def.num_plate_nodes:2:length(triangle_blah)-(numVertices*(cyl_def.lastNode == "endCap")-cyl_def.num_plate_nodes)% Every odd row, only first endcap
             row = row + 4;
@@ -261,16 +265,16 @@ if oneEndcap || twoEndcaps
             sign1 = triangle_blah(i,5); % Should always be -1
             sign2 = triangle_blah(i,4); % Should always be 1
             if sign1*sign2 == 1
-%                 Rho(:,:,i) = [-1,1;-1,-1];
+                Rho(:,:,i) = [-1,1;-1,-1];
             end
 %            Add the edges on the end cap
-            DOF_mat2(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
+            DOF_mat2(row:row+3,1) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
 %             Rho_index = sub2ind(size(DOF_mat(1:2:end,:)), linear_row, col)-1;
 %              Rho_index = Rho_index + 2;
 %             [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,8,7,i,i);
             
             if (row == (2*numVertices)-3)
-                DOF_mat2(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
+                DOF_mat2(row:row+3,1) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
 %                 [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,7,8,i,i);
                 row = -3;
                 col = col+1;
@@ -302,6 +306,8 @@ if oneEndcap || twoEndcaps
                  linear_row = 0;
             end
         end
+        DOF_mat3(:,col-1) = flip(DOF_mat3(:,col-1));
+%         DOF_mat3(:,col-1) = circshift(DOF_mat3(:,col-1),-1); % To get the edges that they are aligned to dof mats 1/2
     end
 end
 
@@ -310,7 +316,7 @@ end
 
 if (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap") || (cyl_def.firstNode == "conn" && cyl_def.lastNode ~= "conn")
     DOF_mat1 = [circshift(DOF_mat1(:,1:end-1), [0 1]), DOF_mat1(:,end)]; % Swap columns, so that DOFs are ascending from column 1
-    DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
+%     DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
     DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
 %     DOF_mat1(:,end) = sort(DOF_mat1(:,end));
 %     DOF_mat2(:,end) = sort(DOF_mat2(:,end));
@@ -320,11 +326,19 @@ if (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap") || (cyl_def.f
 elseif cyl_def.firstNode == "endCap"
     Rho(:,:,end-numVertices+1:end) = Rho(:,:,end-numVertices+1:end) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
 end
-
+% Create cell array that has all the DOFs associated with all the MBFs 
+% (One MBF per cell)
+DOF_mat2( :, ~any(DOF_mat2,1) ) = [];  %remove zero columns
+DOF_mat3( :, ~any(DOF_mat3,1) ) = [];  %remove zero column
+for k = 1:size(DOF_mat1,2)
+    DOF_mat{k} = [DOF_mat2(:,k),DOF_mat1(:,k),DOF_mat3(:,k)];
+%     edge_nodes{k} = mesh_data.edges(dof_data.dofs_to_edges(DOF_mat{k})
+end
 
 temp1        = nonzeros(DOF_mat1); % Create temporary column vector
 temp2        = nonzeros(DOF_mat2);
 temp3        = nonzeros(DOF_mat3);
+
 % Create vector containing nodes of each edge:
 edge_nodes_1 = mesh_data.edges(dof_data.dofs_to_edges(temp1(1:2:end,1)),:); % Edges on contour
 edge_nodes_2 = mesh_data.edges(dof_data.dofs_to_edges(temp2(1:2:end,1)),:); % First diagonal
@@ -348,6 +362,8 @@ lim3 = length(edge_vecs_3);
 
 % Determine which columns correspond, so that the correct angle can be
 % determined.
+% This is so that the MBF_mat values can be projected to the normal of the
+% edge
 [~,col1] = find(DOF_mat1);
 
 [~,col2] = find(DOF_mat2);
@@ -361,21 +377,27 @@ lim1_for_3 = lim1_for_3(1:2:end);
 % lim1_for_3 = 1:lim3;
 % lim1_for_2 = 1:lim2;
 
-
 theta_1      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
 theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
-%  theta_1      =  (acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
-%     theta_2      =  (acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
-for MBF_num = 1:3
+theta_2(end+1-numVertices:end) = theta_1(1:numVertices); % Getting the wrong angles here, will fix later.
+
+for MBF_num = 1:3 % unity,sine,cosine
     
     B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
     B2(1:2,:) = [zeros(lim2,1),MBF_mat(edge_nodes_2(:,2),MBF_num)]';
     B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),zeros(lim3,1)]';
-    B2 = B2(:,:) .* [sind(theta_1)';sind(theta_1)'];
+    B2 = B2(:,:) .* [sind(theta_1)';sind(theta_1)']; % Get component of MBF_mat on edge normal
     B3 = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
-%         B2 = B2(:,:) .* [cosd(2.*theta_1)';cosd(2.*theta_1)'];
-%         B3 = B3(:,:) .* [cosd(2.*theta_2)';cosd(2.*theta_2)'];
+    if twoEndcaps && MBF_num > 1 % For only sine,cosine
+        B2(1:2,1:numVertices) = [repelem(1,numVertices)',B2(2,1:numVertices)']'; % Make centre vertex have value of 1
+        B3(1:2,end+1-numVertices:end) = [B3(1,end+1-numVertices:end)', repelem(1,numVertices)']';
+    elseif MBF_num == 1 && twoEndcaps
+        % Don't want to include edges on the endcap for the unity case
+        B2(1:2,1:numVertices) = [zeros(numVertices,1),zeros(numVertices,1)]';
+        B3(1:2,end+1-numVertices:end) = [zeros(numVertices,1),zeros(numVertices,1)]';
+    end
     
+% Solve 2x2 linear system
     for i = 1:lim1
         X1(:,i) = Rho(:,:,i)\B1(:,i);
     end
@@ -390,16 +412,10 @@ for MBF_num = 1:3
     node2 = 1;
     node3 = 1;
     xdom1 = 0;
-    xdom_prev1 = 0;
     for MBF_node = 1:numNodes_new
 
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
-        
-        if MBF_node == 1
-            
-            test = 1;
-        end
 
         % Skip the zero columns
         if DOF_mat1(1,MBF_node) ~= 0

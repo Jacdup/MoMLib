@@ -1,21 +1,21 @@
 % MoMLib
 % This is the main file for testing and further development of the MoMLib package/toolbox. It is based upon the starting version established by Robey Beswick as part of his Master's thesis, Stellenbosch University, 2019.
 temp = [0.05,0.152631,0.255263,0.3578947,0.460526,0.56315,0.6657,0.76842,0.87105,0.97368,1.0763,1.1789,1.2815,1.3842,1.4868,1.58947,1.70,2.0666,2.433,2.8,3.1666,3.533,3.90,4.266,4.63,5];
-for iter = 1:26
-TotalSegments = 400;
-NumGauss = 8;
-WireLength = temp(iter);
-WireRadius = 0.01;
-Frequency = 300e6;
-ExcitationType = 1;
-ThetaIn = pi;
-NumTheta = 180;
-[Zin, Current, ERadiated] = PocklingtonPulseSolution(TotalSegments, NumGauss, WireLength, WireRadius, Frequency, ExcitationType, ThetaIn, NumTheta);
-% figure
-% plot(farfield_XY(:,1),abs(ERadiated))
-ERad{iter} = ERadiated;
-RCS_thin_new(iter) = 4*pi*abs(ERadiated(90));
-end
+% for iter = 1:26
+% TotalSegments = 400;
+% NumGauss = 8;
+% WireLength = temp(iter);
+% WireRadius = 0.01;
+% Frequency = 300e6;
+% ExcitationType = 1;
+% ThetaIn = pi;
+% NumTheta = 180;
+% [Zin, Current, ERadiated] = PocklingtonPulseSolution(TotalSegments, NumGauss, WireLength, WireRadius, Frequency, ExcitationType, ThetaIn, NumTheta);
+% % figure
+% % plot(farfield_XY(:,1),abs(ERadiated))
+% ERad{iter} = ERadiated;
+% RCS_thin_new(iter) = 4*pi*abs(ERadiated(90));
+% end
 % figure
 % semilogy(temp/0.01,RCS_thin_new(1:26))
 
@@ -225,7 +225,7 @@ Contour = [0 0 0; 0 0 0.5; 0 0 1];
 % if (iter > 1)
 %     Contour = RefineMesh(Contour,iter-1);
 % end
-    Contour = RefineMesh(Contour,3);
+    Contour = RefineMesh(Contour,2);
     contour_length = length(Contour(:,1));
 %     i = 1;
 %     while i<contour_length % Remove nodes at the feedpoint to get constant gap width
@@ -547,7 +547,7 @@ end
 
 % MBF Calculation
 
-numMBF = 6;
+numMBF = 3;
 if solver == 3
     if MBF == 1
         
@@ -568,7 +568,7 @@ else
 % cyl_def.lastNode = 'endC'; 
 %         cyl_def.lastNode = 'endCap';
 %         cyl_def.firstNode = 'endCap';
-[U_Mat, DOF_mat, theta1, theta2] = MBF_Circ_endcap(mesh_data, dof_data, vertices ,numMBF, numNodes, reduced_tri_dofs, cyl_def, U_Mat);
+% [U_Mat, DOF_mat, theta1, theta2] = MBF_Circ_endcap(mesh_data, dof_data, vertices ,numMBF, numNodes, reduced_tri_dofs, cyl_def, U_Mat);
 %         
         
         if cyl_def.firstNode == "conn"
@@ -623,7 +623,7 @@ else
     New_N = size(Alpha_Vec_Redu,1);
     I_vec = U_Mat*Alpha_Vec_Redu;
     if (cyl_def.firstNode == "endCap" || cyl_def.lastNode == "endCap")
-%         [I_vec] = ScaleEndCapCurrent(DOF_mat1, DOF_mat, theta1, theta2, I_vec, cyl_def);
+        [I_vec] = ScaleEndCapCurrent(DOF_mat1, DOF_mat, theta1, theta2, I_vec, cyl_def);
     end
 end
 % if solver == 2
@@ -740,15 +740,16 @@ elseif solver == 2 && show_output
 %     PlotCurrent3D(0,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_real);
 %     PlotCurrent3D(0,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_imag);
     PlotCurrent3D(1,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_vert);
+    PlotCurrentDir3D(1,mesh_data.tri_nodes(1:2:end,:),mesh_data.node_coords,tri_currents_dir);
 %     PlotCurrent3D(0,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_cent);
 % set(gcf,'Visible','on')
-%         PlotCurrent3D(1,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_vert_norm);
+        PlotCurrent3D(1,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,tri_currents_vert_norm);
 % PlotCurrent3D(0,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords, tri_currents_cent_norm);
 %          PlotCurrent3D(1,false,mesh_data.tri_nodes(1:2:end,:), mesh_data.node_coords,diff_currents);
     
-    PlotCurrentDir3D(1,mesh_data.tri_nodes(1:2:end,:),mesh_data.node_coords,tri_currents_dir);
+    
 %     set(gcf,'Visible','on')
-%         PlotCurrentDir3D(1,mesh_data.tri_nodes(1:2:end,:),mesh_data.node_coords,tri_currents_dir_norm);
+        PlotCurrentDir3D(1,mesh_data.tri_nodes(1:2:end,:),mesh_data.node_coords,tri_currents_dir_norm);
 elseif solver == 1 && show_output
     PlotCurrent3D(0,false,mesh_data.tri_nodes, mesh_data.node_coords,tri_currents_cent);
     PlotCurrent3D(1,false,mesh_data.tri_nodes,mesh_data.node_coords,tri_currents_vert);
