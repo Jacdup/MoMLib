@@ -105,7 +105,7 @@ if oneEndcap || twoEndcaps
 %     maxNodes(1,1:2) = [maxNode,numMBFNodes-numVertices+maxNode]; % Nodes where maximum current flows over endcap
 end
 
-
+                                                                                                                                                                                       
 row = -3;
 col = 1;
 Rho = [1,1;1,-1];
@@ -248,11 +248,11 @@ if oneEndcap || twoEndcaps
 
     if cyl_def.firstNode == "endCap"
          first_endcap = length(edge_nodes)-(2*numVertices)+1:length(edge_nodes)-numVertices;
-%         B_const(:,first_endcap) = 0;
+        B_const(:,first_endcap) = 0;
     end
     if cyl_def.lastNode == "endCap"
         second_endcap = length(edge_nodes)-(numVertices)+1:length(edge_nodes);
-%         B_const(:,second_endcap) = 0;
+        B_const(:,second_endcap) = 0;
     end
 
 end

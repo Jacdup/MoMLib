@@ -99,12 +99,12 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
     
     int i, j, ii, jj, iter;
     int oip;
-     FILE *fp;
-     FILE *fp1;
-	
-                fp = fopen("Delta.txt","w");
-                fp1 = fopen("Ruv.txt","w");
-    
+//      FILE *fp;
+//      FILE *fp1;
+// 	
+//                 fp = fopen("Delta.txt","w");
+//                 fp1 = fopen("Ruv.txt","w");
+//     
     for (i=0; i< T; i++) //Observation triangle
     {
         
@@ -164,10 +164,10 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
 //                         if ((pEdgeIndex % 2) != 0){
 //                         if ( (pEdgeIndex == 2) ||  (pEdgeIndex == 4) || (pEdgeIndex == 6) || (pEdgeIndex == 8) || (pEdgeIndex == 10) || (pEdgeIndex == 12) ){//|| (pEdgeIndex == 10)){// || (pEdgeIndex == 12)){
 //                        if ( (pEdgeIndex == 1) ||  (pEdgeIndex == 3) || (pEdgeIndex == 5) || (pEdgeIndex == 7) || (pEdgeIndex == 9) || (pEdgeIndex == 11) || (pEdgeIndex >= 13)){
-                            if ((pEdgeIndex == 2)){
-                            fprintf(fp,"%f,%f,%f\n", pRho[0], pRho[1], pRho[2]);
-                         fprintf(fp1,"%f,%f,%f\n", ruv[0],ruv[1],ruv[2]);
-                         }
+//                             if ((pEdgeIndex == 2)){
+//                             fprintf(fp,"%f,%f,%f\n", pRho[0], pRho[1], pRho[2]);
+//                          fprintf(fp1,"%f,%f,%f\n", ruv[0],ruv[1],ruv[2]);
+//                          }
 
 
                        // For incident direction:
@@ -209,8 +209,8 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
             
         }//this brace is new if statement
     }
-                fclose(fp);
-                fclose(fp1);
+//                 fclose(fp);
+//                 fclose(fp1);
 }
 
 /*====================================================================================================

@@ -223,10 +223,10 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
             unitvec_eta[coord] = (-cos(eta_pol)*unitvec_theta[coord])+ (sin(eta_pol)*unitvec_phi[coord]);
         }
         
-       FILE *fp;
-      FILE *fp1;
-       fp = fopen("Delta1.txt","w");
-        fp1 = fopen("Ruv1.txt","w");
+//        FILE *fp;
+//       FILE *fp1;
+//        fp = fopen("Delta1.txt","w");
+//         fp1 = fopen("Ruv1.txt","w");
 //           FILE *fp2;
 //       FILE *fp3;
 //        fp2 = fopen("Delta.txt","w");
@@ -336,14 +336,14 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
                             // mexPrintf("pRho = %f %f %f", pRho[0],pRho[1],pRho[2]);
                             
 // //
-                         if ((pEdgeIndex == 1)|| (pEdgeIndex == 5)){
-//                            if ((i%2)==0){
-                          //   mexPrintf("intPoints = %f %f %f\n pPoints = %f\n", OuterIntPoints[oip][0],OuterIntPoints[oip][1],OuterIntPoints[oip][2], pPoints[0][0]);
-                            // mexPrintf("ruv = %f %f %f\n", pRho[0],pRho[1],pRho[2]);
-                                       fprintf(fp,"%f,%f,%f\n", pRho[0], pRho[1], pRho[2]); //% Delta1
-                                       fprintf(fp1,"%f,%f,%f\n", ruv[0],ruv[1],ruv[2]);
-
-                                                }
+//                          if ((pEdgeIndex == 1)|| (pEdgeIndex == 5)){
+// //                            if ((i%2)==0){
+//                           //   mexPrintf("intPoints = %f %f %f\n pPoints = %f\n", OuterIntPoints[oip][0],OuterIntPoints[oip][1],OuterIntPoints[oip][2], pPoints[0][0]);
+//                             // mexPrintf("ruv = %f %f %f\n", pRho[0],pRho[1],pRho[2]);
+//                                        fprintf(fp,"%f,%f,%f\n", pRho[0], pRho[1], pRho[2]); //% Delta1
+//                                        fprintf(fp1,"%f,%f,%f\n", ruv[0],ruv[1],ruv[2]);
+// 
+//                                                 }
 // //                          }
 //                           if ((pEdgeIndex == 10)||(pEdgeIndex == 42)||(pEdgeIndex == 50)){
 // //
@@ -398,8 +398,8 @@ void FillPlane(double freq, int P, double *points, int T, double *triangles, int
                 
             }//this brace is new if statement
         }
-    fclose(fp);
-    fclose(fp1);
+//     fclose(fp);
+//     fclose(fp1);
 //     fclose(fp2);
 //     fclose(fp3);
 }
