@@ -197,7 +197,6 @@ if oneEndcap || twoEndcaps
             sign1 = triangle_blah(i,5); % Should always be -1
             sign2 = triangle_blah(i,4); % Should always be 1
             if i == length(triangle_blah)-numVertices+1-cyl_def.num_plate_nodes
-                Rho(:,:,i) = [-1,-1;-1,1];
                 RWG_sign =sign1*sign2;
                 FO_sign = 0.5*triangle_blah(i+1,10);
                 DOF_mat(row:row+1,col) = [triangle_blah(i,7);triangle_blah(i,13)];%;triangle_blah(i+1,8);triangle_blah(i+1,14)]; 
@@ -209,9 +208,6 @@ if oneEndcap || twoEndcaps
                 RWG_sign = sign1*sign2;
                 FO_sign = 0.5*triangle_blah(i,11);
                 DOF_mat(row:row+1,col) = [triangle_blah(i,8);triangle_blah(i,14)];  
-                if i == length(triangle_blah)-cyl_def.num_plate_nodes
-                     Rho(:,:,i) = [1,-1;1,1];
-                end
 %                 Rho(1,1,i) = triangle_blah(i,5);
 %                 Rho(2,1,i) = triangle_blah(i,5);
 %                 Rho(1,2,i) = 0.5*triangle_blah(i,11);
@@ -239,8 +235,8 @@ end
 % temp = DOF_mat((numVertices*2)-3:(numVertices*2)-2,col);
 % DOF_mat((numVertices*2)-3:(numVertices*2)-2,col) = DOF_mat((numVertices*2)-1:(numVertices*2),col);
 % DOF_mat((numVertices*2)-1:(numVertices*2),col) = temp;
-
-
+Rho(:,:,239) = [-1,-1;-1,1];
+Rho(:,:,252) = [-1,-1;
 % Rho(:,:,end+1-numVertices:end) = Rho(:,:,end+1-(numVertices*2):end-numVertices); % Set the second endcap rho val to first end cap's
 % 
 % DOF_mat = sort(DOF_mat);
