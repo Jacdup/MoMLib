@@ -7,8 +7,8 @@ function [] = PlotMBFMeshDofs(mesh_data,dof_data,TextOn, DOF_mat)
 eps = 0.1;
 
 % Plot the nodes and triangles:
-PlotTriangleMeshRaw(mesh_data.node_coords,mesh_data.tri_nodes,false);
-
+% PlotTriangleMeshRaw(mesh_data.node_coords,mesh_data.tri_nodes,false);
+hold on
 % Get edge midpoints:
 numedges       = size(mesh_data.edges,1);
 num_dofs       = size(dof_data.dofs_to_edges,1);
@@ -16,7 +16,7 @@ ALPHA          = 0.5;
 edge_midpoints = ALPHA*mesh_data.node_coords(mesh_data.edges(:,1),:) + (1-ALPHA)*mesh_data.node_coords(mesh_data.edges(:,2),:);
 
 if TextOn 
-    for ii = 1:length(DOF_mat)
+    for ii = 1:length(nonzeros(DOF_mat))
         thisedge = dof_data.dofs_to_edges(DOF_mat(ii),1);
 %         if (abs(edge_midpoints(thisedge,3) - 0.1) < eps) || (abs(edge_midpoints(thisedge,3)- 2.9375) < eps)
             plot3(edge_midpoints(thisedge,1),edge_midpoints(thisedge,2),edge_midpoints(thisedge,3),'rs');

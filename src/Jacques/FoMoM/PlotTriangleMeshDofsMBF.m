@@ -6,8 +6,8 @@ function [] = PlotTriangleMeshDofsMBF(mesh_data,dof_data,TextOn, U_Mat, numToPlo
 % 2019-12-16: Created. MMB.
 
 % Plot the nodes and triangles:
-PlotTriangleMeshRaw(mesh_data.node_coords,mesh_data.tri_nodes,false);
-
+% PlotTriangleMeshRaw(mesh_data.node_coords,mesh_data.tri_nodes,false);
+hold on
 % Get edge midpoints:
 numedges       = size(mesh_data.edges,1);
 % num_dofs       = size(dof_data.dofs_to_edges,1);

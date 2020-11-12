@@ -17,7 +17,8 @@ for ii = 1:nr_centroids
 %         centroid_coords(ii,3) = centroid_coords(ii,3) + node_coords(nodes(ii,jj),3); % z
     end
 end
-PlotMesh(node_coords,nodes, nodes,tri);
+% PlotMesh(node_coords,nodes, nodes,tri);
+p = patch('Faces',nodes(:,1:3),'Vertices',node_coords);
 % MBF_vals = nonzeros(sum(MBF,2));
 % MBF_vals = MBF_vals(1:2:end);
 hold on
