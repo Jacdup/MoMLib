@@ -279,19 +279,22 @@ if oneEndcap || twoEndcaps
             end
         end
     end
+%     DOF_mat2(1:numVertices*2,1) = circshift(DOF_mat2(1:numVertices*2,1),2);
 %      DOF_mat2(:,~any(DOF_mat,1)) = []; % Remove zero columns
 %     Rho(:,:,i+2) = [1,-1;1,1];
     row = -1;
+    ind = length(Rho3) + 1;
     if cyl_def.lastNode == "endCap" && cyl_def.firstNode ~= "conn"
         for i = length(triangle_blah)-cyl_def.num_plate_nodes:-1:length(triangle_blah)-numVertices+1-cyl_def.num_plate_nodes% Second endcap
             row = row + 2; 
+            ind = ind - 1;
             if i == length(triangle_blah)-numVertices+1-cyl_def.num_plate_nodes
-                Rho3(:,:,i) = [-1,-1;-1,1];
+                Rho3(:,:,ind) = [-1,-1;-1,1];
                 DOF_mat3(row:row+1,col) = [triangle_blah(i,7);triangle_blah(i,13)];%;triangle_blah(i+1,8);triangle_blah(i+1,14)]; 
             else
                 DOF_mat3(row:row+1,col) = [triangle_blah(i,8);triangle_blah(i,14)];  
                 if i == length(triangle_blah)-cyl_def.num_plate_nodes
-                     Rho3(:,:,i) = [1,-1;1,1];
+                     Rho3(:,:,ind) = [1,-1;1,1];
                 end
             end
 
@@ -314,7 +317,7 @@ end
 DOF_mat2( :, ~any(DOF_mat2,1) ) = [];  %remove zero columns
 DOF_mat3( :, ~any(DOF_mat3,1) ) = [];  %remove zero column
 for k = 1:size(DOF_mat1,2)
-    DOF_mat{k} = [DOF_mat2(:,k),DOF_mat1(:,k),DOF_mat3(:,k)];
+%     DOF_mat{k} = [DOF_mat2(:,k),DOF_mat1(:,k),DOF_mat3(:,k)];
 %     edge_nodes{k} = mesh_data.edges(dof_data.dofs_to_edges(DOF_mat{k})
 end
 
@@ -357,40 +360,54 @@ if  twoEndcaps
 %     theta_1(1:endCapExclude,:) = []; % TODO
 %     theta_2(end-endCapExclude+1:end,:) = []; % TODO
 end
-
-refVec2 = edge_vecs_2(1,:);
-refVec3 = edge_vecs_3(end+1-numVertices,:);
+temp1 = MBF_mat(1:numVertices,2);
+temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),2);
+[~, maxNodeSine1] = max(temp1,[],1, 'linear');
+[~, maxNodeSine2] = max(temp2,[],1, 'linear');
+refVec2 = edge_vecs_1(maxNodeSine1,:);
+refVec3 = edge_vecs_1(maxNodeSine2,:);
 for k = 1:numVertices
 %      theta_1(k) = 90;
 %     theta_2(end-numVertices+k) = 90;
-%     theta_1(k) =  abs(90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
-%     theta_2(end-numVertices+k) =  abs(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
+    theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
+    theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
 end
 B2_first_node = zeros(length(edge_nodes_2),1);
 B3_second_node = zeros(length(edge_nodes_3),1);
-    if twoEndcaps 
-        edge_nodes_2(1:numVertices,[1 2]) =   edge_nodes_2(1:numVertices,[2 1]);
-    end
-
+if twoEndcaps % The first endcap's nodes sit on the wrong side for some reason (edge_nodes defined like that)
+     edge_nodes_2(1:numVertices,[1 2]) =   edge_nodes_2(1:numVertices,[2 1]);
+end
+% -----------------------------------------------------------------------
+    % Now there's really only a 2 things that it could be (if signs are correct):
+    % 1. Determination of the correct angles (theta) on endcap
+    % 2. Making end cap MBF separate (not rooftop) (also don't think this
+    % is the correct way to go)
+% -----------------------------------------------------------------------
+    
 % theta_1(1:numVertices) =theta_2(end+1-numVertices:end);
 % Rho2(:,:,end) = [1,1;1,-1];
 % Rho3(:,:,end) = [1,1;1,-1];
-for MBF_num = 2:2 % unity,sine,cosine
+for MBF_num = 3:3 % unity,sine,cosine
     
     if cyl_def.firstNode == "endCap" % This just makes the B2 matrix have the correct MBF value at the centre vertex
-%     B2_first_node = [repelem(MBF_mat(length(edge_nodes_2)+1,2),numVertices)';zeros(length(edge_nodes_2)-numVertices,1)];
-        B2_first_node = [MBF_mat(edge_nodes_1(1:numVertices,1),MBF_num);zeros(length(edge_nodes_2)-numVertices,1)];
+%          B2_first_node = [repelem(MBF_mat(length(edge_nodes_2)+1,2),numVertices)';zeros(length(edge_nodes_2)-numVertices,1)];
+        B2_first_node = [MBF_mat(edge_nodes_2(1:numVertices,1),MBF_num);zeros(length(edge_nodes_2)-numVertices,1)];
+%         B2_first_node = zeros(length(edge_nodes_2),1);
     end
     if cyl_def.lastNode == "endCap"
 %         B3_second_node = [zeros(length(edge_nodes_3)-numVertices,1);repelem(MBF_mat(length(edge_nodes_3)+1,2),numVertices)'];
-         B3_second_node = [zeros(length(edge_nodes_3)-numVertices,1);MBF_mat(edge_nodes_1(end-numVertices+1:end,2),MBF_num)];
+         B3_second_node = [zeros(length(edge_nodes_3)-numVertices,1);MBF_mat(edge_nodes_3(end-numVertices+1:end,2),MBF_num)];
+%          B2_first_node = zeros(length(edge_nodes_2),1);
     end
     
     B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
     B2(1:2,:) = [B2_first_node,MBF_mat(edge_nodes_2(:,2),MBF_num)]';
+    B2(2,1:numVertices) = B2(1,1:numVertices); % This just for endcap case
     B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),B3_second_node]';
+    B3(1,end-numVertices+1:end) = B3(2,end-numVertices+1:end);
     if MBF_num == 1 && twoEndcaps
         % Don't want to include edges on the endcap for the unity case
+        % (potloodpunt)
         B2(1:2,1:numVertices) = [zeros(numVertices,1),zeros(numVertices,1)]';
         B3(1:2,end+1-numVertices:end) = [zeros(numVertices,1),zeros(numVertices,1)]';
     end
@@ -398,8 +415,8 @@ for MBF_num = 2:2 % unity,sine,cosine
     % is on axis)
     B2(:,:) = B2(:,:) .* [sind(theta_1)';sind(theta_1)']; % Get component of MBF_mat on edge normal
     B3(:,:) = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
-%     B2(:,1:end-endCapExclude) = B2(:,1:end-endCapExclude) .* [sind(theta_1)';sind(theta_1)']; % Get component of MBF_mat on edge normal
-%     B3(:,1:end-endCapExclude) = B3(:,1:end-endCapExclude) .* [sind(theta_2)';sind(theta_2)'];
+%     B2(2,1:numVertices) = repelem(0,numVertices); % Temp, lets see what this does
+%      B3(1,end-numVertices+1:end) = repelem(0,numVertices); % Temp, lets see what this does
     
 % Solve 2x2 linear system
     for i = 1:lim1

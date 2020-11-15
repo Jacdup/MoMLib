@@ -159,32 +159,39 @@ if cyl_def.lastNode == "conn"
     DOF_mat(:,end) = sort(DOF_mat(:,end));
 end
 
+% Rho(:,:,i) = [1,-1;1,1];
+% Rho(:,:,i+1) = [-1,-1;-1,1];
 
 ind = 0;
 row = -1;
 if oneEndcap || twoEndcaps
     if cyl_def.firstNode == "endCap"
+%         Rho(:,:,i+2) = [-1,-1;-1,1];
         for i = length(triangle_blah)-endCapExclude+1-cyl_def.num_plate_nodes:1:length(triangle_blah)-(numVertices*(cyl_def.lastNode == "endCap")-cyl_def.num_plate_nodes)% Every odd row, only first endcap
             row = row + 2;
             ind = ind + 1;
-%             Rho(:,:,ind) = [-1,-1;-1,1];
+            if i == length(triangle_blah) -(numVertices*(cyl_def.lastNode == "endCap")-cyl_def.num_plate_nodes)
+%                 Rho(:,:,i) = [1,-1;1,1];
+            else
+%                 Rho(:,:,i) = [1,-1;1,1];
+            end
 %            Add the edges on the end cap
             DOF_mat(row:row+1,col) = [triangle_blah(i,7);triangle_blah(i,13)];
-%             Rho(:,:,i) = [-1,-1;-1,1];
             if i == length(triangle_blah)-(numVertices*(cyl_def.lastNode == "endCap")-cyl_def.num_plate_nodes)
                 Rho(:,:,i) = [-1,1;-1,-1];
-%                 Rho(:,:,i) = [1,-1;1,1];
                 DOF_mat(row:row+1,col) = [triangle_blah(i,8);triangle_blah(i,14)];
                 col = col+1;
             end
         end
     end
+%     DOF_mat(1:numVertices*2,col-1) = circshift(DOF_mat(1:numVertices*2,col-1),2);
     row = -1;
      DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
     if cyl_def.lastNode == "endCap" && cyl_def.firstNode ~= "conn"
         for i = length(triangle_blah)-cyl_def.num_plate_nodes:-1:length(triangle_blah)-numVertices+1-cyl_def.num_plate_nodes% Second endcap
 %         for i = length(triangle_blah)-numVertices+1-cyl_def.num_plate_nodes:1:length(triangle_blah)-cyl_def.num_plate_nodes% Second endcap
             row = row + 2; 
+            
             if i == length(triangle_blah)-numVertices+1-cyl_def.num_plate_nodes
 %                 Rho(:,:,i) = [-1,-1;-1,1];
                 Rho(:,:,i) = [-1,-1;-1,1];
@@ -197,6 +204,7 @@ if oneEndcap || twoEndcaps
                      Rho(:,:,i) = [1,-1;1,1];
                 end
             end
+%             Rho(:,:,i) = Rho(:,:,i) .* [-1,-1;-1,-1];
 
         end
 %         DOF_mat(1:numVertices*2,col) = circshift(DOF_mat(1:numVertices*2,col),-2);
@@ -216,7 +224,7 @@ edge_vecs  = mesh_data.node_coords(edge_nodes(:,1),:)-mesh_data.node_coords(edge
 theta      =  abs(90 - acosd(dot(edge_vecs(1:2:end,:),edge_vecs(2:2:end,:),2)./(vecnorm(edge_vecs(1:2:end,:),2,2).*vecnorm(edge_vecs(2:2:end,:),2,2))));
 %  theta      =  abs(acosd(dot(edge_vecs(1:2:end,:),edge_vecs(2:2:end,:),2)./(vecnorm(edge_vecs(1:2:end,:),2,2).*vecnorm(edge_vecs(2:2:end,:),2,2))));
 if oneEndcap || twoEndcaps
-    theta(end-round((endCapExclude/2))+1:end,:) = []; % TODO
+    theta(end-numVertices+1:end,:) = []; % TODO
 end
 lim = 1:length(edge_nodes);
 
@@ -246,7 +254,7 @@ if oneEndcap || twoEndcaps
 end
  DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
         
-for MBF_num = 1:3
+for MBF_num =2:2
     X = zeros(2,length(edge_nodes));
     switch MBF_num
         case 1
@@ -259,8 +267,8 @@ for MBF_num = 1:3
     if twoEndcaps % The last endcap's nodes sit on the wrong side for some reason (edge_nodes defined like that)
        B([1 2],end-numVertices+1:end) =   B([2 1],end-numVertices+1:end);
        if MBF_num == 1 % Seems like this gives the best results
-           B(1,end-endCapExclude:end) = 0;
-           B(2,end-endCapExclude:end) = 0;
+           B(1,end-endCapExclude+1:end) = 0;
+           B(2,end-endCapExclude+1:end) = 0;
        end
     end
     

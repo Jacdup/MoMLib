@@ -17,7 +17,7 @@ edge_midpoints = ALPHA*mesh_data.node_coords(mesh_data.edges(:,1),:) + (1-ALPHA)
 jj = 0;
 if TextOn
     for col = numToPlot%length(U_Mat(1,:))
-        for ii = 1:num_dofs
+        for ii = 1:2:num_dofs
             
             if U_Mat(ii,col) ~= 0
                 thisedge = dof_data.dofs_to_edges(ii,1);
