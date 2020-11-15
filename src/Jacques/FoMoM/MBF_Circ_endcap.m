@@ -254,7 +254,7 @@ if oneEndcap || twoEndcaps
 end
  DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
         
-for MBF_num =2:2
+for MBF_num =1:3
     X = zeros(2,length(edge_nodes));
     switch MBF_num
         case 1

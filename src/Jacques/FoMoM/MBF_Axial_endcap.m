@@ -356,38 +356,41 @@ lim1_for_3 = lim1_for_3(1:2:end);
 theta_1      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
 theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
 
-if  twoEndcaps
-%     theta_1(1:endCapExclude,:) = []; % TODO
-%     theta_2(end-endCapExclude+1:end,:) = []; % TODO
-end
-temp1 = MBF_mat(1:numVertices,2);
-temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),2);
-[~, maxNodeSine1] = max(temp1,[],1, 'linear');
-[~, maxNodeSine2] = max(temp2,[],1, 'linear');
-refVec2 = edge_vecs_1(maxNodeSine1,:);
-refVec3 = edge_vecs_1(maxNodeSine2,:);
-for k = 1:numVertices
-%      theta_1(k) = 90;
-%     theta_2(end-numVertices+k) = 90;
-    theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
-    theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
-end
+
 B2_first_node = zeros(length(edge_nodes_2),1);
 B3_second_node = zeros(length(edge_nodes_3),1);
 if twoEndcaps % The first endcap's nodes sit on the wrong side for some reason (edge_nodes defined like that)
      edge_nodes_2(1:numVertices,[1 2]) =   edge_nodes_2(1:numVertices,[2 1]);
 end
-% -----------------------------------------------------------------------
-    % Now there's really only a 2 things that it could be (if signs are correct):
-    % 1. Determination of the correct angles (theta) on endcap
-    % 2. Making end cap MBF separate (not rooftop) (also don't think this
-    % is the correct way to go)
-% -----------------------------------------------------------------------
+
+
+for MBF_num = 1:3 % unity,sine,cosine
     
-% theta_1(1:numVertices) =theta_2(end+1-numVertices:end);
-% Rho2(:,:,end) = [1,1;1,-1];
-% Rho3(:,:,end) = [1,1;1,-1];
-for MBF_num = 3:3 % unity,sine,cosine
+    
+    if MBF_num == 2 && twoEndcaps % Get max node of sine
+        temp1 = MBF_mat(1:numVertices,2);
+        temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),2);
+        [~, maxNodeSine1] = max(temp1,[],1, 'linear');
+        [~, maxNodeSine2] = max(temp2,[],1, 'linear');
+        refVec2 = edge_vecs_1(maxNodeSine1,:);
+        refVec3 = edge_vecs_1(maxNodeSine2,:);
+        for k = 1:numVertices
+            theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
+            theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
+        end
+    elseif MBF_num == 3 && twoEndcaps      % Get max node of cos (will be 90deg out of phase of sine)
+        temp1 = MBF_mat(1:numVertices,3);
+        temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),3);
+        [~, maxNodeSine1] = max(temp1,[],1, 'linear');
+        [~, maxNodeSine2] = max(temp2,[],1, 'linear');
+        refVec2 = edge_vecs_1(maxNodeSine1,:);
+        refVec3 = edge_vecs_1(maxNodeSine2,:);
+        for k = 1:numVertices
+            theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
+            theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
+        end
+    end
+
     
     if cyl_def.firstNode == "endCap" % This just makes the B2 matrix have the correct MBF value at the centre vertex
 %          B2_first_node = [repelem(MBF_mat(length(edge_nodes_2)+1,2),numVertices)';zeros(length(edge_nodes_2)-numVertices,1)];
