@@ -264,7 +264,7 @@ for MBF_num =1:3
         case 3
             B = B_cos;
      end
-    if twoEndcaps % The last endcap's nodes sit on the wrong side for some reason (edge_nodes defined like that)
+    if cyl_def.lastNode == "endCap" % The last endcap's nodes sit on the wrong side for some reason (edge_nodes defined like that)
        B([1 2],end-numVertices+1:end) =   B([2 1],end-numVertices+1:end);
        if MBF_num == 1 % Seems like this gives the best results
            B(1,end-endCapExclude+1:end) = 0;

@@ -359,15 +359,14 @@ theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,
 
 B2_first_node = zeros(length(edge_nodes_2),1);
 B3_second_node = zeros(length(edge_nodes_3),1);
-if twoEndcaps % The first endcap's nodes sit on the wrong side for some reason (edge_nodes defined like that)
+if cyl_def.firstNode == "endCap" % The first endcap's nodes sit on the wrong side for some reason (edge_nodes defined like that)
      edge_nodes_2(1:numVertices,[1 2]) =   edge_nodes_2(1:numVertices,[2 1]);
 end
 
 
 for MBF_num = 1:3 % unity,sine,cosine
-    
-    
-    if MBF_num == 2 && twoEndcaps % Get max node of sine
+      
+    if MBF_num == 2 && cyl_def.firstNode == "endCap" % Get max node of sine
         temp1 = MBF_mat(1:numVertices,2);
         temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),2);
         [~, maxNodeSine1] = max(temp1,[],1, 'linear');
@@ -378,7 +377,7 @@ for MBF_num = 1:3 % unity,sine,cosine
             theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
             theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
         end
-    elseif MBF_num == 3 && twoEndcaps      % Get max node of cos (will be 90deg out of phase of sine)
+    elseif MBF_num == 3 && cyl_def.lastNode == "endCap"      % Get max node of cos (will be 90deg out of phase of sine)
         temp1 = MBF_mat(1:numVertices,3);
         temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),3);
         [~, maxNodeSine1] = max(temp1,[],1, 'linear');
@@ -391,16 +390,11 @@ for MBF_num = 1:3 % unity,sine,cosine
         end
     end
 
-    
     if cyl_def.firstNode == "endCap" % This just makes the B2 matrix have the correct MBF value at the centre vertex
-%          B2_first_node = [repelem(MBF_mat(length(edge_nodes_2)+1,2),numVertices)';zeros(length(edge_nodes_2)-numVertices,1)];
         B2_first_node = [MBF_mat(edge_nodes_2(1:numVertices,1),MBF_num);zeros(length(edge_nodes_2)-numVertices,1)];
-%         B2_first_node = zeros(length(edge_nodes_2),1);
     end
     if cyl_def.lastNode == "endCap"
-%         B3_second_node = [zeros(length(edge_nodes_3)-numVertices,1);repelem(MBF_mat(length(edge_nodes_3)+1,2),numVertices)'];
          B3_second_node = [zeros(length(edge_nodes_3)-numVertices,1);MBF_mat(edge_nodes_3(end-numVertices+1:end,2),MBF_num)];
-%          B2_first_node = zeros(length(edge_nodes_2),1);
     end
     
     B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
@@ -408,18 +402,20 @@ for MBF_num = 1:3 % unity,sine,cosine
     B2(2,1:numVertices) = B2(1,1:numVertices); % This just for endcap case
     B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),B3_second_node]';
     B3(1,end-numVertices+1:end) = B3(2,end-numVertices+1:end);
-    if MBF_num == 1 && twoEndcaps
+    if MBF_num == 1
         % Don't want to include edges on the endcap for the unity case
         % (potloodpunt)
-        B2(1:2,1:numVertices) = [zeros(numVertices,1),zeros(numVertices,1)]';
-        B3(1:2,end+1-numVertices:end) = [zeros(numVertices,1),zeros(numVertices,1)]';
+        if cyl_def.firstNode == "endCap"
+            B2(1:2,1:numVertices) = [zeros(numVertices,1),zeros(numVertices,1)]';
+        end
+        if cyl_def.lastNode == "endCap"
+            B3(1:2,end+1-numVertices:end) = [zeros(numVertices,1),zeros(numVertices,1)]';
+        end
     end
     % Assume B1 (straight edges) are always aligned with axis (edge normal
     % is on axis)
     B2(:,:) = B2(:,:) .* [sind(theta_1)';sind(theta_1)']; % Get component of MBF_mat on edge normal
     B3(:,:) = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
-%     B2(2,1:numVertices) = repelem(0,numVertices); % Temp, lets see what this does
-%      B3(1,end-numVertices+1:end) = repelem(0,numVertices); % Temp, lets see what this does
     
 % Solve 2x2 linear system
     for i = 1:lim1
