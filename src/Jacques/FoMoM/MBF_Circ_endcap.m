@@ -224,7 +224,7 @@ edge_vecs  = mesh_data.node_coords(edge_nodes(:,1),:)-mesh_data.node_coords(edge
 theta      =  abs(90 - acosd(dot(edge_vecs(1:2:end,:),edge_vecs(2:2:end,:),2)./(vecnorm(edge_vecs(1:2:end,:),2,2).*vecnorm(edge_vecs(2:2:end,:),2,2))));
 %  theta      =  abs(acosd(dot(edge_vecs(1:2:end,:),edge_vecs(2:2:end,:),2)./(vecnorm(edge_vecs(1:2:end,:),2,2).*vecnorm(edge_vecs(2:2:end,:),2,2))));
 if oneEndcap || twoEndcaps
-    theta(end-numVertices+1:end,:) = []; % TODO
+    theta(end-round((endCapExclude/2))+1:end,:) = []; % TODO
 end
 lim = 1:length(edge_nodes);
 

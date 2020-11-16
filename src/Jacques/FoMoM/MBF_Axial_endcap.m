@@ -101,11 +101,11 @@ MBF_mat(contour_nodes, :) = [ones_mat,sin_mat',cos_mat'];
 % New 05/11/2020
 % ------------------------------------------------------------------------
 if oneEndcap || twoEndcaps
-    temp = MBF_mat(:,2) + MBF_mat(:,3);
-    [~, maxNode] = max(temp,[],1, 'linear'); % Sin(x) + cos(x)
+%     temp = MBF_mat(:,2) + MBF_mat(:,3);
+%     [~, maxNode] = max(temp,[],1, 'linear'); % Sin(x) + cos(x)
     if ~twoEndcaps
-         MBF_mat((((numNodes+1)*numVertices)+1),:) = [0,1,1];
-%          MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,0,0];
+         MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,1,1]; % End cap vertex always has value of unity (max)
+         MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,1,1];
     else
         MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,1,1]; % The value at the centre vertex, first endcap
         MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,1,1];
@@ -244,8 +244,6 @@ if oneEndcap || twoEndcaps || connection
                 DOF_mat1(row2:row2+1, col+1) = [triangle_blah(i,7); triangle_blah(i,13)];
                 DOF_mat2(row2:row2+1, col+1) = [triangle_blah(i,9-last); triangle_blah(i,15-last)];
             end
-            
-             
 
 %              Rho3(:,:, Rho_index) = Rho3(:,:,Rho_index) .* [-1,-1;-1,-1];
 %             [Rho(:,:,Rho_index), Rho2(:,:,Rho_index)] = getSigns_new(triangle_blah,7,9-last,i,i);
@@ -263,18 +261,23 @@ end
 % endcap
 ind = 0;
 if oneEndcap || twoEndcaps
-     DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
     row = -1;
     if cyl_def.firstNode == "endCap"
+        if twoEndcaps
+            col_ind = 1;
+            DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
+        else
+            col_ind = col;
+        end
         for i = length(triangle_blah)-endCapExclude+1-cyl_def.num_plate_nodes:1:length(triangle_blah)-(numVertices*(cyl_def.lastNode == "endCap")-cyl_def.num_plate_nodes)% Every odd row, only first endcap
             row = row + 2;
             ind = ind + 1;
 %             Rho2(:,:,ind) = [-1,1;-1,-1];
 %            Add the edges on the end cap
-            DOF_mat2(row:row+1,1) = [triangle_blah(i,7);triangle_blah(i,13)];
+            DOF_mat2(row:row+1,col_ind) = [triangle_blah(i,7);triangle_blah(i,13)];
             if i == length(triangle_blah)-(numVertices*(cyl_def.lastNode == "endCap")-cyl_def.num_plate_nodes)
                 Rho2(:,:,ind) = [-1,1;-1,-1];
-                 DOF_mat2(row:row+1,1) = [triangle_blah(i,8);triangle_blah(i,14)];
+                 DOF_mat2(row:row+1,col_ind) = [triangle_blah(i,8);triangle_blah(i,14)];
                  col = col+1;
             end
         end
@@ -284,7 +287,7 @@ if oneEndcap || twoEndcaps
 %     Rho(:,:,i+2) = [1,-1;1,1];
     row = -1;
     ind = length(Rho3) + 1;
-    if cyl_def.lastNode == "endCap" && cyl_def.firstNode ~= "conn"
+    if cyl_def.lastNode == "endCap" %&& cyl_def.firstNode ~= "conn"
         for i = length(triangle_blah)-cyl_def.num_plate_nodes:-1:length(triangle_blah)-numVertices+1-cyl_def.num_plate_nodes% Second endcap
             row = row + 2; 
             ind = ind - 1;
@@ -304,18 +307,21 @@ end
 
 
 % -------------------------------------------------------------------------
-
-if (cyl_def.firstNode == "endCap" && cyl_def.lastNode == "endCap") || (cyl_def.firstNode == "conn" && cyl_def.lastNode ~= "conn")
+if twoEndcaps || (cyl_def.firstNode == "conn" && cyl_def.lastNode ~= "conn")
     DOF_mat1 = [circshift(DOF_mat1(:,1:end-1), [0 1]), DOF_mat1(:,end)]; % Swap columns, so that DOFs are ascending from column 1
     DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
     Rho(:,:,1:numVertices) = Rho(:,:,1:numVertices) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
 elseif cyl_def.firstNode == "endCap"
+%       Rho(:,:,1:numVertices) = Rho(:,:,1:numVertices) .* [-1,-1;-1,-1]; 
     Rho(:,:,end-numVertices+1:end) = Rho(:,:,end-numVertices+1:end) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
+%     Rho2(:,:,1:numVertices) = Rho2(:,:,1:numVertices) .* [-1,-1;-1,-1];
 end
 % Create cell array that has all the DOFs associated with all the MBFs 
 % (One MBF per cell)
+
 DOF_mat2( :, ~any(DOF_mat2,1) ) = [];  %remove zero columns
 DOF_mat3( :, ~any(DOF_mat3,1) ) = [];  %remove zero column
+
 for k = 1:size(DOF_mat1,2)
 %     DOF_mat{k} = [DOF_mat2(:,k),DOF_mat1(:,k),DOF_mat3(:,k)];
 %     edge_nodes{k} = mesh_data.edges(dof_data.dofs_to_edges(DOF_mat{k})
@@ -364,29 +370,24 @@ if cyl_def.firstNode == "endCap" % The first endcap's nodes sit on the wrong sid
 end
 
 
-for MBF_num = 1:3 % unity,sine,cosine
+for MBF_num = 2:2 % unity,sine,cosine
       
-    if MBF_num == 2 && cyl_def.firstNode == "endCap" % Get max node of sine
-        temp1 = MBF_mat(1:numVertices,2);
-        temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),2);
-        [~, maxNodeSine1] = max(temp1,[],1, 'linear');
-        [~, maxNodeSine2] = max(temp2,[],1, 'linear');
-        refVec2 = edge_vecs_1(maxNodeSine1,:);
-        refVec3 = edge_vecs_1(maxNodeSine2,:);
+    if MBF_num > 1  && (oneEndcap || twoEndcaps)
+        temp1 = MBF_mat(1:numVertices,MBF_num);  % Get max node of sine/cosine
+        temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),MBF_num);
+        [~, maxNode1] = max(temp1,[],1, 'linear');
+        [~, maxNode2] = max(temp2,[],1, 'linear');
+        refVec2 = edge_vecs_1(maxNode1,:);
+        refVec3 = edge_vecs_1(maxNode2,:);
         for k = 1:numVertices
-            theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
-            theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
-        end
-    elseif MBF_num == 3 && cyl_def.lastNode == "endCap"      % Get max node of cos (will be 90deg out of phase of sine)
-        temp1 = MBF_mat(1:numVertices,3);
-        temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),3);
-        [~, maxNodeSine1] = max(temp1,[],1, 'linear');
-        [~, maxNodeSine2] = max(temp2,[],1, 'linear');
-        refVec2 = edge_vecs_1(maxNodeSine1,:);
-        refVec3 = edge_vecs_1(maxNodeSine2,:);
-        for k = 1:numVertices
-            theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
-            theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
+            if twoEndcaps
+                 theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
+                 theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
+            elseif cyl_def.firstNode == "endCap"
+                 theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
+            elseif cyl_def.lastNode == "endCap"
+                 theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
+            end
         end
     end
 
@@ -399,9 +400,13 @@ for MBF_num = 1:3 % unity,sine,cosine
     
     B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
     B2(1:2,:) = [B2_first_node,MBF_mat(edge_nodes_2(:,2),MBF_num)]';
-    B2(2,1:numVertices) = B2(1,1:numVertices); % This just for endcap case
+    if cyl_def.firstNode == "endCap"
+        B2(2,1:numVertices) = B2(1,1:numVertices); % This just for endcap case
+    end
     B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),B3_second_node]';
-    B3(1,end-numVertices+1:end) = B3(2,end-numVertices+1:end);
+    if cyl_def.lastNode == "endCap"
+        B3(1,end-numVertices+1:end) = B3(2,end-numVertices+1:end);
+    end
     if MBF_num == 1
         % Don't want to include edges on the endcap for the unity case
         % (potloodpunt)

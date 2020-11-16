@@ -223,8 +223,10 @@ edge_vecs  = mesh_data.node_coords(edge_nodes(:,1),:)-mesh_data.node_coords(edge
 % Angles between straight and diagonal edges
 theta      =  abs(90 - acosd(dot(edge_vecs(1:2:end,:),edge_vecs(2:2:end,:),2)./(vecnorm(edge_vecs(1:2:end,:),2,2).*vecnorm(edge_vecs(2:2:end,:),2,2))));
 %  theta      =  abs(acosd(dot(edge_vecs(1:2:end,:),edge_vecs(2:2:end,:),2)./(vecnorm(edge_vecs(1:2:end,:),2,2).*vecnorm(edge_vecs(2:2:end,:),2,2))));
-if oneEndcap || twoEndcaps
-    theta(end-numVertices+1:end,:) = []; % TODO
+if cyl_def.firstNode == "endCap"
+    theta(end-numVertices/2 + 1,:
+    || twoEndcaps
+%     theta(end-numVertices+1:end,:) = []; % TODO
 end
 lim = 1:length(edge_nodes);
 
@@ -264,7 +266,7 @@ for MBF_num =1:3
         case 3
             B = B_cos;
      end
-    if cyl_def.lastNode == ' % The last endcap's nodes sit on the wrong side for some reason (edge_nodes defined like that)
+    if cyl_def.lastNode == "endCap" % The last endcap's nodes sit on the wrong side for some reason (edge_nodes defined like that)
        B([1 2],end-numVertices+1:end) =   B([2 1],end-numVertices+1:end);
        if MBF_num == 1 % Seems like this gives the best results
            B(1,end-endCapExclude+1:end) = 0;
