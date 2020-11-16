@@ -187,7 +187,10 @@ if oneEndcap || twoEndcaps
 %     DOF_mat(1:numVertices*2,col-1) = circshift(DOF_mat(1:numVertices*2,col-1),2);
     row = -1;
      DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
-    if cyl_def.lastNode == "endCap" && cyl_def.firstNode ~= "conn"
+    if cyl_def.lastNode == "endCap" %&& cyl_def.firstNode ~= "conn"
+        if cyl_def.num_plate_nodes > 0 
+            cyl_def.num_plate_nodes = cyl_def.num_plate_nodes -1;
+        end
         for i = length(triangle_blah)-cyl_def.num_plate_nodes:-1:length(triangle_blah)-numVertices+1-cyl_def.num_plate_nodes% Second endcap
 %         for i = length(triangle_blah)-numVertices+1-cyl_def.num_plate_nodes:1:length(triangle_blah)-cyl_def.num_plate_nodes% Second endcap
             row = row + 2; 
@@ -254,7 +257,7 @@ if oneEndcap || twoEndcaps
 end
  DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
         
-for MBF_num =1:3
+for MBF_num =2:3
     X = zeros(2,length(edge_nodes));
     switch MBF_num
         case 1

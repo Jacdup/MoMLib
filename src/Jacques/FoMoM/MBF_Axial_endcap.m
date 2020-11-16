@@ -82,17 +82,17 @@ contour_nodes = (1:numMBFNodes_new)';
 
 if connection
     contour_nodes = (1:(numNodes+2)*numVertices)';
-%     contour_nodes(end-(numVertices*2)+1:end-numVertices) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ;
-%     contour_nodes(end-(numVertices)+1:end)               =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes_end ;
-%     * (cyl_def.lastNode ~= "conn"))
-contour_nodes = [contour_nodes; cyl_def.last_element_val+  cyl_def.plate_polygon_nodes;  cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
-
+    %     contour_nodes(end-(numVertices*2)+1:end-numVertices) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ;
+    %     contour_nodes(end-(numVertices)+1:end)               =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes_end ;
+    %     * (cyl_def.lastNode ~= "conn"))
+    contour_nodes = [contour_nodes; cyl_def.last_element_val+  cyl_def.plate_polygon_nodes;  cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
+    
 elseif cyl_def.firstNode == "conn"
-%     contour_nodes = [contour_nodes; cyl_def.last_element_val  + cyl_def.plate_polygon_nodes];
+    %     contour_nodes = [contour_nodes; cyl_def.last_element_val  + cyl_def.plate_polygon_nodes];
     contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes ; % Since the polygon nodes are not sequential anymore
 elseif cyl_def.lastNode == "conn"
     contour_nodes = [contour_nodes; cyl_def.last_element_val + cyl_def.plate_polygon_nodes_end];
-%     contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes_end ;
+    %     contour_nodes(end-numVertices+1:end) =   ((numNodes+1)*numVertices) + 1 + cyl_def.plate_polygon_nodes_end ;
 end
 % Contour_nodes can now be used to set the values through linear indexing:
 MBF_mat = zeros(numMBFNodes*2, 3); % Don't really care how big this matrix is, as long as the rows correspond to the nodes.
@@ -104,8 +104,8 @@ if oneEndcap || twoEndcaps
 %     temp = MBF_mat(:,2) + MBF_mat(:,3);
 %     [~, maxNode] = max(temp,[],1, 'linear'); % Sin(x) + cos(x)
     if ~twoEndcaps
-         MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,1,1]; % End cap vertex always has value of unity (max)
-         MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,1,1];
+         MBF_mat((((numNodes+1)*numVertices)+1),:) = [0,1,1]; % End cap vertex always has value of unity (max)
+%          MBF_mat((((numNodes+1)*numVertices)+2),:) = [0,1,1];
     else
         MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,1,1]; % The value at the centre vertex, first endcap
         MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,1,1];
@@ -196,7 +196,7 @@ if oneEndcap || twoEndcaps || connection
                 DOF_mat1(row1:row1+1, col) = [triangle_blah(i,7); triangle_blah(i,13)];
                 DOF_mat3(row1:row1+1, col) = [triangle_blah(i+1,8-last); triangle_blah(i+1,14-last)];
                 
-%                  Rho2(:,:, Rho_index) = Rho2(:,:,Rho_index) .* [-1,-1;-1,-1];
+%                  Rho2(:,:, i) = Rho2(:,:,i) .* [-1,-1;-1,-1];
             if connection
                 Rho_index = sub2ind(size(DOF_mat1(1:2:end,:)), linear_row, col);
                 Rho3(:,:, Rho_index) = Rho3(:,:,Rho_index) .* [-1,-1;-1,-1]; % This fixes the 'connection' case (2 connections)
@@ -278,16 +278,19 @@ if oneEndcap || twoEndcaps
             if i == length(triangle_blah)-(numVertices*(cyl_def.lastNode == "endCap")-cyl_def.num_plate_nodes)
                 Rho2(:,:,ind) = [-1,1;-1,-1];
                  DOF_mat2(row:row+1,col_ind) = [triangle_blah(i,8);triangle_blah(i,14)];
-                 col = col+1;
             end
         end
     end
+    col = col+1;
 %     DOF_mat2(1:numVertices*2,1) = circshift(DOF_mat2(1:numVertices*2,1),2);
 %      DOF_mat2(:,~any(DOF_mat,1)) = []; % Remove zero columns
 %     Rho(:,:,i+2) = [1,-1;1,1];
     row = -1;
     ind = length(Rho3) + 1;
     if cyl_def.lastNode == "endCap" %&& cyl_def.firstNode ~= "conn"
+        if cyl_def.num_plate_nodes > 0 
+            cyl_def.num_plate_nodes = cyl_def.num_plate_nodes -1;
+        end
         for i = length(triangle_blah)-cyl_def.num_plate_nodes:-1:length(triangle_blah)-numVertices+1-cyl_def.num_plate_nodes% Second endcap
             row = row + 2; 
             ind = ind - 1;
@@ -309,6 +312,7 @@ end
 % -------------------------------------------------------------------------
 if twoEndcaps || (cyl_def.firstNode == "conn" && cyl_def.lastNode ~= "conn")
     DOF_mat1 = [circshift(DOF_mat1(:,1:end-1), [0 1]), DOF_mat1(:,end)]; % Swap columns, so that DOFs are ascending from column 1
+    DOF_mat2 = [circshift(DOF_mat2(:,1:end-1), [0 1]), DOF_mat2(:,end)];
     DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
     Rho(:,:,1:numVertices) = Rho(:,:,1:numVertices) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
 elseif cyl_def.firstNode == "endCap"
@@ -319,8 +323,10 @@ end
 % Create cell array that has all the DOFs associated with all the MBFs 
 % (One MBF per cell)
 
-DOF_mat2( :, ~any(DOF_mat2,1) ) = [];  %remove zero columns
-DOF_mat3( :, ~any(DOF_mat3,1) ) = [];  %remove zero column
+if twoEndcaps
+%     DOF_mat2( :, ~any(DOF_mat2,1) ) = [];  %remove zero columns
+%     DOF_mat3( :, ~any(DOF_mat3,1) ) = [];  %remove zero column
+end
 
 for k = 1:size(DOF_mat1,2)
 %     DOF_mat{k} = [DOF_mat2(:,k),DOF_mat1(:,k),DOF_mat3(:,k)];
@@ -370,11 +376,15 @@ if cyl_def.firstNode == "endCap" % The first endcap's nodes sit on the wrong sid
 end
 
 
-for MBF_num = 2:2 % unity,sine,cosine
+for MBF_num = 1:3 % unity,sine,cosine
       
     if MBF_num > 1  && (oneEndcap || twoEndcaps)
         temp1 = MBF_mat(1:numVertices,MBF_num);  % Get max node of sine/cosine
-        temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),MBF_num);
+%         if MBF_num == 2
+             temp2 = MBF_mat(length(edge_nodes_2)-numVertices+1:length(edge_nodes_2),MBF_num); % Last endcap
+%         else
+%             temp2 = MBF_mat(length(edge_nodes_3)-numVertices+1:length(edge_nodes_3),MBF_num); % Last endcap
+%         end
         [~, maxNode1] = max(temp1,[],1, 'linear');
         [~, maxNode2] = max(temp2,[],1, 'linear');
         refVec2 = edge_vecs_1(maxNode1,:);

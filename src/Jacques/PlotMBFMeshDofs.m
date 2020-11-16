@@ -8,6 +8,7 @@ eps = 0.1;
 
 % Plot the nodes and triangles:
 % PlotTriangleMeshRaw(mesh_data.node_coords,mesh_data.tri_nodes,false);
+% figure
 hold on
 % Get edge midpoints:
 numedges       = size(mesh_data.edges,1);
