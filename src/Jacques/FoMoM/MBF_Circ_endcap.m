@@ -100,7 +100,7 @@ if oneEndcap || twoEndcaps
 %          MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,0,0];
     else
         MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,0,0]; % The value at the centre vertex, first endcap
-        MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,0,0]; % Second endcap
+        MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,0, 0]; % Second endcap
     end
 %     maxNodes(1,1:2) = [maxNode,numMBFNodes-numVertices+maxNode]; % Nodes where maximum current flows over endcap
 end
@@ -122,28 +122,45 @@ for i = 1:2:len_tri_mat% Every odd row
     
     if i <= numVertices*2 && cyl_def.firstNode == "conn"
         DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,9);triangle_blah(i,15)];
+%         Rho(2,2,i) = -0.25*triangle_blah(i,11)*triangle_blah(i,12);
+%         Rho(1,2,i) = 0.25*triangle_blah(i,11)*triangle_blah(i,12);
+%         Rho(1,1,i) = 1;
+%          Rho(2,1,i) = 1;
+
+%         Rho(1,1,i) = triangle_blah(i,6);
+% %         Rho(2,1,i) = triangle_blah(i,6);
+%         if triangle_blah(i,11)*triangle_blah(i,12) < 0
+%             Rho(:,:,i) = [1,-1;1,1];
+%         elseif triangle_blah(i,6) < 1
+%             Rho(:,:,i) = [1,-1;1,1];
+%         else
+%             Rho(:,:,i) = [1,-1;1,1];
+%         end
+        
     elseif i > len_tri_mat - (2*numVertices) && cyl_def.lastNode == "conn"
         DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,9);triangle_blah(i,15)];
     else
         DOF_mat(row:row+3,col) = [triangle_blah(i,8);triangle_blah(i,14);triangle_blah(i,7);triangle_blah(i,13)];
+
     end
     
+        if sign1*sign2 == 1
+            Rho(:,:,i) = [-1,1;-1,-1];
+        end
 
-    if sign1*sign2 == 1
-        Rho(:,:,i) = [-1,1;-1,-1];
-    end
 %      Rho_index = sub2ind(size(DOF_mat(1:2:end,:)), linear_row, col)-1;
 %     [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,8,7,i,i);
     if (row == (4*numVertices)-3)
         if i <= numVertices*2 && cyl_def.firstNode == "conn"
             DOF_mat(row:row+3,col) = [triangle_blah(i,9);triangle_blah(i,15);triangle_blah(i,8);triangle_blah(i,14)];
+%             Rho(:,:,i) = [1,-1;1,1];
         elseif i > len_tri_mat - (2*numVertices) && cyl_def.lastNode == "conn"
             DOF_mat(row:row+3,col) = [triangle_blah(i,9);triangle_blah(i,15);triangle_blah(i,8);triangle_blah(i,14)];
         else
             DOF_mat(row:row+3,col) = [triangle_blah(i,7);triangle_blah(i,13);triangle_blah(i,8);triangle_blah(i,14)];
+            Rho(:,:,i+1) = [1,-1;1,1];
         end
-        
-        Rho(:,:,i+1) = [1,-1;1,1];
+
 %         [Rho(:,:,i), Rho(:,:,i+1)] = getSigns_new(triangle_blah,7,8,i,i);
         row = -3;
         col = col + 1;
@@ -249,15 +266,19 @@ B_cos(1:2,:)   = [MBF_mat(edge_nodes(lim,1),3),MBF_mat(edge_nodes(lim,2),3)]';
 B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
 B_sin(:,2:2:end-endCapExclude) = B_sin(:,2:2:end-endCapExclude) .* [sind(theta)';sind(theta)'];
 B_cos(:,2:2:end-endCapExclude) = B_cos(:,2:2:end-endCapExclude) .*[sind(theta)';sind(theta)'];
-%         B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [cosd(2.*theta)';cosd(2.*theta)'];
+% B_sin(2,end-endCapExclude+1:end) = (1i)*B_sin(1,end-endCapExclude+1:end);
+% B_cos(2,end-endCapExclude+1:end) = (1i)*B_cos(1,end-endCapExclude+1:end);
+% %         B_const(:,2:2:end-endCapExclude) = B_const(:,2:2:end-endCapExclude) .* [cosd(2.*theta)';cosd(2.*theta)'];
 %     B_sin(:,2:2:end-endCapExclude) = B_sin(:,2:2:end-endCapExclude) .* [cosd(2.*theta)';cosd(2.*theta)'];
 %     B_cos(:,2:2:end-endCapExclude) = B_cos(:,2:2:end-endCapExclude) .*[cosd(2.*theta)';cosd(2.*theta)'];
 if oneEndcap || twoEndcaps
     extra = extra + 1;
 end
+
+
  DOF_mat(:,~any(DOF_mat,1)) = []; % Remove zero columns
         
-for MBF_num =2:3
+for MBF_num =1:3
     X = zeros(2,length(edge_nodes));
     switch MBF_num
         case 1
@@ -266,12 +287,14 @@ for MBF_num =2:3
             B = B_sin;
         case 3
             B = B_cos;
-     end
+    end
+
+    
     if cyl_def.lastNode == "endCap" % The last endcap's nodes sit on the wrong side for some reason (edge_nodes defined like that)
        B([1 2],end-numVertices+1:end) =   B([2 1],end-numVertices+1:end);
-       if MBF_num == 1 % Seems like this gives the best results
-           B(1,end-endCapExclude+1:end) = 0;
-           B(2,end-endCapExclude+1:end) = 0;
+       if MBF_num == 1 % Fourier mode 0 has phi BC = 0 (at p=0)
+%            B(1,end-endCapExclude+1:end) = 0;
+%            B(2,end-endCapExclude+1:end) = 0;
        end
     end
     

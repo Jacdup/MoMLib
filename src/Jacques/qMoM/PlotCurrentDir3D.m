@@ -23,7 +23,7 @@ end
 % figure
 % patch('Faces',nodes(:,1:3),'Vertices',node_coords, 'FaceColor', 'w');
 hold on
-h = quiver3(centroid_coords(:,1),centroid_coords(:,2),centroid_coords(:,3),centroid_flowdirs(:,1),centroid_flowdirs(:,2),centroid_flowdirs(:,3), 2,'LineWidth', 2);
+h = quiver3(centroid_coords(:,1),centroid_coords(:,2),centroid_coords(:,3),centroid_flowdirs(:,1),centroid_flowdirs(:,2),centroid_flowdirs(:,3), 1.2,'LineWidth', 2);
 axis equal
 
 % h = quiver3(centroid_coords(:,1),centroid_coords(:,2),centroid_coords(:,3),centroid_flowdirs(:,1),centroid_flowdirs(:,2),centroid_flowdirs(:,3), 2,'LineWidth', 2);

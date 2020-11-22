@@ -1120,9 +1120,9 @@ end
 % err1 = pNormError(sqrt(farfield_XY(:,3).^2 + farfield_XY(:,5).^2), sqrt(farfield_XY_norm(:,3).^2 + farfield_XY_norm(:,5).^2), 2)
 
 
-% xlabel("x ($\lambda$)");
-% ylabel("y ($\lambda$)");
-% zlabel("z ($\lambda$)");
+xlabel("x ($\lambda$)");
+ylabel("y ($\lambda$)");
+zlabel("z ($\lambda$)");
 % G_B_Thin = zeros(20,1)
 % for k = 1:20
 %    G_B_Thin(k) = str2num(Z_thin(k));
