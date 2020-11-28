@@ -385,7 +385,7 @@ if cyl_def.firstNode == "endCap" % The first endcap's nodes sit on the wrong sid
 end
 
 
-for MBF_num = 1:3 % unity,sine,cosine
+for MBF_num = 2:2 % unity,sine,cosine
       maxVal = 0;
     if MBF_num > 1  && (oneEndcap || twoEndcaps)
         temp1 = MBF_mat(1:numVertices,MBF_num);  % Get max node of sine/cosine
