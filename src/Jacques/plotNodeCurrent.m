@@ -1,4 +1,8 @@
 function [x_axis, current_norm, current_MBF] = plotNodeCurrent(I_vec,I_vec_norm,DOF_mat1,DOF_mat2,DOF_mat3,DOF_mat, numNodes, cyl_def)
+% 29 Aug 2021
+% What I think this function does:
+% Plots the current magnitude at each node with phi on independent axis
+
 iter = 0;
 % Current magnitude at all nodes
 for node = 1:numNodes
@@ -10,7 +14,6 @@ for node = 1:numNodes
     
     dofs_circ = 1:4:length(DOF_mat);
     dofs_circ_lin = 2:4:length(DOF_mat);
-%     x_axis = 0:360/vertices:359;
     x_axis = linspace(0,360,length(dofs));
     x_axis_circ = linspace(0,360,length(dofs_circ));
     if (cyl_def.firstNode == "endcap" && cyl_def.lastNode == "endcap" ) % Exclude zeros

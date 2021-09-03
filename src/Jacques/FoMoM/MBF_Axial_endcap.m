@@ -420,6 +420,11 @@ for MBF_num = 2:2 % unity,sine,cosine
 %          B3_second_node = [zeros(length(edge_nodes_3)-numVertices,1);MBF_mat(edge_nodes_3(end-numVertices+1:end,2),MBF_num)];
     end
     
+    % B variable has the value of the analytical MBF
+    % Row 1 has the first edge, row 2 has the other edge
+    % B1 = edge on node
+    % B2 = First diagonal edge
+    % B3 = Second diagonal edge
     B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
     B2(1:2,:) = [B2_first_node,MBF_mat(edge_nodes_2(:,2),MBF_num)]';
     if cyl_def.firstNode == "endCap"
@@ -441,7 +446,9 @@ for MBF_num = 2:2 % unity,sine,cosine
     end
     % Assume B1 (straight edges) are always aligned with axis (edge normal
     % is on axis)
-    B2(:,:) = B2(:,:) .* [sind(theta_1)';sind(theta_1)']; % Get component of MBF_mat on edge normal
+     % Get component of MBF_mat on edge normal
+     % One row of each B1, B2 will always be zero (rooftop)
+    B2(:,:) = B2(:,:) .* [sind(theta_1)';sind(theta_1)'];
     B3(:,:) = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
     
 % Solve 2x2 linear system
