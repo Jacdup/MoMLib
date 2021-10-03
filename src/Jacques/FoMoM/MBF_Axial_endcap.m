@@ -109,6 +109,9 @@ if oneEndcap || twoEndcaps
     else
         MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,1,1]; % The value at the centre vertex, first endcap
         MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,1,1];
+        
+%         MBF_mat(1:numVertices,2) =  MBF_mat(1:numVertices,2) - sin_mat(1:numVertices)'; % Get max node of sine/cosine
+%         MBF_mat(length( DOF_mat2(1:2:end))-numVertices+1:length(DOF_mat2(1:2:end)),3) =  MBF_mat(length( DOF_mat2(1:2:end))-numVertices+1:length( DOF_mat2(1:2:end)),3) - sin_mat(length( DOF_mat2(1:2:end))-numVertices+1:length(DOF_mat2(1:2:end)))';% Last endcap
     end
 %     maxNodes(1,1:2) = [maxNode,numMBFNodes-numVertices+maxNode]; % Nodes where maximum current flows over endcap
 end
@@ -376,7 +379,8 @@ lim1_for_3 = lim1_for_3(1:2:end);
 
 theta_1      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
 theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
-
+theta_1_a = theta_1
+theta_2_a = theta_2
 
 B2_first_node = zeros(length(edge_nodes_2),1);
 B3_second_node = zeros(length(edge_nodes_3),1);
@@ -385,10 +389,18 @@ if cyl_def.firstNode == "endCap" % The first endcap's nodes sit on the wrong sid
 end
 
 
-for MBF_num = 2:2 % unity,sine,cosine
+for MBF_num = 2:3 % unity,sine,cosine
       maxVal = 0;
     if MBF_num > 1  && (oneEndcap || twoEndcaps)
+        
+        % For MBF=2, we need to include the (-sin(phi)) componenet IN
+        % ADDITION to the normal MBF_mat component
+        % For MBF=3, we need to include the (cos(phi)) component IN
+        % ADDITION to the normal MBF_mat component
+        
+        % Temp1 & temp2 contain the values of the MBF at the endcap
         temp1 = MBF_mat(1:numVertices,MBF_num);  % Get max node of sine/cosine
+%         MBF_mat(1:numVertices,MBF_num) = 
 %         if MBF_num == 2
              temp2 = MBF_mat(length(edge_nodes_2)-numVertices+1:length(edge_nodes_2),MBF_num); % Last endcap
 %         else
@@ -403,6 +415,8 @@ for MBF_num = 2:2 % unity,sine,cosine
             if twoEndcaps % The lack of (abs) here is due to the minus sign in the formula (cos(phi)ap - sin(phi)aphi)
                  theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
                  theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
+                 theta_1_a(k) =  (90 - asind(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
+                 theta_2_a(end-numVertices+k) =(90 - asind(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
             elseif cyl_def.firstNode == "endCap"
                  theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
             elseif cyl_def.lastNode == "endCap"
@@ -428,7 +442,8 @@ for MBF_num = 2:2 % unity,sine,cosine
     B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
     B2(1:2,:) = [B2_first_node,MBF_mat(edge_nodes_2(:,2),MBF_num)]';
     if cyl_def.firstNode == "endCap"
-        B2(2,1:numVertices) = B2(1,1:numVertices); % This just for endcap case
+        B2(2,1:numVertices) = B2(1,1:numVertices);
+%         B2(2,1:numVertices) = (B2(1,1:numVertices)+circshift(B2(1,1:numVertices),-1))/2; % This just for endcap case
     end
     B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),B3_second_node]';
     if cyl_def.lastNode == "endCap"
