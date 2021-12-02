@@ -74,8 +74,8 @@ Rho3 = Rho;
 % numMBFNodes_new = numVertices*(numNodes+4); % For coupling
 % numMBFNodes_new = numVertices*(numNodes_new+2) ; % This is only for filling the MBF_mat
 numMBFNodes_new = ((numNodes+2)*numVertices) + length(cyl_def.plate_polygon_nodes) + length(cyl_def.plate_polygon_nodes_end);
-sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
-cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
+sin_mat = circshift(sind(phi*(0:(numMBFNodes_new-1))),1);
+cos_mat = circshift(cosd(phi*(0:(numMBFNodes_new-1))),1);
 ones_mat = (ones(numMBFNodes_new,1));
 
 contour_nodes = (1:numMBFNodes_new)';
@@ -389,7 +389,7 @@ if cyl_def.firstNode == "endCap" % The first endcap's nodes sit on the wrong sid
 end
 
 
-for MBF_num = 2:3 % unity,sine,cosine
+for MBF_num = 1:3 % unity,sine,cosine
       maxVal = 0;
     if MBF_num > 1  && (oneEndcap || twoEndcaps)
         
