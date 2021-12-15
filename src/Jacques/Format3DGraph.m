@@ -1,4 +1,4 @@
-function [] = Format3DGraph()
+function [] = Format3DGraph(quiverObject,cyl_definition)
 % Set the properties of a 3D graph (view angle, quiver arrow colour, etc)
 % figure
 set(gcf,'Visible','on')
@@ -31,6 +31,30 @@ ax.FontName = "CMU Serif";
 % ylim([0,0.2])
 % zlim([0,0.2])
 view(-45,30) % Set the view angle
-caxis([0 2]) % Set the colourbar limits
+caxis([0 2.5]) % Set the colourbar limits
 
+% Quiver Properties
+quiverObject.Color = 'black';
+quiverObject.LineWidth = 2;
+quiverObject.AutoScaleFactor = 1;
+
+% Colourbar properties
+a = colorbar;
+a.Label.Interpreter = 'latex';
+a.Label.String = '$|\textbf{J}_{MBF}|$';
+
+% ax.Position = [100 100 540 400];
+
+set(gcf,'Position',[100 100 500 500])
+
+
+if cyl_definition.MBF == "both"
+    identifierName = "full_mbf" + "_" + cyl_definition.radius+ cyl_definition.firstNode + "_" + cyl_definition.lastNode + cyl_definition.vertices;
+else
+   identifierName = cyl_definition.MBF + "_" +  cyl_definition.radius+cyl_definition.firstNode + "_" +cyl_definition.lastNode + cyl_definition.vertices; 
+end
+path = sprintf("C:\\Users\\jacdu\\Desktop\\Journal_Article_Figs\\%s.png",identifierName)
+print("Exporting figure")
+% export_fig path gcf
+exportgraphics(gcf,path,'Resolution',300)
 end

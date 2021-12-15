@@ -67,8 +67,8 @@ end
 % Set up MBF matrix
 % -------------------------------------------------------------------------
 
-sin_mat = sind(phi*(0:(numMBFNodes-1)));
-cos_mat = cosd(phi*(0:(numMBFNodes-1)));
+sin_mat = circshift(sind(phi*(0:(numMBFNodes-1))),2);
+cos_mat = circshift(cosd(phi*(0:(numMBFNodes-1))),2);
 % contour_nodes = (1:(numNodes+2)*numVertices)';
  contour_nodes = (1:numMBFNodes)';
 ones_mat = (ones(numMBFNodes,1));

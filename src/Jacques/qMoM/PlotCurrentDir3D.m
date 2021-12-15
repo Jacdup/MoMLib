@@ -1,4 +1,4 @@
-function [] = PlotCurrentDir3D(tri,nodes,node_coords,centroid_flowdirs, centroid_flowdirs_imag)
+function [h] = PlotCurrentDir3D(tri,nodes,node_coords,centroid_flowdirs, centroid_flowdirs_imag)
 
 nr_centroids = length(centroid_flowdirs(:,1));
 centroid_coords = zeros(nr_centroids ,3);
