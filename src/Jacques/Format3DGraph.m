@@ -56,5 +56,5 @@ end
 path = sprintf("C:\\Users\\jacdu\\Desktop\\Journal_Article_Figs\\%s.png",identifierName)
 print("Exporting figure")
 % export_fig path gcf
-exportgraphics(gcf,path,'Resolution',300)
+% exportgraphics(gcf,path,'Resolution',300)
 end
