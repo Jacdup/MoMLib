@@ -401,7 +401,7 @@ for MBF_num = 2:2 % unity,sine,cosine
         refVec3 = edge_vecs_1(maxNode2,:);
         for k = 1:numVertices
             if twoEndcaps % The lack of (abs) here is due to the minus sign in the formula (cos(phi)ap - sin(phi)aphi)
-                 theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
+                 theta_1(k) =   (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
                  theta_2(end-numVertices+k) =(90 - acosd(dot(refVec3,edge_vecs_3(end-numVertices+k,:),2)./(vecnorm(refVec3,2,2).*vecnorm(edge_vecs_3(end-numVertices+k,:),2,2))));
             elseif cyl_def.firstNode == "endCap"
                  theta_1(k) =  (90 - acosd(dot(refVec2,edge_vecs_2(k,:),2)./(vecnorm(refVec2,2,2).*vecnorm(edge_vecs_2(k,:),2,2))));
@@ -459,18 +459,18 @@ for MBF_num = 2:2 % unity,sine,cosine
     node2 = 1;
     node3 = 1;
     xdom1 = 0;
-    for MBF_node = 1:numNodes_new
+    for MBF_node = 1:1
 
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
 
         % Skip the zero columns
-        if DOF_mat1(1,MBF_node) ~= 0
-            xdom_prev1 = xdom1 + 1;
-            xdom1 = xdom1 + numVertices; % Next set of values
-            U_Mat(DOF_mat1(1:2:end,MBF_node),col_index) = X1(1,xdom_prev1:xdom1); % RWG
-            U_Mat(DOF_mat1(2:2:end,MBF_node),col_index) = X1(2,xdom_prev1:xdom1); % Linear
-        end
+%         if DOF_mat1(1,MBF_node) ~= 0
+%             xdom_prev1 = xdom1 + 1;
+%             xdom1 = xdom1 + numVertices; % Next set of values
+%             U_Mat(DOF_mat1(1:2:end,MBF_node),col_index) = X1(1,xdom_prev1:xdom1); % RWG
+%             U_Mat(DOF_mat1(2:2:end,MBF_node),col_index) = X1(2,xdom_prev1:xdom1); % Linear
+%         end
         % Skip the zero columns
         if DOF_mat2(1,MBF_node) ~= 0
             xdom = (numVertices*(node2-1))+1:(numVertices*node2);
@@ -479,12 +479,12 @@ for MBF_num = 2:2 % unity,sine,cosine
             % Move to next X domain
             node2 = node2 + 1;
         end
-        if DOF_mat3(1,MBF_node) ~= 0
-            xdom = (numVertices*(node3-1))+1:(numVertices*node3);
-            U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,xdom); % RWG
-            U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,xdom); % Linear
-            node3 = node3 + 1;
-        end
+%         if DOF_mat3(1,MBF_node) ~= 0
+%             xdom = (numVertices*(node3-1))+1:(numVertices*node3);
+%             U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,xdom); % RWG
+%             U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,xdom); % Linear
+%             node3 = node3 + 1;
+%         end
         
     end
 end
