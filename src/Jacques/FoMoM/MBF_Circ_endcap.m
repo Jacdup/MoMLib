@@ -308,6 +308,7 @@ for MBF_num =1:3
         col_iter = 1;
     end
     x_ind_1 = 0;
+%     for MBF_node = 4:4
     for MBF_node = 1:numNodes+1+extra % numNodes is still without extra 2, TODO: add one if this MBF is added to endcap
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
