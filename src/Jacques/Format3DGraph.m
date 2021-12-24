@@ -39,13 +39,14 @@ caxis([0 2]) % Set the colourbar limits
 
 % Quiver Properties
 quiverObject.Color = 'black';
-quiverObject.LineWidth = 2;
+quiverObject.LineWidth = 1;
 quiverObject.AutoScaleFactor = 1;
 
 % Colourbar properties
-a = colorbar;
-a.Label.Interpreter = 'latex';
-a.Label.String = '$|\textbf{J}_{MBF}|$';
+% a = colorbar;
+set(colorbar,'visible','off')
+% a.Label.Interpreter = 'latex';
+% a.Label.String = '$|\textbf{J}_{MBF}|$';
 
 
 % ax.Position = [100 100 540 400];
@@ -55,7 +56,7 @@ set(gcf,'Position',[100 100 500 500])
 hold on 
 zAxis = quiver3(0.75,0,0,-1,0,0);
 zAxis.Color = 'black';
-zAxis.LineWidth = 2;
+zAxis.LineWidth = 1;
 zAxis.AutoScaleFactor = 1;
 textObj = text(-0.35,0,0,"z");
 
@@ -71,5 +72,5 @@ end
 path = sprintf("C:\\Users\\jduplessis\\Desktop\\Journal_Article_Figs\\%s.png",identifierName)
 print("Exporting figure")
 % export_fig path gcf
-% exportgraphics(gcf,path,'Resolution',300)
+exportgraphics(gcf,path,'Resolution',500)
 end
