@@ -107,8 +107,8 @@ if oneEndcap || twoEndcaps
          MBF_mat((((numNodes+1)*numVertices)+1),:) = [0,1,1]; % End cap vertex always has value of unity (max)
 %          MBF_mat((((numNodes+1)*numVertices)+2),:) = [0,1,1];
     else
-%         MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,1,1]; % The value at the centre vertex, first endcap
-%         MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,1,1];
+        MBF_mat((((numNodes+2)*numVertices)+1),:) = [0,1,1]; % The value at the centre vertex, first endcap
+        MBF_mat((((numNodes+2)*numVertices)+2),:) = [0,1,1];
     end
 %     maxNodes(1,1:2) = [maxNode,numMBFNodes-numVertices+maxNode]; % Nodes where maximum current flows over endcap
 end
@@ -324,10 +324,6 @@ if twoEndcaps || (cyl_def.firstNode == "conn" && cyl_def.lastNode ~= "conn")
     end
     DOF_mat3 = [circshift(DOF_mat3(:,1:end-1), [0 1]), DOF_mat3(:,end)];
     Rho(:,:,1:numVertices) = Rho(:,:,1:numVertices) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
-elseif cyl_def.firstNode == "endCap"
-%       Rho(:,:,1:numVertices) = Rho(:,:,1:numVertices) .* [-1,-1;-1,-1]; 
-%     Rho(:,:,end-numVertices+1:end) = Rho(:,:,end-numVertices+1:end) .* [-1,-1;-1,-1]; % I REALLY don't know why this is suddenly necessary (since 25/05/2020)
-%     Rho2(:,:,1:numVertices) = Rho2(:,:,1:numVertices) .* [-1,-1;-1,-1];
 end
 
 temp1        = nonzeros(DOF_mat1); % Create temporary column vector
@@ -365,48 +361,41 @@ lim1_for_3 = lim1_for_3(1:2:end);
 theta_1      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
 theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
 
-for MBF_num = 1:3 % unity,sine,cosine
-    
-    B1(1:2,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
-%     B2(1:2,:) = [MBF_mat(edge_nodes_2(:,2),MBF_num),MBF_mat(edge_nodes_2(:,2),MBF_num)]';
-%     B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),MBF_mat(edge_nodes_3(:,2),MBF_num)]';
-%     B2(1:2,1:numVertices) = [MBF_mat(edge_nodes_2(1:numVertices,2),MBF_num), MBF_mat(edge_nodes_2(1:numVertices,2),MBF_num)]';
-%     B3(1:2,end-numVertices+1:end) = [MBF_mat(edge_nodes_3(end-numVertices+1:end,2),MBF_num), MBF_mat(edge_nodes_3(end-numVertices+1:end,2),MBF_num)]';
+for MBF_num = 2:3 % unity,sine,cosine
+    B1(:,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
     if cyl_def.firstNode == "endCap" % This just makes the B2 matrix have the correct MBF value at the centre vertex
         B2_first_node = [repelem(1,numVertices)';zeros(length(edge_nodes_2)-numVertices,1)];
-%         B2_first_node = MBF_mat(edge_nodes_2(:,2),MBF_num);
     end
     if cyl_def.lastNode == "endCap"
         B3_second_node = [zeros(length(edge_nodes_3)-numVertices,1);repelem(1,numVertices)'];
     end
-    B2(1:2,:) = [B2_first_node,MBF_mat(edge_nodes_2(:,2),MBF_num)]';
-    B3(1:2,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),B3_second_node]';
+    B2(:,:) = [B2_first_node,MBF_mat(edge_nodes_2(:,2),MBF_num)]';
+    B3(:,:) = [MBF_mat(edge_nodes_3(:,1),MBF_num),B3_second_node]';
     B3(:,:) = B3(:,:) .* [sind(theta_2)';sind(theta_2)'];
     B2(:,:) = B2(:,:) .* [sind(theta_1)';sind(theta_1)'];
     if twoEndcaps 
         if MBF_num == 2 
-            B2(1,1:numVertices) = cos_mat(1:numVertices);
-            B2(2,1:numVertices) = cos_mat(1:numVertices);
-%                 B2(1,1:numVertices) = cos_mat(2:numVertices+1);
-%                 B2(2,1:numVertices) = cos_mat(2:numVertices+1);
+%             B2(1,1:numVertices) = cos_mat(2:numVertices+1);
+            B2(1,1:numVertices) = MBF_mat(edge_nodes_2(1:numVertices,1),3);
+            B2(2,1:numVertices) = B2(1,1:numVertices);
+%             B2(2,1:numVertices) = MBF_mat(edge_nodes_2(1:numVertices,2),3);
+%             B2(2,1:numVertices) = 1;
+%             B2(2,1:numVertices) = cos_mat(2:numVertices+1);
             B3(1,end-numVertices+1:end) = cos_mat(1:numVertices);
             B3(2,end-numVertices+1:end) = cos_mat(1:numVertices);
         elseif MBF_num == 3
-            B2(1,1:numVertices) = (-1.*sin_mat(1:numVertices));
-            B2(2,1:numVertices) = (-1.*sin_mat(1:numVertices));
-%                 B2(1,1:numVertices) = (-1.*sin_mat(2:numVertices+1));
-%                 B2(2,1:numVertices) = (-1.*sin_mat(2:numVertices+1));
+%             B2(1,1:numVertices) = (-1.*sin_mat(2:numVertices+1));
+            B2(1,1:numVertices) = -1.*MBF_mat(edge_nodes_2(1:numVertices,1),2);
+            B2(2,1:numVertices) = B2(1,1:numVertices);
+%             B2(2,1:numVertices) = -1.*MBF_mat(edge_nodes_2(1:numVertices,2),2);
+%             B2(2,1:numVertices) = 1;
+%             B2(2,1:numVertices) = (-1.*sin_mat(2:numVertices+1));
             B3(1,end-numVertices+1:end) = (-1.*sin_mat(1:numVertices));
             B3(2,end-numVertices+1:end) = (-1.*sin_mat(1:numVertices));
         else
-       
+            % No azimuthal components at first MBF
             B2(1:2,1:numVertices) = [zeros(numVertices,1),zeros(numVertices,1)]';
             B3(1:2,end+1-numVertices:end) = [zeros(numVertices,1),zeros(numVertices,1)]';
-
-%               B2(2,1:numVertices) = 1;
-%               B3(2,end-numVertices+1:end) = 1;
-%               B2(1,1:numVertices) = MBF_mat(edge_nodes_2(1:numVertices,2),1);
-%               B3(2,end-numVertices+1:end) = MBF_mat(edge_nodes_3(end-numVertices+1:end,2),1);
         end
     end
 % Solve 2x2 linear system
@@ -424,8 +413,8 @@ for MBF_num = 1:3 % unity,sine,cosine
     node2 = 1;
     node3 = 1;
     xdom1 = 0;
-%     for MBF_node = 1:3
-    for MBF_node = 1:numNodes_new
+    for MBF_node = 1:1
+%     for MBF_node = 1:numNodes_new
 
         col_index = col_iter + (MBF_num-1);
         col_iter = col_iter + numMBF;
