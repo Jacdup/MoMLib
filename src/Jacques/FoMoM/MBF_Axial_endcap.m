@@ -74,8 +74,8 @@ Rho3 = Rho;
 % numMBFNodes_new = numVertices*(numNodes+4); % For coupling
 % numMBFNodes_new = numVertices*(numNodes_new+2) ; % This is only for filling the MBF_mat
 numMBFNodes_new = ((numNodes+2)*numVertices) + length(cyl_def.plate_polygon_nodes) + length(cyl_def.plate_polygon_nodes_end);
-sin_mat = sind(phi*(0:(numMBFNodes_new-1)));
-cos_mat = cosd(phi*(0:(numMBFNodes_new-1)));
+sin_mat = circshift(sind(phi*(0:(numMBFNodes_new-1))),1);
+cos_mat = circshift(cosd(phi*(0:(numMBFNodes_new-1))),1);
 ones_mat = (ones(numMBFNodes_new,1));
 
 contour_nodes = (1:numMBFNodes_new)';
@@ -385,7 +385,7 @@ if cyl_def.firstNode == "endCap" % The first endcap's nodes sit on the wrong sid
 end
 
 
-for MBF_num = 2:2 % unity,sine,cosine
+for MBF_num = 1:3 % unity,sine,cosine
       maxVal = 0;
     if MBF_num > 1  && (oneEndcap || twoEndcaps)
         temp1 = MBF_mat(1:numVertices,MBF_num);  % Get max node of sine/cosine
@@ -465,12 +465,12 @@ for MBF_num = 2:2 % unity,sine,cosine
         col_iter = col_iter + numMBF;
 
         % Skip the zero columns
-%         if DOF_mat1(1,MBF_node) ~= 0
-%             xdom_prev1 = xdom1 + 1;
-%             xdom1 = xdom1 + numVertices; % Next set of values
-%             U_Mat(DOF_mat1(1:2:end,MBF_node),col_index) = X1(1,xdom_prev1:xdom1); % RWG
-%             U_Mat(DOF_mat1(2:2:end,MBF_node),col_index) = X1(2,xdom_prev1:xdom1); % Linear
-%         end
+        if DOF_mat1(1,MBF_node) ~= 0
+            xdom_prev1 = xdom1 + 1;
+            xdom1 = xdom1 + numVertices; % Next set of values
+            U_Mat(DOF_mat1(1:2:end,MBF_node),col_index) = X1(1,xdom_prev1:xdom1); % RWG
+            U_Mat(DOF_mat1(2:2:end,MBF_node),col_index) = X1(2,xdom_prev1:xdom1); % Linear
+        end
         % Skip the zero columns
         if DOF_mat2(1,MBF_node) ~= 0
             xdom = (numVertices*(node2-1))+1:(numVertices*node2);
@@ -479,12 +479,12 @@ for MBF_num = 2:2 % unity,sine,cosine
             % Move to next X domain
             node2 = node2 + 1;
         end
-%         if DOF_mat3(1,MBF_node) ~= 0
-%             xdom = (numVertices*(node3-1))+1:(numVertices*node3);
-%             U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,xdom); % RWG
-%             U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,xdom); % Linear
-%             node3 = node3 + 1;
-%         end
+        if DOF_mat3(1,MBF_node) ~= 0
+            xdom = (numVertices*(node3-1))+1:(numVertices*node3);
+            U_Mat(DOF_mat3(1:2:end,MBF_node),col_index) = X3(1,xdom); % RWG
+            U_Mat(DOF_mat3(2:2:end,MBF_node),col_index) = X3(2,xdom); % Linear
+            node3 = node3 + 1;
+        end
         
     end
 end
