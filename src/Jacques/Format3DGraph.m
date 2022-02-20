@@ -1,4 +1,4 @@
-function [] = Format3DGraph(quiverObject,cyl_definition)
+function [] = Format3DGraph(quiverObject,cyl_definition, quantityToPlot)
 % Set the properties of a 3D graph (view angle, quiver arrow colour, etc)
 % figure
 
@@ -35,7 +35,7 @@ set(gca,'visible','off')
 % ylim([0,0.2])
 % zlim([0,0.2])
 view(-45,30) % Set the view angle
-caxis([0 2]) % Set the colourbar limits
+% caxis([0 2]) % Set the colourbar limits
 
 % Quiver Properties
 quiverObject.Color = 'black';
@@ -68,6 +68,11 @@ if cyl_definition.MBF == "both"
     identifierName = "full_mbf" + "_" + cyl_definition.radius+ cyl_definition.firstNode + "_" + cyl_definition.lastNode + cyl_definition.vertices;
 else
    identifierName = cyl_definition.MBF + "_" +  cyl_definition.radius+cyl_definition.firstNode + "_" +cyl_definition.lastNode + cyl_definition.vertices; 
+end
+if quantityToPlot == "iden"
+    identifierName = identifierName + "_" + "analytical";
+else
+    identifierName = identifierName + "_" + "quantityToPlot";
 end
 path = sprintf("C:\\Users\\jduplessis\\Desktop\\Journal_Article_Figs\\%s.png",identifierName)
 print("Exporting figure")

@@ -93,4 +93,3 @@ for ii = 1:size(tri_dofs,1)
         end
     end
 end
-test = 1;
