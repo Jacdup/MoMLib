@@ -334,7 +334,8 @@ lim1_for_3 = lim1_for_3(1:2:end);
 
 theta_1      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_2,:),edge_vecs_2(1:lim2,:),2)./(vecnorm(edge_vecs_1(lim1_for_2,:),2,2).*vecnorm(edge_vecs_2(1:lim2,:),2,2))));
 theta_2      =  abs(90 - acosd(dot(edge_vecs_1(lim1_for_3,:),edge_vecs_3(1:lim3,:),2)./(vecnorm(edge_vecs_1(lim1_for_3,:),2,2).*vecnorm(edge_vecs_3(1:lim3,:),2,2))));
-
+B2_first_node = zeros(length(edge_nodes_2),1);
+B3_second_node = zeros(length(edge_nodes_3),1);
 for MBF_num = 1:3 % unity,sine,cosine
     B1(:,:) = [MBF_mat(edge_nodes_1(:,1),MBF_num),MBF_mat(edge_nodes_1(:,2),MBF_num)]';
     if cyl_def.firstNode == "endCap" % This just makes the B2 matrix have the correct MBF value at the centre vertex
